@@ -23,6 +23,17 @@ source .venv/bin/activate
 ```
 and to exit the environment, enter `deactivate`.
 
+# Database Setup
+Enter the database as a root user by the following command:
+```
+mysql -u root -p
+```
+Enter the password when prompted. After entering the MySQL prompt, (`mysql>`) enter the following command:
+```
+CREATE DATABASE veralign CHARACTER SET utf8mb4;
+```
+This creates a database called `veralign` that has a `utf8` character set.
+
 # Password Setup
 Enter the `veralign` project directory, and create a file containing your password to the root user login for your local MySQL database (the `password` file is already in the `.gitignore`).
 ```
