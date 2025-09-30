@@ -59,5 +59,6 @@ Enter the credentials you would like to set to access the admin interface.
 
 # Project Structure
 `veralign/` - main Django project configuration
+
 `crm/` - CRM application (website templates, models, URLs)
 
