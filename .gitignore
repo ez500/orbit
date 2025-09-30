@@ -1,1 +1,5 @@
+# Python Virtual Environment
 .venv/
+
+# Password management for MySQL database
+veralign/password
