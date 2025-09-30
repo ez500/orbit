@@ -1,0 +1,36 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+<div class="card">
+    <h1>Welcome to VerAlign - Your AI-based CRM Tool</h1>
+    <p>Streamline your customer relationships with AI-powered insights and automation.</p>
+    
+    <div style="margin-top: 2rem;">
+        <h2>Key Features</h2>
+        <ul style="margin: 1rem 0; padding-left: 2rem;">
+            <li>AI-powered customer insights</li>
+            <li>Automated lead scoring</li>
+            <li>Contact management</li>
+            <li>Sales pipeline tracking</li>
+            <li>Analytics and reporting</li>
+        </ul>
+    </div>
+    
+    <div style="margin-top: 2rem;">
+        <a href="{% url 'crm:dashboard' %}" class="btn">Go to Dashboard</a>
+        <a href="/admin/" class="btn" style="margin-left: 1rem; background-color: #e74c3c;">Admin Panel</a>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Getting Started</h3>
+    <p>Welcome to your new Django-powered CRM system. This basic template provides:</p>
+    <ul style="margin: 1rem 0; padding-left: 2rem;">
+        <li>Django project structure</li>
+        <li>Basic templates with responsive design</li>
+        <li>URL routing configuration</li>
+        <li>Admin interface access</li>
+        <li>Ready for customization and extension</li>
+    </ul>
+</div>
+{% endblock %}
