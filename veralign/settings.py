@@ -73,8 +73,11 @@ WSGI_APPLICATION = 'veralign.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-with open(PASSWORD_FILE) as f:
-    PASSWORD = f.read().rstrip()
+try:
+    with open(PASSWORD_FILE) as f:
+        PASSWORD = f.read().rstrip()
+except (FileNotFoundError, PermissionError, OSError) as e:
+    raise RuntimeError(f"Could not read password file '{PASSWORD_FILE}': {e}")
 
 DATABASES = {
     'default': {
