@@ -81,11 +81,12 @@ except (FileNotFoundError, PermissionError, OSError) as e:
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'veralign',
-        'USER': 'root',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'veraligndb',
+        'USER': 'veralignadmin',
         'PASSWORD': PASSWORD,
-        'HOST': ''
+        'HOST': 'localhost',
+        'PORT': 5432
     }
 }
 
