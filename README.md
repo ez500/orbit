@@ -10,6 +10,10 @@ A AI-based CRM tool.
 ## Python Package Requirements
 - [Django 5.2](https://www.djangoproject.com/download/)
 - [mysqlclient 2.2](https://pypi.org/project/mysqlclient/)
+- Install using:
+```
+pip install -r requirements.txt
+```
 
 ## Python Virtual Environment (Optional)
 Create a new virtual environment with the following command:
