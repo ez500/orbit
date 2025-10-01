@@ -4,12 +4,11 @@ A AI-based CRM tool.
 # Setup
 ## System Installation Requirements
 - [Python 3.10](https://wiki.python.org/moin/BeginnersGuide/Download)
-- [MySQL 8.4](https://dev.mysql.com/doc/refman/8.4/en/installing.html)
-  - **Important!** Remember the password you set when setting up the MySQL database, it will be needed to authorize Django to modify the local database
-
+- [PostgreSQL 18.0](https://www.postgresql.org/download/)
+  - 
 ## Python Package Requirements
 - [Django 5.2](https://www.djangoproject.com/download/)
-- [mysqlclient 2.2](https://pypi.org/project/mysqlclient/)
+- [psycopg 3.2.10](https://www.psycopg.org/psycopg3/docs/basic/install.html#supported-systems)
 - Install using:
 ```
 pip install -r requirements.txt
@@ -29,27 +28,35 @@ source .venv/bin/activate
 and to exit the environment, enter `deactivate`.
 
 ## Database Setup
-Enter the database as a root user by the following command:
+Enter the `postgres` prompt (`postgres=#`) by the following commands:
 ```
-mysql -u root -p
+sudo -i -u postgres
+psql
 ```
-Enter the password when prompted. After entering the MySQL prompt, (`mysql>`) enter the following command:
+(If psql does not successfully start, check the psql installation with `psql --version` or check that the postgres server is running with `sudo systemctl status postgresql`. If the server is not running, start it with `sudo systemctl start postgresql`.)
+
+Create a VerAlign-associated database and local postgres user by entering the following commands:
 ```
-CREATE DATABASE veralign CHARACTER SET utf8mb4;
+CREATE DATABASE veraligndb;
+CREATE USER veralignadmin WITH PASSWORD '<password>';
+GRANT ALL PRIVELEGES ON DATABASE veraligndb TO veralignadmin;
 ```
-This creates a database called `veralign` that has a `utf8` character set.
+(Replace `<password>` with your own password to authorize access to this local database... **Important!** Remember the password, as it will be needed to authorize Django to modify the local database)
+
+This creates a database called `veraligndb` that Django will be able to access with the password.
 
 ## Password Setup
-Enter the `veralign` project directory, and create a file containing your password to the root user login for your local MySQL database (the `password` file is already in the `.gitignore`).
+Enter the `veralign` project directory, and create a file containing your password to the local `veraligndb` database (the `password` file is already in the `.gitignore`).
 ```
 cd veralign
-echo "<PASSWORD>" >> password
+echo "<password>" >> password
 ```
-(replace `<PASSWORD>` with your actual password to the root user login for your MySQL database)
+(replace `<password>` with the actual password)
 
 ## Migrate and Start Development Server
-Migrate database entries and start local server (return to repository root directory first via `cd ..`).
+Migrate database entries and start local server (after returning to repository root directory via `cd ..`).
 ```
+python manage.py makemigrations
 python manage.py migrate
 python manage.py runserver
 ```
