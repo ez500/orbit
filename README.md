@@ -39,7 +39,7 @@ Create a VerAlign-associated database and local postgres user by entering the fo
 ```
 CREATE DATABASE veraligndb;
 CREATE USER veralignadmin WITH PASSWORD '<password>';
-GRANT ALL PRIVELEGES ON DATABASE veraligndb TO veralignadmin;
+GRANT ALL PRIVILEGES ON DATABASE veraligndb TO veralignadmin;
 ```
 (Replace `<password>` with your own password to authorize access to this local database... **Important!** Remember the password, as it will be needed to authorize Django to modify the local database)
 
