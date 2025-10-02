@@ -5,7 +5,7 @@ A AI-based CRM tool.
 ## System Installation Requirements
 - [Python 3.10](https://wiki.python.org/moin/BeginnersGuide/Download)
 - [PostgreSQL 18.0](https://www.postgresql.org/download/)
-  - 
+
 ## Python Package Requirements
 - [Django 5.2](https://www.djangoproject.com/download/)
 - [psycopg 3.2.10](https://www.psycopg.org/psycopg3/docs/basic/install.html#supported-systems)
