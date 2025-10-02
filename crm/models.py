@@ -6,7 +6,7 @@ class User(models.Model):
    hashed_password=models.CharField(max_length=200)
    userEmail=models.EmailField(unique=True)
    userId=models.IntegerField(primary_key=True)
-   #profilePicture
+   profilePicture=models.ImageField(upload_to='profile_pics/', blank=True, null=True)
    connectionIds=models.IntegerField(unique=True)
    groups=ArrayField(models.IntegerField(unique=True), blank=True, default=list) #ArrayField only works with PostgreSQL
    projects=ArrayField(models.IntegerField(unique=True), blank=True, default=list) #ArrayField only works with PostgreSQL
