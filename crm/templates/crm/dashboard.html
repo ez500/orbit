@@ -1,0 +1,56 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+<div class="card">
+    <h1>Dashboard</h1>
+    <p>Welcome back, User! Here's your CRM overview.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+    <div class="card">
+        <h3>🎯 Leads</h3>
+        <p style="font-size: 2rem; color: #3498db; margin: 1rem 0;">42</p>
+        <p>Active leads in pipeline</p>
+        <a href="#" class="btn" style="margin-top: 1rem;">Manage Leads</a>
+    </div>
+    
+    <div class="card">
+        <h3>👥 Contacts</h3>
+        <p style="font-size: 2rem; color: #2ecc71; margin: 1rem 0;">156</p>
+        <p>Total contacts in database</p>
+        <a href="#" class="btn" style="margin-top: 1rem;">View Contacts</a>
+    </div>
+    
+    <div class="card">
+        <h3>💰 Sales</h3>
+        <p style="font-size: 2rem; color: #f39c12; margin: 1rem 0;">$23,450</p>
+        <p>This month's revenue</p>
+        <a href="#" class="btn" style="margin-top: 1rem;">Sales Report</a>
+    </div>
+    
+    <div class="card">
+        <h3>📊 Analytics</h3>
+        <p style="font-size: 2rem; color: #9b59b6; margin: 1rem 0;">85%</p>
+        <p>Customer satisfaction rate</p>
+        <a href="#" class="btn" style="margin-top: 1rem;">View Analytics</a>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Recent Activity</h3>
+    <ul style="list-style: none; padding: 0;">
+        <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+            <strong>New lead:</strong> Acme Corp interested in Enterprise package
+        </li>
+        <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+            <strong>Meeting scheduled:</strong> Demo call with TechStart Inc tomorrow
+        </li>
+        <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+            <strong>Deal closed:</strong> $5,000 contract with StartupXYZ
+        </li>
+        <li style="padding: 0.5rem 0;">
+            <strong>Follow-up:</strong> Pending response from GlobalTech Ltd
+        </li>
+    </ul>
+</div>
+{% endblock %}
