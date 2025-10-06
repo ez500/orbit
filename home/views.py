@@ -7,12 +7,6 @@ def home(request):
 
     return render(request, 'home/home.html', context)
 
-def register(request):
-    """Register view"""
-    context = {'title': 'VerAlign CRM'}
-
-    return render(request, 'home/register.html', context)
-
 def dashboard(request):
     """Dashboard view"""
     context = {'title': 'Dashboard'}
