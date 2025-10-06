@@ -3,3 +3,6 @@
 
 # Password management for MySQL database
 veralign/password
+
+__pycache__/
+*.pyc
