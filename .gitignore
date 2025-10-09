@@ -4,5 +4,6 @@
 # Password management for MySQL database
 veralign/password
 
+# Pycache
 __pycache__/
 *.pyc
