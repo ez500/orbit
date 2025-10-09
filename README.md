@@ -9,6 +9,7 @@ A AI-based CRM tool.
 ## Python Package Requirements
 - [Django 5.2](https://www.djangoproject.com/download/)
 - [psycopg 3.2.10](https://www.psycopg.org/psycopg3/docs/basic/install.html#supported-systems)
+- [Pillow 11.3.0](https://pypi.org/project/pillow/)
 - Install using `pip install -r requirements.txt`.
 
 ## Python Virtual Environment (Optional)
