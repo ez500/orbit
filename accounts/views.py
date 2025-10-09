@@ -5,5 +5,5 @@ def register(request):
     """Register view"""
     context = {'title': 'VerAlign CRM'}
 
-    return render(request, 'account/register.html', context)
+    return render(request, 'accounts/register.html', context)
 
