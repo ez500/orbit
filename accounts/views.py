@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 # Create your views here.
 
-class RegisterView(CreateView):
+class UserRegisterView(CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy("login")
     template_name = 'accounts/register.html'
@@ -15,4 +16,20 @@ class RegisterView(CreateView):
 
         context['title'] = 'Register'
         return context
+
+class UserLoginView(LoginView):
+    template_name = 'accounts/login.html'
+    extra_context = {'title': 'Login'}
+
+class UserLogoutView(LogoutView):
+    template_name = 'accounts/logout.html'
+    extra_context = {'title': 'Logged out'}
+
+class UserPasswordResetView(PasswordResetView):
+    template_name = 'accounts/password_reset.html'
+    extra_context = {'title': 'Password Reset'}
+
+class UserPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'accounts/password_reset_done.html'
+    extra_context = {'title': 'Successful Password Reset'}
 
