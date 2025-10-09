@@ -5,7 +5,7 @@ class Task(models.Model):
    title = models.CharField(max_length=200)
    id = models.IntegerField(primary_key=True)
    content = models.CharField(max_length=200)
-   group = -1
+   group = models.IntegerField(default=-1)
    deadline = models.CharField(max_length=200)
    pub_date = models.CharField(max_length=200)
    color = ArrayField(models.IntegerField(), size=3) #ArrayField only works with PostgreSQL
