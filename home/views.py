@@ -5,10 +5,10 @@ def home(request):
     """Home page view"""
     context = {'title': 'VerAlign CRM'}
 
-    return render(request, 'crm/home.html', context)
+    return render(request, 'home/home.html', context)
 
 def dashboard(request):
     """Dashboard view"""
     context = {'title': 'Dashboard'}
 
-    return render(request, 'crm/dashboard.html', context)
+    return render(request, 'home/dashboard.html', context)
