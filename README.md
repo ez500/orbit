@@ -61,6 +61,12 @@ echo "<password>" >> password
 ```
 (replace `<password>` with the actual password)
 
+## .env File Setup
+Make sure that you have a passowrd file in the correct location from the previous step. Open a terminal in the Project root directory and the run the following command:
+```
+py ./env_file_maker.py
+```
+
 ## Migrate and Start Development Server
 Migrate database entries and start local server (after returning to repository root directory via `cd ..`).
 ```
