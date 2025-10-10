@@ -9,7 +9,6 @@ chars = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!?@#$%^&
 size = 50
 secret_key = "".join(random.choices(chars, k=size))
 
-size = 20
 password_file = Path(__file__).resolve().parent / "veralign" / "password"
 try:
     with open(password_file, "r") as f:
