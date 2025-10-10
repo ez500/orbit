@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class SignupForm(UserCreationForm):
     first_name = forms.CharField(
-        label='Name',
+        label='First Name',
         max_length=30,
         required=False,
         widget=forms.TextInput(attrs={'autofocus': 'autofocus'})
@@ -27,3 +27,4 @@ class SignupForm(UserCreationForm):
             'password1',
             'password2'
         )
+
