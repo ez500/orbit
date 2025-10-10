@@ -2,6 +2,10 @@
 {% block content %}
 <h1 class="title">My Teams</h1>
 
+<a href="{% url 'teams:create_team' %}">
+  <button>Create New Team</button>
+</a>
+
 <form method="get" style="margin-bottom:1rem;">
   <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search teams..." />
   <button type="submit">Search</button>
