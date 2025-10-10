@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from accounts.forms import SignupForm
+from accounts.models import Profile
 
 # Create your views here.
 
@@ -33,4 +35,12 @@ class UserPasswordResetView(PasswordResetView):
 class UserPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'accounts/password_reset_done.html'
     extra_context = {'title': 'Successful Password Reset'}
+
+@login_required
+def profile_view(request, username):
+    context = {'title': f'{username}\'s Profile'}
+
+    context['profile'] = Profile.objects.get(user__username=username)
+
+    return render(request, 'accounts/profile.html', context)
 
