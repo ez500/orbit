@@ -3,6 +3,7 @@
 
 # Password management for MySQL database
 veralign/password
+veralign/.env
 
 # Pycache
 __pycache__/
