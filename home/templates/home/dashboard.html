@@ -1,7 +1,16 @@
+<<<<<<< HEAD:crm/templates/crm/dashboard.html
 {% extends 'crm/base.html' %} {% block content %}
 <div class="dashboard-hero-element">
   <h1>Welcome, {USER NAME}</h1>
   <p>Overview of your projects and tasks</p>
+=======
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h1>Dashboard</h1>
+    <p>Welcome back, {{ user.username }}! Here's your CRM overview.</p>
+>>>>>>> origin:home/templates/home/dashboard.html
 </div>
 
 <div class="dashboard-grid-4x1">

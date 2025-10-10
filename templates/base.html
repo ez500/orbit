@@ -17,6 +17,7 @@
   </head>
   <body>
     <header>
+<<<<<<< HEAD:crm/templates/crm/base.html
       <div class="container">
         <nav>
           <div class="logo">Orbit</div>
@@ -27,6 +28,27 @@
           </ul>
         </nav>
       </div>
+=======
+        <div class="container">
+            <nav>
+                <div class="logo">VerAlign CRM</div>
+                <ul class="nav-links">
+                    <li><a href="{% url 'home:home' %}">Home</a></li>
+                    <li><a href="{% url 'home:dashboard' %}">Dashboard</a></li>
+                    {% if user.is_authenticated %}
+                    <li>
+                        <form action="{% url 'accounts:logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit">Log out</button>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li><a href="{% url 'accounts:login' %}">Login</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+>>>>>>> origin:templates/base.html
     </header>
 
     <main>
@@ -34,12 +56,20 @@
     </main>
 
     <footer>
+<<<<<<< HEAD:crm/templates/crm/base.html
       <div class="container">
         <p>
           &copy; 2025 VerAlign. AI-based Customer Relationship Management. All
           Rights Reserved.
         </p>
       </div>
+=======
+        <div class="container">
+            <p>
+                &copy; 2025 VerAlign. AI-based Customer Relationship Management. All Rights Reserved. <a href="/admin/">Admin</a>
+            </p>
+        </div>
+>>>>>>> origin:templates/base.html
     </footer>
 
     {% block extra_js %}{% endblock %}
