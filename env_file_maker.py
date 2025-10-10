@@ -7,7 +7,7 @@ import random
 
 chars = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!?@#$%^&*()"
 size = 50
-secret_key = "".join(random.sample(chars, size))
+secret_key = "".join(random.choices(chars, k=size))
 
 chars = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!?@#$%_"
 size = 20
