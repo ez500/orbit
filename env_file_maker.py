@@ -9,7 +9,6 @@ chars = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!?@#$%^&
 size = 50
 secret_key = "".join(random.choices(chars, k=size))
 
-chars = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!?@#$%_"
 size = 20
 password_file = Path(__file__).resolve().parent / "veralign" / "password"
 try:
