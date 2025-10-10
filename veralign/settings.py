@@ -106,6 +106,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# Login/logout + redirect URLs
+
+LOGIN_URL = '/accounts/login'
+
+LOGIN_REDIRECT_URL = '/dashboard/'
+
+LOGOUT_REDIRECT_URL = '/'
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 

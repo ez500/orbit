@@ -3,7 +3,7 @@
 {% block content %}
 <div class="card">
     <h1>Dashboard</h1>
-    <p>Welcome back, User! Here's your CRM overview.</p>
+    <p>Welcome back, {{ user.username }}! Here's your CRM overview.</p>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
