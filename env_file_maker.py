@@ -45,4 +45,4 @@ with open(Path(__file__).resolve().parent / "veralign" / ".env", "w") as configf
     configfile.write(CONFIG_STRING)
 
 print("Success!")
-print("Type: cat .env")
+print("Type: cat ./veralign/.env")

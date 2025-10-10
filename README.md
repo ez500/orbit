@@ -63,9 +63,15 @@ echo "<password>" >> password
 
 ## .env File Setup
 Make sure that you have a password file in the correct location from the previous step. Open a terminal in the Project root directory and the run the following command:
+Linux (venv):
+```
+python env_file_maker.py
+```
+Windows:
 ```
 py ./env_file_maker.py
 ```
+A `.env` file will be created in the `veralign` folder.
 
 ## Migrate and Start Development Server
 Migrate database entries and start local server (after returning to repository root directory via `cd ..`).
