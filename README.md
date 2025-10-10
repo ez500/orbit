@@ -62,7 +62,7 @@ echo "<password>" >> password
 (replace `<password>` with the actual password)
 
 ## .env File Setup
-Make sure that you have a passowrd file in the correct location from the previous step. Open a terminal in the Project root directory and the run the following command:
+Make sure that you have a password file in the correct location from the previous step. Open a terminal in the Project root directory and the run the following command:
 ```
 py ./env_file_maker.py
 ```
