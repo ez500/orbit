@@ -1,63 +1,56 @@
-<<<<<<< HEAD:crm/templates/crm/dashboard.html
-{% extends 'crm/base.html' %} {% block content %}
-<div class="dashboard-hero-element">
-  <h1>Welcome, {USER NAME}</h1>
-  <p>Overview of your projects and tasks</p>
-=======
-{% extends 'base.html' %}
-
-{% block content %}
-<div class="card">
-    <h1>Dashboard</h1>
-    <p>Welcome back, {{ user.username }}! Here's your CRM overview.</p>
->>>>>>> origin:home/templates/home/dashboard.html
-</div>
-
-<div class="dashboard-grid-4x1">
-  <div class="stat-card stat-card--tasks">
-    <div class="stat-card__content">
-      <h3 class="stat-card__title">Active Tasks</h3>
-      <p class="stat-card__value">42</p>
+{% extends 'base.html' %} {% block content %}
+<div class="container-fluid p-0">
+  <!-- Stats Grid -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="stat-card">
+        <h6 class="text-muted mb-2">Active Tasks</h6>
+        <h2 class="mb-0">20</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <h6 class="text-muted mb-2">Team Members</h6>
+        <h2 class="mb-0">8</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <h6 class="text-muted mb-2">Projects</h6>
+        <h2 class="mb-0">4</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <h6 class="text-muted mb-2">Task Completion</h6>
+        <h2 class="mb-0">89%</h2>
+      </div>
     </div>
   </div>
 
-  <div class="stat-card stat-card--members">
-    <div class="stat-card__content">
-      <h3 class="stat-card__title">Team Members</h3>
-      <p class="stat-card__value">156</p>
+  <!-- Tasks and Insights -->
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Today's Tasks</h5>
+          <div class="task-list">
+            <p class="text-muted">No tasks scheduled for today</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Orbit Insights</h5>
+          <div class="insights-list">
+            <p class="text-muted">No new insights available</p>
+          </div>
+          <button class="btn btn-light mt-3 w-100">Explore</button>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="stat-card stat-card--projects">
-    <div class="stat-card__content">
-      <h3 class="stat-card__title">Projects</h3>
-      <p class="stat-card__value">3</p>
-    </div>
-  </div>
-
-  <div class="stat-card stat-card--completion">
-    <div class="stat-card__content">
-      <h3 class="stat-card__title">Task Completion</h3>
-      <p class="stat-card__value">85%</p>
-    </div>
-  </div>
-</div>
-
-<div class="card">
-  <h3>Recent Activity</h3>
-  <ul style="list-style: none; padding: 0">
-    <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee">
-      <strong>New lead:</strong> Acme Corp interested in Enterprise package
-    </li>
-    <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee">
-      <strong>Meeting scheduled:</strong> Demo call with TechStart Inc tomorrow
-    </li>
-    <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee">
-      <strong>Deal closed:</strong> $5,000 contract with StartupXYZ
-    </li>
-    <li style="padding: 0.5rem 0">
-      <strong>Follow-up:</strong> Pending response from GlobalTech Ltd
-    </li>
-  </ul>
 </div>
 {% endblock %}
