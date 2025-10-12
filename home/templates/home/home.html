@@ -1,4 +1,4 @@
-{% extends 'crm/base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="card">
@@ -17,7 +17,7 @@
     </div>
     
     <div style="margin-top: 2rem;">
-        <a href="{% url 'crm:dashboard' %}" class="btn">Go to Dashboard</a>
+        <a href="{% url 'home:dashboard' %}" class="btn">Go to Dashboard</a>
         <a href="/admin/" class="btn" style="margin-left: 1rem; background-color: #e74c3c;">Admin Panel</a>
     </div>
 </div>

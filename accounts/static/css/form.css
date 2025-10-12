@@ -1,0 +1,8 @@
+body {
+    margin-top: 70px;
+}
+
+span.required:after, label.required:after {
+    content: "*";
+    color: red;
+}
