@@ -5,6 +5,9 @@
 <a href="{% url 'teams:create_team' %}">
   <button>Create New Team</button>
 </a>
+<a href="{% url 'teams:join_team' %}">
+  <button>Join Team</button>
+</a>
 
 <form method="get" style="margin-bottom:1rem;">
   <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search teams..." />
