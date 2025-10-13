@@ -1,0 +1,188 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container-fluid p-0">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Tasks</h1>
+    <div class="d-flex gap-2">
+      <button
+        class="btn btn-light"
+        data-bs-toggle="modal"
+        data-bs-target="#taskSuggestionsModal"
+      >
+        Add Suggestions
+      </button>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-8">
+          <div class="input-group">
+            <span class="input-group-text border-0 bg-light">
+              <i class="fas fa-search text-muted"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control border-0 bg-light"
+              placeholder="Search Tasks"
+            />
+          </div>
+        </div>
+        <div class="col-md-3 col-lg-2">
+          <button
+            class="btn btn-light w-100 d-flex align-items-center justify-content-between"
+          >
+            All Tasks <i class="fas fa-chevron-down"></i>
+          </button>
+        </div>
+        <div class="col-md-3 col-lg-2">
+          <button
+            class="btn btn-light w-100 d-flex align-items-center justify-content-between"
+          >
+            Sort by <i class="fas fa-chevron-down"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasks List -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <!-- Task Item -->
+      <div class="task-item p-3 border-bottom">
+        <div class="d-flex align-items-center">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="task1" />
+          </div>
+          <div class="ms-3 flex-grow-1">
+            <h6 class="mb-1">Update dashboard analytics</h6>
+            <div class="d-flex align-items-center gap-3">
+              <span class="badge bg-success-subtle text-success"
+                >In Progress</span
+              >
+              <small class="text-muted">Due Oct 15</small>
+              <div class="avatar-group">
+                <img
+                  src="https://ui-avatars.com/api/?name=John+Doe"
+                  alt="John D."
+                  class="avatar"
+                />
+                <img
+                  src="https://ui-avatars.com/api/?name=Jane+Smith"
+                  alt="Jane S."
+                  class="avatar"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="btn btn-light btn-sm">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Item -->
+      <div class="task-item p-3 border-bottom">
+        <div class="d-flex align-items-center">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="task2" />
+          </div>
+          <div class="ms-3 flex-grow-1">
+            <h6 class="mb-1">Design new onboarding flow</h6>
+            <div class="d-flex align-items-center gap-3">
+              <span class="badge bg-warning-subtle text-warning"
+                >Pending Review</span
+              >
+              <small class="text-muted">Due Oct 18</small>
+              <div class="avatar-group">
+                <img
+                  src="https://ui-avatars.com/api/?name=Mike+Johnson"
+                  alt="Mike J."
+                  class="avatar"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="btn btn-light btn-sm">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Item -->
+      <div class="task-item p-3 border-bottom">
+        <div class="d-flex align-items-center">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="task3" />
+          </div>
+          <div class="ms-3 flex-grow-1">
+            <h6 class="mb-1">Implement user feedback system</h6>
+            <div class="d-flex align-items-center gap-3">
+              <span class="badge bg-info-subtle text-info">To Do</span>
+              <small class="text-muted">Due Oct 20</small>
+              <div class="avatar-group">
+                <img
+                  src="https://ui-avatars.com/api/?name=Sarah+Wilson"
+                  alt="Sarah W."
+                  class="avatar"
+                />
+                <img
+                  src="https://ui-avatars.com/api/?name=Tom+Brown"
+                  alt="Tom B."
+                  class="avatar"
+                />
+                <div class="avatar avatar-more">+2</div>
+              </div>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="btn btn-light btn-sm">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Suggestions Modal -->
+<div class="modal fade" id="taskSuggestionsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title">Task Suggestions</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-floating mb-3">
+          <input
+            type="text"
+            class="form-control"
+            id="taskSuggestion"
+            placeholder="Enter your suggestion"
+          />
+          <label for="taskSuggestion">Enter your suggestion</label>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-dark">Add Suggestion</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
