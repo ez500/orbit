@@ -4,13 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
-from accounts.forms import SignupForm
+from accounts.forms import RegistrationForm
 from accounts.models import Profile
 
 # Create your views here.
 
 class UserRegisterView(CreateView):
-    form_class = SignupForm
+    form_class = RegistrationForm
     success_url = reverse_lazy("accounts:login")
     template_name = 'accounts/register.html'
     
