@@ -41,6 +41,10 @@ def profile_view(request, username):
     context = {'title': f'{username}\'s Profile'}
 
     context['profile'] = Profile.objects.get(user__username=username)
+    context['connections'] = context['profile'].connections.all()
+    context['companies'] = context['profile'].companies.all()
+    context['teams'] = context['profile'].teams.all()
+    context['projects'] = context['profile'].projects.all()
 
     return render(request, 'accounts/profile.html', context)
 
