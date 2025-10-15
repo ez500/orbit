@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 
 from . import views
 
@@ -10,4 +12,5 @@ urlpatterns = [
     path("logout/", views.UserLogoutView.as_view(), name='logout'),
     path("password_reset/", views.UserPasswordResetView.as_view(), name='password-reset'),
     path("password_reset/done/", views.UserPasswordResetDoneView.as_view(), name='password-reset-done'),
+    path("<str:username>/", views.profile_view, name='profile_view'),
 ]
