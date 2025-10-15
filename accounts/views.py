@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
@@ -40,7 +40,7 @@ class UserPasswordResetDoneView(PasswordResetDoneView):
 def profile_view(request, username):
     context = {'title': f'{username}\'s Profile'}
 
-    context['profile'] = Profile.objects.get(user__username=username)
+    context['profile'] = get_object_or_404(Profile, user__username=username)
     context['connections'] = context['profile'].connections.all()
     context['companies'] = context['profile'].companies.all()
     context['teams'] = context['profile'].teams.all()
