@@ -73,8 +73,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
         return context
 
     def get_object(self, queryset=None):
-        profile, _ = Profile.objects.get_or_create(user=self.request.user)
-        return profile
+        user = get_object_or_404(User, username=self.kwargs['username'])
+        return user.profile
 
 
 @login_required

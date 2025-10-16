@@ -54,6 +54,8 @@
             —
         {% endif %}
 
-        <p><a href="{% url 'accounts:profile_edit' username=user.username %}">Edit Profile</a></p>
+        {% if user.profile == profile %}
+            <p><a href="{% url 'accounts:profile_edit' username=user.username %}">Edit Profile</a></p>
+        {% endif %}
     </div>
 {% endblock %}
