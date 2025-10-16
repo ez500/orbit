@@ -11,17 +11,13 @@ class Profile(models.Model):
         PRIVATE = 'Private'
         HIDDEN = 'Hidden'
 
-        def __init__(self, string):
-            if string == 'Public':
-                self.public = True
-                self.visible = True
-            elif string == 'Private':
-                self.public = False
-                self.visible = True
-            elif string == 'Hidden':
-                self.public = False
-                self.visible = False
+        @property
+        def public(self):
+            return self == Profile.Visibility.PUBLIC
 
+        @property
+        def visible(self):
+            return self != Profile.Visibility.HIDDEN
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures', default='default.jpg')
