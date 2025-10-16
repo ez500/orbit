@@ -1,6 +1,7 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, \
     PasswordResetConfirmView
 from django.contrib.messages.views import SuccessMessageMixin
@@ -77,21 +78,9 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
 
 @login_required
-def profile_view(request, username):
-    context = dict()
-
-    context['title'] = f'{username}\'s Profile'
-    context['profile'] = get_object_or_404(Profile, user__username=username)
-    context['connections'] = context['profile'].connections.all()
-    context['companies'] = context['profile'].companies.all()
-    context['teams'] = context['profile'].teams.all()
-    context['projects'] = context['profile'].projects.all()
-
-    return render(request, 'accounts/profile.html', context)
-
-
-@login_required
 def edit_user_profile(request, username):
+    if get_object_or_404(User, username=username) != request.user:
+        return redirect('accounts:profile_view', username=username)
     if request.method == 'POST':
         user_form = UpdateUserForm(request.POST, instance=request.user)
         profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)

@@ -18,6 +18,7 @@ class Profile(models.Model):
         @property
         def visible(self):
             return self != Profile.Visibility.HIDDEN
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures', default='default.jpg')

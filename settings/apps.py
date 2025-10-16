@@ -5,4 +5,4 @@ class SettingsConfig(AppConfig):
     name = "settings"
 
     def ready(self):
-        pass
+        from . import signals
