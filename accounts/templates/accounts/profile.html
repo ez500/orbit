@@ -3,7 +3,7 @@
 {% block content %}
     <div class="card">
         <h1>{{ profile }}</h1>
-        <img src="{{ profile.profile_picture.url }}" alt="{{ profile }}'s profile picture"/>
+        <img src="{{ profile.profile_picture.url }}" alt="{{ profile }}'s profile picture" style="width:120px; height:120px;"/>
         <p><b>Bio: </b>{{ profile.bio|linebreaksbr|default:"No bio yet." }}</p>
         <p><b>Location:</b> {{ profile.location|default:"—" }}</p>
         <p><b>Website:</b>
