@@ -1,0 +1,29 @@
+from django.conf import settings
+from django.db import models
+
+class Team(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+    description = models.TextField(blank=True)
+
+    # Related name gives you: request.user.teams.all()
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through="TeamMembership",
+        related_name="teams",
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class TeamMembership(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="memberships")
+    role = models.CharField(max_length=50, blank=True)  # "Owner", "Member", etc.
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "team")
+
+    def __str__(self):
+        return f"{self.user} in {self.team} ({self.role or 'Member'})"
