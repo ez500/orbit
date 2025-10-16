@@ -14,7 +14,7 @@
             {% endif %}
         </p>
         <p><b>Connections: </b></p>
-        {% if profile.connections %}
+        {% if connections %}
             <ul>
                 {% for connection in connections %}
                     <li>{{ connection }}</li>
@@ -24,7 +24,7 @@
             —
         {% endif %}
         <p><b>Companies: </b></p>
-        {% if profile.companies %}
+        {% if companies %}
             <ul>
                 {% for company in companies %}
                     <li>{{ company }}</li>
@@ -34,7 +34,7 @@
             —
         {% endif %}
         <p><b>Teams: </b></p>
-        {% if profile.teams %}
+        {% if teams %}
             <ul>
                 {% for team in teams %}
                     <li>{{ team }}</li>
