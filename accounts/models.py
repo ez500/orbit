@@ -5,13 +5,16 @@ from django.contrib.auth.models import User
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    userId = models.IntegerField(primary_key=True)
-    profilePicture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    bio = models.TextField(default='')
+    profile_picture = models.ImageField(upload_to='profile_pictures', default='profile_pictures/default.jpg')
     connections = models.ManyToManyField('self')
     companies = models.ManyToManyField("home.Company")
     teams = models.ManyToManyField("home.Team")
     projects = models.ManyToManyField("home.Project")
     tasks = models.ManyToManyField("home.Task")
-    isVisible = models.BooleanField(default=True)
-    isPrivate = models.BooleanField(default=False)
+    is_visible = models.BooleanField(default=True)
+    is_private = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user.username
 

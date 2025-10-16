@@ -3,6 +3,15 @@
 
 # Password management for MySQL database
 veralign/password
+veralign/.env
 
+# Pycache
 __pycache__/
 *.pyc
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/vcs.xml
+/.idea/veralign.iml
+/.idea/.gitignore
