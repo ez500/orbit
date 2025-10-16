@@ -16,10 +16,3 @@ def dashboard(request):
 
     return render(request, 'home/dashboard.html', context)
 
-@login_required
-def message(request):
-    """Message View"""
-    
-    context = {'title': 'Message'}
-
-    return render(request, 'home/message.html', context)

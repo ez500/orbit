@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class='convoPageContent'>
+        <div class='conversationList'>
+            <form method="POST" action="{% url 'message:start_conversation' username=user.username %}" class='newConvo'>
+                {% csrf_token %}
+                <input class='searchBar' type='text' name='other_name' required>
+                <button type='submit' class=startConvoBtn>Start</button>
+            </form>
+            {% if conversations %}
+                {% for conversation in conversations %}
+                    <div class='conversation'>
+                        <a href="{% url 'message:thread' username=user.username conversation_id=conversation.id %}">test</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class='conversation'>
+                    <p>you have no conversations</p>
+                </div>
+            {% endif %}
+        </div>
+        <div class='messageContainer'>
+            
+        </div>
+    </div>
+{% endblock %}

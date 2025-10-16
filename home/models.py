@@ -65,25 +65,5 @@ class Email(models.Model):
    subject = models.CharField(max_length=200)
    content = models.CharField(max_length=1000*20) #300 words 20 characters per word
    datetime = models.DateTimeField(max_length=200)
-   
-class Conversation(models.Model):
-   id = models.IntegerField(primary_key=True)
-   is_team = models.BooleanField(default=False)
-   title = models.CharField(max_length=255, blank=True)
-   created_at = models.DateTimeField(auto_now_add=True)
-   updated_at = models.DateTimeField(auto_now=True)
-   participants = models.ManyToManyField(User, through='Participant')
-   
-class Participant(models.Model):
-   user = models.ForeignKey(User, on_delete=models.CASCADE)
-   conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
-   joined_at = models.DateTimeField(auto_now_add=True)
 
-class Message(models.Model):
-   id = models.IntegerField(primary_key=True)
-   conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
-   sender = models.ForeignKey(User, on_delete=models.CASCADE)
-   content = models.TextField()
-   timestamp = models.DateTimeField(auto_now_add=True)
-   is_read = models.BooleanField(default=False)
    

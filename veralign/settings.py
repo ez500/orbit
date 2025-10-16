@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "widget_tweaks",
-    "teams"
+    "teams",
+    "message",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [

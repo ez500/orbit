@@ -72,13 +72,67 @@
         }
 
         .messageReciver {
+            background: lightGray;
+            font-size: 12pt;
+            flex:
+
+        }
+
+        .messageSender {
+
+        }
+        
+        .conversationList {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            max-width: 33.33%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .conversation {
+            
+            padding: 2rem;
+            border-bottom: 2px solid gray;
+            /*border-radius: 8px;*/
+            
+        }
+
+        .messageContainer {
             background: white;
             padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
             margin-bottom: 2rem;
+            flex: 2;
+            display: flex;
+            flex-align: column;
+            
         }
-        
+
+        .newConvo {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .searchBar {
+            background: lightGray;
+            border-radius: 8px;
+            flex: 2.5;
+        }
+
+        .startConvoBtn {
+            border-radius: 8px;
+            background: lightGray;
+            flex: .5;
+        }
+
+        .convoPageContent {
+            display: flex;
+        }
+
         .btn {
             display: inline-block;
             padding: 0.75rem 1.5rem;
@@ -111,9 +165,9 @@
                 <ul class="nav-links">
                     <li><a href="{% url 'home:home' %}">Home</a></li>
                     <li><a href="{% url 'home:dashboard' %}">Dashboard</a></li>
-                    <li><a href="{% url 'home:message' %}">Messages</a></li>
+                    
                     {% if user.is_authenticated %}
-
+                    <li><a href="{% url 'message:conversations' username=user.username %}">Conversations</a></li>
                     <li><a href="{% url 'accounts:profile_view' username=user.username %}">Profile</a></li>
                     <li>
                         <form action="{% url 'accounts:logout' %}" method="post">
