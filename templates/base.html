@@ -114,6 +114,7 @@
                     <li><a href="{% url 'home:message' %}">Messages</a></li>
                     {% if user.is_authenticated %}
 
+                    <li><a href="{% url 'accounts:profile_view' username=user.username %}">Profile</a></li>
                     <li>
                         <form action="{% url 'accounts:logout' %}" method="post">
                             {% csrf_token %}

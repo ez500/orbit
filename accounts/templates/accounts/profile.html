@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card"> 
+    <h1>{{ profile.user.username }}</h1>
+    <img src="{{ profile.profile_picture.url }}"/>
+    <p><b>Bio: </b>{{ profile.bio }}</p>
+    {% if profile.is_private %}
+    <p>This profile is private.</p>
+    {% else %}
+    <p><b>Connections: </b></p>
+    <ul>
+        {% for connection in connections %}
+            <li>{{ connection }}</li>
+        {% endfor %}
+    </ul>
+    <p><b>Companies: </b></p>
+    <ul>
+        {% for company in companies %}
+            <li>{{ company }}</li>
+        {% endfor %}
+    </ul>
+    <p><b>Teams: </b></p>
+    <ul>
+        {% for team in teams %}
+            <li>{{ team }}</li>
+        {% endfor %}
+    </ul>
+    <p><b>Projects: </b></p>
+    <ul>
+        {% for project in projects %}
+            <li>{{ project }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endblock %}
