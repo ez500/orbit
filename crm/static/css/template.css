@@ -187,6 +187,37 @@ body {
   background-color: #cff4fc;
 }
 
+/* Calendar Styles */
+.fc .fc-toolbar-title {
+  font-size: 1.2rem;
+}
+
+.fc .fc-button {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #212529;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #000;
+  border-color: #000;
+}
+
+.fc .fc-button:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
+}
+
+.view-toggle .btn {
+  padding: 0.5rem 1rem;
+}
+
+.view-toggle .btn.active {
+  background-color: #000;
+  border-color: #000;
+  color: #fff;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .sidebar {
