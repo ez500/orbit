@@ -1,11 +1,9 @@
 from django.contrib.auth import login
-from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, \
+    PasswordResetConfirmView
+from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
@@ -22,16 +20,19 @@ class UserRegisterView(CreateView):
 
     def form_valid(self, form):
         self.object = form.save()
-        login(self.request, self.object)
-        return HttpResponseRedirect(reverse_lazy("accounts:profile_view", kwargs={'username': self.object.username}))
+        login(self.request, self.object, backend='django.contrib.auth.backends.ModelBackend')
+        return redirect("accounts:profile_view", username=self.object.username)
+
 
 class UserLoginView(LoginView):
     template_name = 'accounts/login.html'
     extra_context = {'title': 'Login'}
 
+
 class UserLogoutView(LogoutView):
     template_name = 'accounts/logout.html'
     extra_context = {'title': 'Logged out'}
+
 
 class UserPasswordResetView(SuccessMessageMixin, PasswordResetView):
     template_name = 'accounts/password_reset.html'
@@ -41,14 +42,17 @@ class UserPasswordResetView(SuccessMessageMixin, PasswordResetView):
     success_url = reverse_lazy('accounts:password_reset_done')
     extra_context = {'title': 'Password Reset'}
 
+
 class UserPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'accounts/password_reset_confirm.html'
     success_url = reverse_lazy('accounts:login')
     extra_context = {'title': 'Set New Password'}
 
+
 class UserPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'accounts/password_reset_done.html'
     extra_context = {'title': 'Successful Password Reset'}
+
 
 @login_required
 def profile_view(request, username):
@@ -62,4 +66,3 @@ def profile_view(request, username):
     context['projects'] = context['profile'].projects.all()
 
     return render(request, 'accounts/profile.html', context)
-
