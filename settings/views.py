@@ -1,31 +1,10 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse_lazy
-from django.views.generic import DetailView, UpdateView
-from .models import UserProfile
-from .forms import ProfileForm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
-class ProfileView(LoginRequiredMixin, DetailView):
-    model = UserProfile
-    template_name = "settings/profile.html"
-    context_object_name = "profile"
+@login_required
+def settings(request):
+    context = dict()
+    context['title'] = "Settings"
 
-    def get_object(self, queryset=None):
-        # Always show the logged-in user's profile
-        profile, _ = UserProfile.objects.get_or_create(user=self.request.user)
-        return profile
-
-
-class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = UserProfile
-    form_class = ProfileForm
-    template_name = "settings/profile_edit.html"
-    success_url = reverse_lazy("settings:me")
-
-    def get_object(self, queryset=None):
-        profile, _ = UserProfile.objects.get_or_create(user=self.request.user)
-        return profile
-
-    def test_func(self):
-        # Only the owner can edit
-        return self.get_object().user_id == self.request.user.id
-
+    # TODO SETUP HYPERLINK TO PROFILE EDIT
+    return render(request, "settings/index.html", context)
