@@ -40,29 +40,20 @@ def thread(request, username, conversation_id):
 
 @login_required
 def start_conversation(request, username):
-    # The user we want to message
     other_user = get_object_or_404(User, username=username)
     user = request.user
     
     conversations = Conversation.objects.filter(participants=user).order_by('-updated_at')
     conversationSerializer = ConversationSerializer(conversations, many=True)
 
-    # Step 1: Check if a conversation between these two users already exists
-    conversation = (
-        Conversation.objects
-        .filter(participants=user)
-        .filter(participants=other_user)
-        .first()
-    )
+    conversation = Conversation.objects.filter(participants=user).filter(participants=other_user).first()
 
-    # Step 2: If it doesn’t exist, create one and add both participants
     if not conversation:
         conversation = Conversation.objects.create()
         conversation.participants.add(user)
         conversation.participants.add(other_user)
         conversation.save()
 
-    # Step 3: If user sends an initial message
     if request.method == 'POST':
         content = request.POST.get('content')
         if content:
@@ -73,7 +64,6 @@ def start_conversation(request, username):
             )
             return redirect('conversation_detail', conversation_id=conversation.id)
 
-    # Step 4: Show existing messages if any
     messages = conversation.messages.all().order_by('timestamp')
     
     context = {
