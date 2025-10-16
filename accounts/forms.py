@@ -42,7 +42,7 @@ class UpdateUserForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
 
-class UpdateProfileForm(UpdateUserForm, forms.ModelForm):
+class UpdateProfileForm(forms.ModelForm):
     bio = forms.CharField(label='Bio', max_length=127, required=False)
     profile_picture = forms.ImageField(label='Profile Picture', required=False)
     location = forms.CharField(label='Location', max_length=100, required=False)
