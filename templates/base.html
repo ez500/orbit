@@ -70,6 +70,14 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
         }
+
+        .messageReciver {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
         
         .btn {
             display: inline-block;
@@ -103,7 +111,9 @@
                 <ul class="nav-links">
                     <li><a href="{% url 'home:home' %}">Home</a></li>
                     <li><a href="{% url 'home:dashboard' %}">Dashboard</a></li>
+                    <li><a href="{% url 'home:message' %}">Messages</a></li>
                     {% if user.is_authenticated %}
+
                     <li>
                         <form action="{% url 'accounts:logout' %}" method="post">
                             {% csrf_token %}
