@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>My Profile</h1>
+
+<div style="display:flex; gap:1rem; align-items:flex-start;">
+  <div>
+    {% if profile.avatar %}
+      <img src="{{ profile.avatar.url }}" alt="Avatar" style="width:120px; height:120px; object-fit:cover; border-radius:50%;" />
+    {% else %}
+      <div style="width:120px; height:120px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+        No Avatar
+      </div>
+    {% endif %}
+  </div>
+
+  <div>
+    <p><strong>Username:</strong> {{ profile.user.username }}</p>
+    <p><strong>Full name:</strong> {{ profile.full_name|default:"—" }}</p>
+    <p><strong>Email:</strong> {{ profile.user.email|default:"—" }}</p>
+    <p><strong>Company:</strong> {{ profile.company|default:"—" }}</p>
+    <p><strong>Location:</strong> {{ profile.location|default:"—" }}</p>
+    <p><strong>Website:</strong>
+      {% if profile.website %}<a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a>{% else %}—{% endif %}
+    </p>
+    <p><strong>Visibility:</strong> {{ profile.get_visibility_display }}</p>
+    <p><strong>Bio:</strong><br/> {{ profile.bio|linebreaksbr|default:"No bio yet." }}</p>
+
+    <p><a href="{% url 'infosetting:edit' %}">Edit Profile</a></p>
+  </div>
+</div>
+{% endblock %}
