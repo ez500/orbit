@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import ProfileView, ProfileEditView
 
-app_name = "infosetting"
+app_name = "settings"
 
 urlpatterns = [
     path("me/", ProfileView.as_view(), name="me"),          # View profile

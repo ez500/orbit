@@ -21,14 +21,7 @@ class RegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = (
-            'first_name',
-            'last_name',
-            'username',
-            'email',
-            'password1',
-            'password2'
-        )
+        fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2']
 
 class UpdateUserForm(forms.ModelForm):
    first_name = forms.CharField(
@@ -47,20 +40,17 @@ class UpdateUserForm(forms.ModelForm):
 
    class Meta:
         model = User
-        fields = (
-            'first_name',
-            'last_name',
-            'username',
-            'email'
-        )
+        fields = ['first_name', 'last_name', 'username', 'email']
 
-class UpdateProfileForm(forms.ModelForm):
+class UpdateProfileForm(UpdateUserForm, forms.ModelForm):
     bio = forms.CharField(label='Bio', max_length=127, required=False)
-    profile_picture = forms.ImageField()
-    is_visible = forms.BooleanField(label='Profile visible to others')
-    is_private = forms.BooleanField(label='Personal info shown in profile')
+    profile_picture = forms.ImageField(label='Profile Picture', required=False)
+    location = forms.CharField(label='Location', max_length=100, required=False)
+    website = forms.URLField(label='Website', required=False)
+    visibility = forms.ChoiceField(label='Profile Visibility',
+                                   choices=[(tag.name, tag.value) for tag in Profile.Visibility],
+                                   initial=Profile.Visibility.PUBLIC.name)
 
     class Meta:
         model = Profile
-        fields = ('bio', 'profile_picture', 'is_visible', 'is_private')
-
+        fields = ['bio', 'profile_picture', 'location', 'website', 'visibility']

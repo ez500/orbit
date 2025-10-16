@@ -6,7 +6,7 @@ from .forms import ProfileForm
 
 class ProfileView(LoginRequiredMixin, DetailView):
     model = UserProfile
-    template_name = "infosetting/profile.html"
+    template_name = "settings/profile.html"
     context_object_name = "profile"
 
     def get_object(self, queryset=None):
@@ -18,8 +18,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
 class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = UserProfile
     form_class = ProfileForm
-    template_name = "infosetting/profile_edit.html"
-    success_url = reverse_lazy("infosetting:me")
+    template_name = "settings/profile_edit.html"
+    success_url = reverse_lazy("settings:me")
 
     def get_object(self, queryset=None):
         profile, _ = UserProfile.objects.get_or_create(user=self.request.user)

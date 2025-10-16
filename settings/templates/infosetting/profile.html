@@ -25,7 +25,7 @@
     <p><strong>Visibility:</strong> {{ profile.get_visibility_display }}</p>
     <p><strong>Bio:</strong><br/> {{ profile.bio|linebreaksbr|default:"No bio yet." }}</p>
 
-    <p><a href="{% url 'infosetting:edit' %}">Edit Profile</a></p>
+    <p><a href="{% url 'settings:edit' %}">Edit Profile</a></p>
   </div>
 </div>
 {% endblock %}

@@ -4,34 +4,56 @@
     <div class="card">
         <h1>{{ profile }}</h1>
         <img src="{{ profile.profile_picture.url }}" alt="{{ profile }}'s profile picture"/>
-        <p><b>Bio: </b>{{ profile.bio }}</p>
-        {% if profile.is_private %}
-            <p>This profile is private.</p>
-        {% else %}
-            <p><b>Connections: </b></p>
+        <p><b>Bio: </b>{{ profile.bio|linebreaksbr|default:"No bio yet." }}</p>
+        <p><b>Location:</b> {{ profile.location|default:"—" }}</p>
+        <p><b>Website:</b>
+            {% if profile.website %}
+                <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a>
+            {% else %}
+                —
+            {% endif %}
+        </p>
+        <p><b>Connections: </b></p>
+        {% if profile.connections %}
             <ul>
                 {% for connection in connections %}
                     <li>{{ connection }}</li>
                 {% endfor %}
             </ul>
-            <p><b>Companies: </b></p>
+        {% else %}
+            —
+        {% endif %}
+        <p><b>Companies: </b></p>
+        {% if profile.companies %}
             <ul>
                 {% for company in companies %}
                     <li>{{ company }}</li>
                 {% endfor %}
             </ul>
-            <p><b>Teams: </b></p>
+        {% else %}
+            —
+        {% endif %}
+        <p><b>Teams: </b></p>
+        {% if profile.teams %}
             <ul>
                 {% for team in teams %}
                     <li>{{ team }}</li>
                 {% endfor %}
             </ul>
-            <p><b>Projects: </b></p>
+        {% else %}
+            —
+        {% endif %}
+        <p><b>Projects: </b></p>
+        {% if projects %}
             <ul>
                 {% for project in projects %}
                     <li>{{ project }}</li>
                 {% endfor %}
             </ul>
+        {% else %}
+            —
         {% endif %}
+
+        <p><a href="{% url 'accounts:profile_edit' username=user.username %}">Edit Profile</a></p>
     </div>
 {% endblock %}
