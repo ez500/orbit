@@ -59,3 +59,16 @@ def profile_view(request, username):
 
     return render(request, 'accounts/profile.html', context)
 
+@login_required
+def profile_edit_view(request, username):
+    context = dict()
+
+    context['title'] = f'{username}\'s Profile'
+    context['profile'] = get_object_or_404(Profile, user__username=username)
+    context['connections'] = context['profile'].connections.all()
+    context['companies'] = context['profile'].companies.all()
+    context['teams'] = context['profile'].teams.all()
+    context['projects'] = context['profile'].projects.all()
+
+    return render(request, 'accounts/profile_edit.html', context)
+
