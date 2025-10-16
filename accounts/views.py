@@ -1,5 +1,6 @@
+from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
@@ -28,9 +29,18 @@ class UserLogoutView(LogoutView):
     template_name = 'accounts/logout.html'
     extra_context = {'title': 'Logged out'}
 
-class UserPasswordResetView(PasswordResetView):
+class UserPasswordResetView(SuccessMessageMixin, PasswordResetView):
     template_name = 'accounts/password_reset.html'
+    email_template_name = 'accounts/password_reset_email.html'
+    subject_template_name = 'accounts/password_reset_subject'
+    success_message = 'An email has been sent with instructions to reset your password.'
+    success_url = reverse_lazy('accounts:password_reset_done')
     extra_context = {'title': 'Password Reset'}
+
+class UserPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'accounts/password_reset_confirm.html'
+    success_url = reverse_lazy('accounts:login')
+    extra_context = {'title': 'Set New Password'}
 
 class UserPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'accounts/password_reset_done.html'
@@ -38,8 +48,9 @@ class UserPasswordResetDoneView(PasswordResetDoneView):
 
 @login_required
 def profile_view(request, username):
-    context = {'title': f'{username}\'s Profile'}
+    context = dict()
 
+    context['title'] = f'{username}\'s Profile'
     context['profile'] = get_object_or_404(Profile, user__username=username)
     context['connections'] = context['profile'].connections.all()
     context['companies'] = context['profile'].companies.all()
