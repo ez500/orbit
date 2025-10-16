@@ -1,24 +1,26 @@
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
 from accounts.forms import RegistrationForm
 from accounts.models import Profile
 
+
 # Create your views here.
 
 class UserRegisterView(CreateView):
     form_class = RegistrationForm
-    success_url = reverse_lazy("accounts:login")
     template_name = 'accounts/register.html'
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    extra_context = {'title': 'Register'}
 
-        context['title'] = 'Register'
-        return context
+    def form_valid(self, form):
+        self.object = form.save()
+        login(self.request, self.object)
+        return HttpResponseRedirect(reverse_lazy("accounts:profile_view", kwargs={'username': self.object.username}))
 
 class UserLoginView(LoginView):
     template_name = 'accounts/login.html'
