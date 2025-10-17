@@ -1,12 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Edit Profile</h1>
+    <div class="card">
+        <div class="row md-4">
+            <div class="col-md-6">
+                <h1>Edit Profile</h1>
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ user_form.as_p }}
-        {{ profile_form.as_p }}
-        <button type="submit">Save Changes</button>
-        <a href="{% url 'accounts:profile_view' username=user.username %}">Cancel</a>
-    </form>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ user_form.as_p }}
+                    {{ profile_form.as_p }}
+                    <button type="submit">Save Changes</button>
+                    <a href="{% url 'accounts:profile_view' username=user.username %}">Cancel</a>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <h1>Security</h1>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ password_form.as_p }}
+                    <button type="submit">Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}

@@ -6,6 +6,26 @@ from enum import Enum
 # Create your models here.
 
 class Profile(models.Model):
+    class Meta:
+        app_label = 'accounts'
+
+    THEME_CHOICES = [
+        ('light', 'Light'),
+        ('dark', 'Dark'),
+        ('system', 'System'),
+    ]
+
+    ACCENT_CHOICES = [
+        ('#1E90FF', 'Blue'),
+        ('#32CD32', 'Green'),
+        ('#9370DB', 'Purple'),
+        ('#FF4500', 'Red Orange'),
+        ('#FFD700', 'Gold'),
+        ('#FF69B4', 'Pink'),
+        ('#20B2AA', 'Teal'),
+        ('#FF8C00', 'Dark Orange'),
+    ]
+
     class Visibility(Enum):
         PUBLIC = 'Public'
         PRIVATE = 'Private'
@@ -28,10 +48,14 @@ class Profile(models.Model):
     companies = models.ManyToManyField("home.Company")
     projects = models.ManyToManyField("home.Project")
     tasks = models.ManyToManyField("home.Task")
+    theme_color = models.CharField(max_length=20, choices=THEME_CHOICES, default='dark')
+    accent_color = models.CharField(max_length=7, choices=ACCENT_CHOICES, default='#1E90FF')
     visibility = models.CharField(max_length=20, choices=[(tag.name, tag.value) for tag in Visibility],
                                   default=Visibility.PUBLIC.name)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    notification_email = models.BooleanField(default=True)
+    notification_web = models.BooleanField(default=True)
 
     def __str__(self):
         return self.user.username
