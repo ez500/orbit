@@ -1,4 +1,4 @@
-from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 
 class Team(models.Model):
@@ -7,7 +7,7 @@ class Team(models.Model):
 
     # Related name gives you: request.user.teams.all()
     members = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
+        User,
         through="TeamMembership",
         related_name="teams",
     )
@@ -17,7 +17,7 @@ class Team(models.Model):
 
 
 class TeamMembership(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="memberships")
     role = models.CharField(max_length=50, blank=True)  # "Owner", "Member", etc.
     joined_at = models.DateTimeField(auto_now_add=True)

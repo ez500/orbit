@@ -26,7 +26,6 @@ class Profile(models.Model):
     website = models.URLField(blank=True)
     connections = models.ManyToManyField('self')
     companies = models.ManyToManyField("home.Company")
-    teams = models.ManyToManyField("home.Team")
     projects = models.ManyToManyField("home.Project")
     tasks = models.ManyToManyField("home.Task")
     visibility = models.CharField(max_length=20, choices=[(tag.name, tag.value) for tag in Visibility],

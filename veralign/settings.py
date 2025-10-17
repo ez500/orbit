@@ -35,8 +35,7 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", default=[], cast=Csv())
 INSTALLED_APPS = [
     "home.apps.HomeConfig",
     "accounts.apps.AccountsConfig",
-    "settings.apps.SettingsConfig",
-    "teams",
+    "teams.apps.TeamsConfig",
 
     "widget_tweaks",
     "django.contrib.admin",

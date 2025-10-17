@@ -68,7 +68,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context['title'] = f'{profile}\'s Profile'
         context['connections'] = profile.connections.all()
         context['companies'] = profile.companies.all()
-        context['teams'] = Team.objects.filter(members=profile.user).order_by("name") #I changed this
+        context['teams'] = Team.objects.filter(members=profile.user).order_by("name")
         context['projects'] = profile.projects.all()
         return context
 
@@ -78,9 +78,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
 
 @login_required
-def edit_user_profile(request, username):
-    if get_object_or_404(User, username=username) != request.user:
-        return redirect('accounts:profile_view', username=username)
+def edit_user_profile(request):
     if request.method == 'POST':
         user_form = UpdateUserForm(request.POST, instance=request.user)
         profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
@@ -97,3 +95,11 @@ def edit_user_profile(request, username):
         'user_form': user_form,
         'profile_form': profile_form
     })
+
+
+@login_required
+def settings(request):
+    context = {'title': "Settings"}
+
+    # TODO SETUP HYPERLINK TO PROFILE EDIT
+    return render(request, "accounts/settings.html", context)
