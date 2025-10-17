@@ -11,7 +11,7 @@ from django.views.generic import CreateView, DetailView
 
 from accounts.forms import RegistrationForm, UpdateUserForm, UpdateProfileForm
 from accounts.models import Profile
-
+from teams.models import Team
 
 # Create your views here.
 
@@ -68,7 +68,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context['title'] = f'{profile}\'s Profile'
         context['connections'] = profile.connections.all()
         context['companies'] = profile.companies.all()
-        context['teams'] = profile.teams.all()
+        context['teams'] = Team.objects.filter(members=profile.user).order_by("name") #I changed this
         context['projects'] = profile.projects.all()
         return context
 
