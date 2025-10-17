@@ -1,6 +1,7 @@
 /* Base Styles */
 :root {
   --sidebar-width: 280px;
+  --sidebar-width-collapsed: 80px;
 }
 
 * {
@@ -24,6 +25,10 @@ body {
   min-height: 100vh;
 }
 
+.collapsed~.main-content {
+  margin-left: var(--sidebar-width-collapsed);
+}
+
 /* Sidebar Styles */
 .sidebar {
   width: var(--sidebar-width);
@@ -35,6 +40,12 @@ body {
   padding: 1.5rem;
   color: white;
   z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-width-collapsed);
+  padding: 1.5rem 0.75rem !important;
 }
 
 .sidebar .nav-link {
@@ -45,7 +56,9 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .sidebar .nav-link:hover {
@@ -54,6 +67,44 @@ body {
 
 .sidebar .nav-link.active {
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+.top-text {
+  background: linear-gradient(45deg, #E5E6E4, #FFFFFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: opacity 0.3s ease;
+}
+
+/* Collapse */
+.toggle-btn {
+  position: absolute;
+  right: -15px;
+  top: 20px;
+  background: white;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.collapsed .toggle-btn {
+  transform: rotate(180deg);
+}
+
+.collapsed .hide-on-collapse {
+  opacity: 0;
+  visibility: hidden;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.collapsed .top-text {
+  opacity: 0;
 }
 
 /* Cards */
@@ -85,6 +136,11 @@ body {
 }
 
 /* Team Chats */
+.team-chats {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1rem 0.5rem;
+}
+
 .chat-item {
   padding: 0.8rem 0;
   display: flex;
