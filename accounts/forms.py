@@ -17,13 +17,13 @@ class RegistrationForm(UserCreationForm):
         label='E-mail',
         max_length=254,
         help_text='Required. Must be a valid E-mail address.',
-    ) # TODO CHECK THIS FIELD
+    )
 
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2']
 
-class UpdateUserForm(forms.ModelForm): # TODO CHECK EFFECTIVE FUNCTION OF THIS FORM
+class UpdateUserForm(forms.ModelForm):
    first_name = forms.CharField(
         label='First Name',
         max_length=30,
@@ -42,7 +42,7 @@ class UpdateUserForm(forms.ModelForm): # TODO CHECK EFFECTIVE FUNCTION OF THIS F
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
 
-# TODO FINISH THIS FORM
+
 class UpdateProfileForm(forms.ModelForm):
     bio = forms.CharField(label='Bio', max_length=127, required=False)
     profile_picture = forms.ImageField(label='Profile Picture', required=False)
