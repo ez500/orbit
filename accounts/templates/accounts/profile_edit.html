@@ -12,7 +12,10 @@
     </div>
   {% endif %}
   <div>
-    <h1 style="margin:0;">Edit Profile</h1>
+    <div class="card">
+        <div class="row md-4">
+            <div class="col-md-6">
+                <h1 style="margin:0;">Edit Profile</h1>
     <p style="opacity:.8; margin:.25rem 0 0 0;">Update your account details and profile information.</p>
   </div>
 </div>
@@ -80,6 +83,17 @@
     <a href="{% url 'accounts:profile_view' username=user.username %}" class="btn" style="background:#555;">Cancel</a>
   </div>
 </form>
+</div>
+            <div class="col-md-6">
+                <h1>Security</h1>
 
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ password_form.as_p }}
+                    <button type="submit">Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 

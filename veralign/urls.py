@@ -26,3 +26,7 @@ urlpatterns = [
     path("teams/", include("teams.urls", namespace="teams")),
     path('', include("home.urls"))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Serve static files during development
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
