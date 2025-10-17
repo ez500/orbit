@@ -1,15 +1,18 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
+def default_color():
+    return [0, 0, 0]
+
 class Task(models.Model):
    title = models.CharField(max_length=200)
-   id = models.IntegerField(primary_key=True)
+   id = models.AutoField(primary_key=True)
    content = models.CharField(max_length=200)
-   group = models.IntegerField(default=-1)
+   team = models.IntegerField(default=-1)
    deadline = models.CharField(max_length=200)
    pub_date = models.CharField(max_length=200)
-   color = ArrayField(models.IntegerField(), size=3) #ArrayField only works with PostgreSQL
-   project = models.IntegerField()
+   color = ArrayField(models.IntegerField(), size=3, blank=True, default=default_color) #ArrayField only works with PostgreSQL
+   project = models.IntegerField(default=-1)
    users = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
 
 class Text(models.Model):

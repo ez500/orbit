@@ -130,17 +130,15 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Email configs
 
-EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = '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'
 
-EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_CONNECTION_CLASS = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
-
-EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
-
-EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
-
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 
 
 # Login/logout + redirect URLs
