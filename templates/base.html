@@ -169,6 +169,7 @@
                     {% if user.is_authenticated %}
                     <li><a href="{% url 'message:conversations' username=user.username %}">Conversations</a></li>
                     <li><a href="{% url 'accounts:profile_view' username=user.username %}">Profile</a></li>
+		    <li><a href="{% url 'teams:my_teams' %}">Teams</a></li>
                     <li>
                         <form action="{% url 'accounts:logout' %}" method="post">
                             {% csrf_token %}

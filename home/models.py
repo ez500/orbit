@@ -47,17 +47,6 @@ class Project(models.Model):
    users = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
    tasks = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
 
-class Team(models.Model):
-   id = models.IntegerField(primary_key=True)
-   name = models.CharField(max_length=200)
-   description = models.CharField(max_length=300*20) #300 words 20 characters per word
-   company = models.IntegerField()
-   owner = models.IntegerField()
-   admins = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
-   users = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
-   projects = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
-   texts = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
-
 class Email(models.Model):
    id = models.IntegerField(primary_key=True)
    sender = models.EmailField()
