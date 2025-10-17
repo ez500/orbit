@@ -16,7 +16,6 @@ from accounts.models import Profile
 from teams.models import Team
 
 # Create your views here.
-# TODO CHECK ALL VIEWS IN ACCOUNTS
 class UserRegisterView(CreateView):
     form_class = RegistrationForm
     template_name = 'accounts/register.html'
