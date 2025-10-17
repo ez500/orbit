@@ -1,0 +1,4 @@
+[
+  { "model": "teams.team", "pk": 1, "fields": { "name": "Engineering", "description": "All engineers" } },
+  { "model": "teams.team", "pk": 2, "fields": { "name": "Marketing", "description": "Growth and content" } }
+]
