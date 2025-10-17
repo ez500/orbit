@@ -1,6 +1,7 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, SetPasswordMixin
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import PasswordChangeForm as DefaultChangePasswordForm
 from .models import Profile
 
 class RegistrationForm(UserCreationForm):
@@ -69,3 +70,18 @@ class UpdateProfileForm(forms.ModelForm):
             'notification_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'notification_web': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
+
+class ChangePasswordForm(DefaultChangePasswordForm):
+    old_password = forms.CharField(
+        label="Current Password",
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={"autocomplete": "current-password", "autofocus": True}
+        ),
+    )
+
+    new_password1, new_password2 = SetPasswordMixin.create_password_fields("New Password", "Confirm New Password")
+
+    class Meta:
+        model = User
+        fields = ['password1', 'password2']
