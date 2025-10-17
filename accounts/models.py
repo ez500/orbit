@@ -1,12 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from enum import Enum
+
 # Create your models here.
 
+# TODO CHECK THIS CLASS
 class Profile(models.Model):
     class Meta:
         app_label = 'accounts'
-        
+
     THEME_CHOICES = [
         ('light', 'Light'),
         ('dark', 'Dark'),
@@ -24,26 +27,37 @@ class Profile(models.Model):
         ('#FF8C00', 'Dark Orange'),
     ]
 
-    VISIBILITY_CHOICES = [
-        ('public', 'Public - Anyone can view your profile'),
-        ('connections', 'Connections Only - Only your connections can view your profile'),
-        ('private', 'Private - Only you can view your profile'),
-    ]
+    class Visibility(Enum):
+        PUBLIC = 'Public'
+        PRIVATE = 'Private'
+        HIDDEN = 'Hidden'
+
+        @property
+        def public(self):
+            return self == Profile.Visibility.PUBLIC
+
+        @property
+        def visible(self):
+            return self != Profile.Visibility.HIDDEN
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    bio = models.TextField(blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures', default='default.jpg')
+    location = models.CharField(max_length=100, blank=True)
+    website = models.URLField(blank=True)
     connections = models.ManyToManyField('self')
     companies = models.ManyToManyField("home.Company")
-    teams = models.ManyToManyField("home.Team")
     projects = models.ManyToManyField("home.Project")
     tasks = models.ManyToManyField("home.Task")
-    is_visible = models.BooleanField(default=True)
-    is_private = models.BooleanField(default=False)
-    theme_color = models.CharField(max_length=20, choices=THEME_CHOICES, default='default')
-    visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
+    theme_color = models.CharField(max_length=20, choices=THEME_CHOICES, default='dark')
     accent_color = models.CharField(max_length=7, choices=ACCENT_CHOICES, default='#1E90FF')
-    bio = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=100, blank=True)
+    visibility = models.CharField(max_length=20, choices=[(tag.name, tag.value) for tag in Visibility],
+                                  default=Visibility.PUBLIC.name)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     notification_email = models.BooleanField(default=True)
     notification_web = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.user.username
 

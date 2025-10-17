@@ -5,7 +5,13 @@
 veralign/password
 veralign/.env
 
+# Pycache
 __pycache__/
 *.pyc
+
+# Database
 db.sqlite3
 db.sqlite3.bak
+
+# IntelliJ
+/.idea

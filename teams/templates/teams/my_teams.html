@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="title">My Teams</h1>
+
+<a href="{% url 'teams:create_team' %}">
+  <button>Create New Team</button>
+</a>
+<a href="{% url 'teams:join_team' %}">
+  <button>Join Team</button>
+</a>
+
+<form method="get" style="margin-bottom:1rem;">
+  <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search teams..." />
+  <button type="submit">Search</button>
+</form>
+
+{% if teams %}
+  <ul>
+    {% for team in teams %}
+      <li style="margin: .5rem 0;">
+        <a href="{% url 'teams:detail' team.pk %}"><strong>{{ team.name }}</strong></a><br/>
+        <small>{{ team.description|default:"No description" }}</small><br/>
+        <small>Members: {{ team.members.count }}</small>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% if is_paginated %}
+    <nav style="margin-top:1rem;">
+      {% if page_obj.has_previous %}
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
+      {% endif %}
+      <span> Page {{ page_obj.number }} of {{ paginator.num_pages }} </span>
+      {% if page_obj.has_next %}
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <p>You’re not in any teams yet.</p>
+{% endif %}
+{% endblock %}

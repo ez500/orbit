@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ team.name }}</h1>
+<p>{{ team.description|default:"No description" }}</p>
+
+<h3>Members ({{ team.members.count }})</h3>
+<ul>
+  {% for u in team.members.all %}
+    <li>{{ u.username }}{% if u.get_full_name %} — {{ u.get_full_name }}{% endif %}</li>
+  {% endfor %}
+</ul>
+{% endblock %}
