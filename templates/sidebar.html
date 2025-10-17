@@ -54,13 +54,22 @@
             <span class="hide-on-collapse">Orbit Insights</span>
           </a>
         </li>
-        <li class="nav-item mt-auto">
+        <li class="nav-item">
           <a
             class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}"
             href="{% url 'accounts:settings' %}"
           >
             <i class="fas fa-cog"></i>
             <span class="hide-on-collapse">Settings</span>
+          </a>
+        </li>
+        <li class="nav-item mt-auto">
+          <a
+            class="nav-link logout"
+            href="{% url 'accounts:logout' %}"
+          >
+            <i class="fas fa-right-from-bracket"></i>
+            <span class="hide-on-collapse">Logout</span>
           </a>
         </li>
       </ul>
