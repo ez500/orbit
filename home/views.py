@@ -16,3 +16,10 @@ def dashboard(request):
 
     return render(request, 'home/dashboard.html', context)
 
+@login_required
+def tasks(request):
+    """Tasks view"""
+    
+    context = {'title': 'Tasks'}
+
+    return render(request, 'home/tasks.html', context)

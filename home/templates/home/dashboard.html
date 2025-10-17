@@ -1,57 +1,113 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% load static %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+{% endblock %} {% block content %}
+<div class="container-fluid p-4">
+  <!-- Dashboard Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-0">Dashboard</h1>
+      <p class="text-muted mb-0">Welcome back, {{ request.user.first_name }}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="dropdown">
+        <button
+          class="btn btn-light dropdown-toggle"
+          type="button"
+          id="addWidgetDropdown"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <i class="fas fa-plus"></i> Add Widget
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="addWidgetDropdown">
+          <li>
+            <a class="dropdown-item" href="#" onclick="addWidget('tasks')">
+              <i class="fas fa-tasks me-2"></i> Tasks
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#" onclick="addWidget('calendar')">
+              <i class="fas fa-calendar me-2"></i> Calendar
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#" onclick="addWidget('stats')">
+              <i class="fas fa-chart-bar me-2"></i> Statistics
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#" onclick="addWidget('team')">
+              <i class="fas fa-users me-2"></i> Team Activity
+            </a>
+          </li>
+          <li><hr class="dropdown-divider" /></li>
+          <li>
+            <a
+              class="dropdown-item"
+              href="#"
+              onclick="addWidget('projectTimeline')"
+            >
+              <i class="fas fa-stream me-2"></i> Project Timeline
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#" onclick="addWidget('teamBoard')">
+              <i class="fas fa-columns me-2"></i> Team Board
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#" onclick="addWidget('analytics')">
+              <i class="fas fa-chart-line me-2"></i> Analytics
+            </a>
+          </li>
+        </ul>
+      </div>
+      <button class="btn btn-dark" onclick="dashboard.saveLayout()">
+        <i class="fas fa-save"></i> Save Layout
+      </button>
+    </div>
+  </div>
 
-{% block content %}
-<div class="card">
-    <h1>Dashboard</h1>
-    <p>Welcome back, {{ user.username }}! Here's your CRM overview.</p>
+  <!-- Dashboard Grid -->
+  <div class="row" id="dashboard-widgets">
+    <!-- Widgets will be dynamically inserted here -->
+  </div>
+
+  <!-- Empty State -->
+  <div id="empty-dashboard" class="empty-dashboard d-none">
+    <div class="mb-3">
+      <i class="fas fa-shapes fa-3x text-muted"></i>
+    </div>
+    <h4>Your Dashboard is Empty</h4>
+    <p class="text-muted">Add widgets to customize your dashboard</p>
+    <button
+      class="btn btn-dark"
+      data-bs-toggle="dropdown"
+      data-bs-target="#addWidgetDropdown"
+    >
+      <i class="fas fa-plus"></i> Add Your First Widget
+    </button>
+  </div>
 </div>
+{% endblock %} {% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+  // Show empty state if no widgets are present
+  function updateEmptyState() {
+    const hasWidgets =
+      document.querySelectorAll(".dashboard-widget").length > 0;
+    document
+      .getElementById("empty-dashboard")
+      .classList.toggle("d-none", hasWidgets);
+  }
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-    <div class="card">
-        <h3>🎯 Leads</h3>
-        <p style="font-size: 2rem; color: #3498db; margin: 1rem 0;">42</p>
-        <p>Active leads in pipeline</p>
-        <a href="#" class="btn" style="margin-top: 1rem;">Manage Leads</a>
-    </div>
-    
-    <div class="card">
-        <h3>👥 Contacts</h3>
-        <p style="font-size: 2rem; color: #2ecc71; margin: 1rem 0;">156</p>
-        <p>Total contacts in database</p>
-        <a href="#" class="btn" style="margin-top: 1rem;">View Contacts</a>
-    </div>
-    
-    <div class="card">
-        <h3>💰 Sales</h3>
-        <p style="font-size: 2rem; color: #f39c12; margin: 1rem 0;">$23,450</p>
-        <p>This month's revenue</p>
-        <a href="#" class="btn" style="margin-top: 1rem;">Sales Report</a>
-    </div>
-    
-    <div class="card">
-        <h3>📊 Analytics</h3>
-        <p style="font-size: 2rem; color: #9b59b6; margin: 1rem 0;">85%</p>
-        <p>Customer satisfaction rate</p>
-        <a href="#" class="btn" style="margin-top: 1rem;">View Analytics</a>
-    </div>
+  // Watch for changes in the dashboard
+  const observer = new MutationObserver(updateEmptyState);
+  observer.observe(document.getElementById("dashboard-widgets"), {
+    childList: true,
+  });
 
-</div>
-
-<div class="card">
-    <h3>Recent Activity</h3>
-    <ul style="list-style: none; padding: 0;">
-        <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
-            <strong>New lead:</strong> Acme Corp interested in Enterprise package
-        </li>
-        <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
-            <strong>Meeting scheduled:</strong> Demo call with TechStart Inc tomorrow
-        </li>
-        <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
-            <strong>Deal closed:</strong> $5,000 contract with StartupXYZ
-        </li>
-        <li style="padding: 0.5rem 0;">
-            <strong>Follow-up:</strong> Pending response from GlobalTech Ltd
-        </li>
-    </ul>
-</div>
+  // Initial check
+  updateEmptyState();
+</script>
 {% endblock %}

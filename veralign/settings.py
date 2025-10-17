@@ -22,12 +22,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY")
+# Provide a safe default for local development so the project can be run
+# without an external .env file. In production you should set SECRET_KEY
+# in the environment or via a .env file.
+SECRET_KEY = config("SECRET_KEY", default="dev-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# For local development, enable DEBUG and allow all hosts
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default=[], cast=Csv())
+ALLOWED_HOSTS = ['*']  # Allow all hosts in development
 
 
 # Application definition
@@ -81,16 +85,28 @@ WSGI_APPLICATION = "veralign.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("POSTGRES_DB"),
-        "USER": config("POSTGRES_USER"),
-        "PASSWORD": config("POSTGRES_PASSWORD"),
-        "HOST": config("DB_HOST"),
-        "PORT": 5432,
+# Database
+# If Postgres environment variables are provided, use Postgres. Otherwise
+# fall back to a local sqlite3 database for easy local development.
+POSTGRES_DB = config("POSTGRES_DB", default=None)
+if POSTGRES_DB:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": POSTGRES_DB,
+            "USER": config("POSTGRES_USER"),
+            "PASSWORD": config("POSTGRES_PASSWORD"),
+            "HOST": config("DB_HOST"),
+            "PORT": 5432,
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -159,6 +175,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "home" / "static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
