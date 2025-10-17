@@ -88,6 +88,9 @@ def edit_user_profile(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
+            return redirect('accounts:profile_view', username=request.user.username)
+
+        if password_form.is_valid():
             password_form.save()
             return redirect('accounts:profile_view', username=request.user.username)
     else:

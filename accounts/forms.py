@@ -42,19 +42,19 @@ class UpdateUserForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
 
-
+# TODO MANAGE THEME, NOTIFICATION PREFERENCES SEPARATELY
 class UpdateProfileForm(forms.ModelForm):
     bio = forms.CharField(label='Bio', max_length=127, required=False)
     profile_picture = forms.ImageField(label='Profile Picture', required=False)
     location = forms.CharField(label='Location', max_length=100, required=False)
     website = forms.URLField(label='Website', required=False)
-    theme_color = forms.ChoiceField(label='Theme Color')
-    accent_color = forms.ChoiceField(label='Accent Color')
+    # theme_color = forms.ChoiceField(label='Theme Color')
+    # accent_color = forms.ChoiceField(label='Accent Color')
     visibility = forms.ChoiceField(label='Profile Visibility',
                                    choices=[(tag.name, tag.value) for tag in Profile.Visibility],
                                    initial=Profile.Visibility.PUBLIC.name)
-    notification_email = forms.BooleanField()
-    notification_web = forms.BooleanField()
+    # notification_email = forms.BooleanField()
+    # notification_web = forms.BooleanField()
 
     class Meta:
         model = Profile
@@ -64,11 +64,11 @@ class UpdateProfileForm(forms.ModelForm):
             'profile_picture': forms.FileInput(attrs={'class': 'form-control'}),
             'location': forms.TextInput(attrs={'class': 'form-control'}),
             'website': forms.TextInput(attrs={'class': 'form-control'}),
-            'theme_color': forms.Select(attrs={'class': 'form-select'}),
-            'accent_color': forms.RadioSelect(attrs={'class': 'accent-color-select'}),
+            # 'theme_color': forms.Select(attrs={'class': 'form-select'}),
+            # 'accent_color': forms.RadioSelect(attrs={'class': 'accent-color-select'}),
             'visibility': forms.Select(attrs={'class': 'form-select'}),
-            'notification_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'notification_web': forms.CheckboxInput(attrs={'class': 'form-check-input'})
+            # 'notification_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            # 'notification_web': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
 
 class ChangePasswordForm(DefaultChangePasswordForm):
