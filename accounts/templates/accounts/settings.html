@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="card">
+        This is the settings index page.
+        <p><a href="{% url 'accounts:profile_edit' %}">Edit Profile</a></p>
+        User Preferences: None yet.
+    </div>
+{% endblock content %}

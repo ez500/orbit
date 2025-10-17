@@ -1,15 +1,17 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, \
     PasswordResetConfirmView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView
+from django.views.generic import CreateView, DetailView
 
-from accounts.forms import RegistrationForm
+from accounts.forms import RegistrationForm, UpdateUserForm, UpdateProfileForm
 from accounts.models import Profile
-
+from teams.models import Team
 
 # Create your views here.
 
@@ -54,15 +56,50 @@ class UserPasswordResetDoneView(PasswordResetDoneView):
     extra_context = {'title': 'Successful Password Reset'}
 
 
+class ProfileView(LoginRequiredMixin, DetailView):
+    model = Profile
+    template_name = "accounts/profile.html"
+    context_object_name = "profile"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile = self.get_object()
+
+        context['title'] = f'{profile}\'s Profile'
+        context['connections'] = profile.connections.all()
+        context['companies'] = profile.companies.all()
+        context['teams'] = Team.objects.filter(members=profile.user).order_by("name")
+        context['projects'] = profile.projects.all()
+        return context
+
+    def get_object(self, queryset=None):
+        user = get_object_or_404(User, username=self.kwargs['username'])
+        return user.profile
+
+
 @login_required
-def profile_view(request, username):
-    context = dict()
+def edit_user_profile(request):
+    if request.method == 'POST':
+        user_form = UpdateUserForm(request.POST, instance=request.user)
+        profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
 
-    context['title'] = f'{username}\'s Profile'
-    context['profile'] = get_object_or_404(Profile, user__username=username)
-    context['connections'] = context['profile'].connections.all()
-    context['companies'] = context['profile'].companies.all()
-    context['teams'] = context['profile'].teams.all()
-    context['projects'] = context['profile'].projects.all()
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return redirect('accounts:profile_view', username=request.user.username)
+    else:
+        user_form = UpdateUserForm(instance=request.user)
+        profile_form = UpdateProfileForm(instance=request.user.profile)
 
-    return render(request, 'accounts/profile.html', context)
+    return render(request, 'accounts/profile_edit.html', {
+        'user_form': user_form,
+        'profile_form': profile_form
+    })
+
+
+@login_required
+def settings(request):
+    context = {'title': "Settings"}
+
+    # TODO SETUP HYPERLINK TO PROFILE EDIT
+    return render(request, "accounts/settings.html", context)
