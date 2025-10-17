@@ -79,6 +79,11 @@ body {
   margin-bottom: 1rem;
 }
 
+.sidebar .login {
+  background-color: #3ce77e;
+  margin-bottom: 1rem;
+}
+
 .top-text {
   background: linear-gradient(45deg, #E5E6E4, #FFFFFF);
   -webkit-background-clip: text;
