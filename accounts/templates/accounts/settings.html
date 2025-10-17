@@ -106,9 +106,16 @@
                                     <label class="form-label">Bio</label>
                                     {{ profile_form.bio }}
                                 </div>
-                                <div class="mb-4">
-                                    <label class="form-label">Location</label>
-                                    {{ profile_form.location }}
+                                <div class="row mb-4">
+                                    <div class="col-mb-6">
+                                        <label class="form-label">Location</label>
+                                        {{ profile_form.location }}
+                                    </div>
+                                    <div class="col-mb-6">
+                                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-secondary btn-sm mt-2" role="button">
+                                            Advanced Profile...
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
