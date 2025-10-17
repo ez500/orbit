@@ -4,6 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 def default_color():
     return [0, 0, 0]
 
+# TODO SEPARATE TASKS & CALENDAR INTO SEPARATE APP
 class Task(models.Model):
    title = models.CharField(max_length=200)
    id = models.AutoField(primary_key=True)
