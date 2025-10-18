@@ -43,7 +43,7 @@
 
   <!-- Connections -->
   <div class="card">
-    <h3 style="margin-top:0;">👥 Connections{% if connections %} ({{ connections|length }}){% endif %}</h3>
+    <h3 style="margin-top:0;">👥 Connections{% if connections.exists %} ({{ connections.count }}){% endif %}</h3>
     {% if connections %}
       <ul style="list-style:none; padding:0; margin:0;">
         {% for connection in connections %}
@@ -59,7 +59,7 @@
 
   <!-- Companies -->
   <div class="card">
-    <h3 style="margin-top:0;">🏢 Companies{% if companies %} ({{ companies|length }}){% endif %}</h3>
+    <h3 style="margin-top:0;">🏢 Companies{% if companies.exists %} ({{ companies.count }}){% endif %}</h3>
     {% if companies %}
       <ul style="list-style:none; padding:0; margin:0;">
         {% for company in companies %}
@@ -79,7 +79,7 @@
 
   <!-- Teams -->
   <div class="card">
-    <h3 style="margin-top:0;">🛡️ Teams{% if teams %} ({{ teams|length }}){% endif %}</h3>
+    <h3 style="margin-top:0;">🛡️ Teams{% if teams.exists %} ({{ teams.count }}){% endif %}</h3>
     {% if teams %}
       <ul style="list-style:none; padding:0; margin:0;">
         {% for team in teams %}
@@ -95,7 +95,7 @@
 
   <!-- Projects -->
   <div class="card">
-    <h3 style="margin-top:0;">📂 Projects{% if projects %} ({{ projects|length }}){% endif %}</h3>
+    <h3 style="margin-top:0;">📂 Projects{% if projects.exists %} ({{ projects.count }}){% endif %}</h3>
     {% if projects %}
       <ul style="list-style:none; padding:0; margin:0;">
         {% for project in projects %}
