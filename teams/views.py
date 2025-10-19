@@ -7,11 +7,13 @@ from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from .forms import JoinTeamForm
 
+
 class MyTeamsView(LoginRequiredMixin, ListView):
     model = Team
     template_name = "teams/my_teams.html"
     context_object_name = "teams"
     paginate_by = 12
+    extra_context = {'title': 'My Teams'}
 
     def get_queryset(self):
         qs = Team.objects.filter(members=self.request.user).order_by("name").prefetch_related("members")
@@ -20,16 +22,21 @@ class MyTeamsView(LoginRequiredMixin, ListView):
             qs = qs.filter(name__icontains=q)
         return qs
 
+
 class TeamDetailView(LoginRequiredMixin, DetailView):
     model = Team
     template_name = "teams/team_detail.html"
     context_object_name = "team"
+    extra_context = {'title': 'My Teams'}
 
+
+# TODO: EDIT TEAM
 class TeamCreateView(LoginRequiredMixin, CreateView):
     model = Team
     template_name = "teams/create_team.html"
     fields = ["name", "description"]
     success_url = reverse_lazy("teams:my_teams")
+    extra_context = {'title': 'Create Team'}
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -39,6 +46,7 @@ class TeamCreateView(LoginRequiredMixin, CreateView):
             role="Owner"
         )
         return response
+
 
 @login_required
 def join_team(request):

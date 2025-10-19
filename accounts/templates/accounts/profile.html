@@ -31,8 +31,14 @@
 
             {% if user.profile == profile %}
                 <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap;">
-                    <a href="{% url 'accounts:profile_edit' %}" class="btn">Edit Profile</a>
-                    <a href="{% url 'accounts:user_settings' %}" class="btn">Settings</a>
+                    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
+                        <i class="fas fa-user"></i>
+                        <span>Edit Profile</span>
+                    </a>
+                    <a href="{% url 'accounts:user_settings' %}" class="btn btn-secondary">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
                 </div>
             {% endif %}
         </div>
