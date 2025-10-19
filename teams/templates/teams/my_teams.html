@@ -1,42 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="title">My Teams</h1>
 
-<a href="{% url 'teams:create_team' %}">
-  <button>Create New Team</button>
-</a>
-<a href="{% url 'teams:join_team' %}">
-  <button>Join Team</button>
-</a>
+    <div class="card">
+        <h1>My Teams</h1>
+        <p>View and manage all the teams you're part of.</p>
+    </div>
 
-<form method="get" style="margin-bottom:1rem;">
-  <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search teams..." />
-  <button type="submit">Search</button>
-</form>
+    <div style="margin-bottom: 1.5rem;">
+        <a href="{% url 'teams:create_team' %}" class="btn" style="margin-right: 0.5rem;">➕ Create New Team</a>
+        <a href="{% url 'teams:join_team' %}" class="btn">🤝 Join Team</a>
+    </div>
 
-{% if teams %}
-  <ul>
-    {% for team in teams %}
-      <li style="margin: .5rem 0;">
-        <a href="{% url 'teams:detail' team.pk %}"><strong>{{ team.name }}</strong></a><br/>
-        <small>{{ team.description|default:"No description" }}</small><br/>
-        <small>Members: {{ team.members.count }}</small>
-      </li>
-    {% endfor %}
-  </ul>
+    <form method="get" style="margin-bottom: 2rem;">
+        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="🔍 Search teams..."
+               style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ccc; width: 250px;">
+        <button type="submit" class="btn">Search</button>
+    </form>
 
-  {% if is_paginated %}
-    <nav style="margin-top:1rem;">
-      {% if page_obj.has_previous %}
-        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.previous_page_number }}">Prev</a>
-      {% endif %}
-      <span> Page {{ page_obj.number }} of {{ paginator.num_pages }} </span>
-      {% if page_obj.has_next %}
-        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
-      {% endif %}
-    </nav>
-  {% endif %}
-{% else %}
-  <p>You’re not in any teams yet.</p>
-{% endif %}
+    {% if teams %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+            {% for team in teams %}
+                <div class="card" style="text-align: left;">
+                    <h3 style="margin-bottom: 0.5rem;">
+                        <a href="{% url 'teams:detail' team.pk %}" style="text-decoration: none; color: #3498db;">
+                            {{ team.name }}
+                        </a>
+                    </h3>
+                    <p style="color: #ccc; margin-bottom: 0.5rem;">{{ team.description|default:"No description" }}</p>
+                    <p><strong>👥 Members:</strong> {{ team.members.count }}</p>
+                    <a href="{% url 'teams:detail' team.pk %}" class="btn" style="margin-top: 1rem;">View Team</a>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+            <nav style="text-align: center; margin-top: 2rem;">
+                {% if page_obj.has_previous %}
+                    <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.previous_page_number }}"
+                       class="btn">⬅ Prev</a>
+                {% endif %}
+                <span style="margin: 0 1rem;">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.next_page_number }}"
+                       class="btn">Next ➡</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="card">
+            <p>You're not in any teams yet. Create or join one to get started!</p>
+        </div>
+    {% endif %}
+
 {% endblock %}
+

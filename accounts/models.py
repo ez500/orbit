@@ -5,7 +5,6 @@ from enum import Enum
 
 # Create your models here.
 
-# TODO CHECK THIS CLASS
 class Profile(models.Model):
     class Meta:
         app_label = 'accounts'
