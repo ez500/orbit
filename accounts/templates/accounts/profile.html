@@ -2,118 +2,118 @@
 
 {% block content %}
 
-<!-- Header / About card -->
-<div class="card" style="display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap;">
-  <div>
-    {% if profile.profile_picture %}
-      <img src="{{ profile.profile_picture.url }}" alt="{{ profile }}'s profile picture"
-           style="width:120px; height:120px; object-fit:cover; border-radius:12px; border:1px solid #333;" />
-    {% else %}
-      <div style="width:120px; height:120px; border-radius:12px; border:1px dashed #555; display:grid; place-items:center; font-size:2rem; opacity:.7;">
-        {{ profile.user.username|first|upper }}
-      </div>
-    {% endif %}
-  </div>
-
-  <div style="flex:1 1 320px; min-width:280px;">
-    <h1 style="margin:0 0 .25rem 0;">{{ profile }}</h1>
-    <p style="margin:.25rem 0;">
-      <b>Bio:</b>
-      <span>{{ profile.bio|linebreaksbr|default:"No bio yet." }}</span>
-    </p>
-    <p style="margin:.25rem 0;"><b>Location:</b> {{ profile.location|default:"—" }}</p>
-    <p style="margin:.25rem 0;">
-      <b>Website:</b>
-      {% if profile.website %}
-        <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a>
-      {% else %} — {% endif %}
-    </p>
-
-    {% if user.profile == profile %}
-      <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap;">
-        <a href="{% url 'accounts:profile_edit' %}" class="btn">Edit Profile</a>
-        <a href="{% url 'accounts:user_settings' %}" class="btn">Settings</a>
-      </div>
-    {% endif %}
-  </div>
-</div>
-
-<!-- Grid of related lists -->
-<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:2rem; margin-top:2rem;">
-
-  <!-- Connections -->
-  <div class="card">
-    <h3 style="margin-top:0;">👥 Connections{% if connections.exists %} ({{ connections.count }}){% endif %}</h3>
-    {% if connections %}
-      <ul style="list-style:none; padding:0; margin:0;">
-        {% for connection in connections %}
-          <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
-            {{ connection }}
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p style="opacity:.8;">—</p>
-    {% endif %}
-  </div>
-
-  <!-- Companies -->
-  <div class="card">
-    <h3 style="margin-top:0;">🏢 Companies{% if companies.exists %} ({{ companies.count }}){% endif %}</h3>
-    {% if companies %}
-      <ul style="list-style:none; padding:0; margin:0;">
-        {% for company in companies %}
-          <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
-            {% if company.get_absolute_url %}
-              <a href="{{ company.get_absolute_url }}">{{ company }}</a>
+    <!-- Header / About card -->
+    <div class="card" style="display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap;">
+        <div>
+            {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" alt="{{ profile }}'s profile picture"
+                     style="width:120px; height:120px; object-fit:cover; border-radius:12px; border:1px solid #333;"/>
             {% else %}
-              {{ company }}
+                <div style="width:120px; height:120px; border-radius:12px; border:1px dashed #555; display:grid; place-items:center; font-size:2rem; opacity:.7;">
+                    {{ profile.user.username|first|upper }}
+                </div>
             {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p style="opacity:.8;">—</p>
-    {% endif %}
-  </div>
+        </div>
 
-  <!-- Teams -->
-  <div class="card">
-    <h3 style="margin-top:0;">🛡️ Teams{% if teams.exists %} ({{ teams.count }}){% endif %}</h3>
-    {% if teams %}
-      <ul style="list-style:none; padding:0; margin:0;">
-        {% for team in teams %}
-          <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
-            <a href="{% url 'teams:detail' team.pk %}">{{ team }}</a>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p style="opacity:.8;">—</p>
-    {% endif %}
-  </div>
+        <div style="flex:1 1 320px; min-width:280px;">
+            <h1 style="margin:0 0 .25rem 0;">{{ profile }}</h1>
+            <p style="margin:.25rem 0;">
+                <b>Bio:</b>
+                <span>{{ profile.bio|linebreaksbr|default:"No bio yet." }}</span>
+            </p>
+            <p style="margin:.25rem 0;"><b>Location:</b> {{ profile.location|default:"—" }}</p>
+            <p style="margin:.25rem 0;">
+                <b>Website:</b>
+                {% if profile.website %}
+                    <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a>
+                {% else %} — {% endif %}
+            </p>
 
-  <!-- Projects -->
-  <div class="card">
-    <h3 style="margin-top:0;">📂 Projects{% if projects.exists %} ({{ projects.count }}){% endif %}</h3>
-    {% if projects %}
-      <ul style="list-style:none; padding:0; margin:0;">
-        {% for project in projects %}
-          <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
-            {% if project.get_absolute_url %}
-              <a href="{{ project.get_absolute_url }}">{{ project }}</a>
+            {% if user.profile == profile %}
+                <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+                    <a href="{% url 'accounts:profile_edit' %}" class="btn">Edit Profile</a>
+                    <a href="{% url 'accounts:user_settings' %}" class="btn">Settings</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Grid of related lists -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:2rem; margin-top:2rem;">
+
+        <!-- Connections -->
+        <div class="card">
+            <h3 style="margin-top:0;">👥 Connections{% if connections.exists %} ({{ connections.count }}){% endif %}</h3>
+            {% if connections %}
+                <ul style="list-style:none; padding:0; margin:0;">
+                    {% for connection in connections %}
+                        <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
+                            {{ connection }}
+                        </li>
+                    {% endfor %}
+                </ul>
             {% else %}
-              {{ project }}
+                <p style="opacity:.8;">—</p>
             {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p style="opacity:.8;">—</p>
-    {% endif %}
-  </div>
+        </div>
 
-</div>
+        <!-- Companies -->
+        <div class="card">
+            <h3 style="margin-top:0;">🏢 Companies{% if companies.exists %} ({{ companies.count }}){% endif %}</h3>
+            {% if companies %}
+                <ul style="list-style:none; padding:0; margin:0;">
+                    {% for company in companies %}
+                        <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
+                            {% if company.get_absolute_url %}
+                                <a href="{{ company.get_absolute_url }}">{{ company }}</a>
+                            {% else %}
+                                {{ company }}
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="opacity:.8;">—</p>
+            {% endif %}
+        </div>
+
+        <!-- Teams -->
+        <div class="card">
+            <h3 style="margin-top:0;">🛡️ Teams{% if teams.exists %} ({{ teams.count }}){% endif %}</h3>
+            {% if teams %}
+                <ul style="list-style:none; padding:0; margin:0;">
+                    {% for team in teams %}
+                        <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
+                            <a href="{% url 'teams:detail' team.pk %}">{{ team }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="opacity:.8;">—</p>
+            {% endif %}
+        </div>
+
+        <!-- Projects -->
+        <div class="card">
+            <h3 style="margin-top:0;">📂 Projects{% if projects.exists %} ({{ projects.count }}){% endif %}</h3>
+            {% if projects %}
+                <ul style="list-style:none; padding:0; margin:0;">
+                    {% for project in projects %}
+                        <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
+                            {% if project.get_absolute_url %}
+                                <a href="{{ project.get_absolute_url }}">{{ project }}</a>
+                            {% else %}
+                                {{ project }}
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="opacity:.8;">—</p>
+            {% endif %}
+        </div>
+
+    </div>
 
 {% endblock %}
 
