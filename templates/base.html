@@ -66,13 +66,14 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <nav>
-                <div class="logo nav-links"><a href="{% url 'home:home' %}">VerAlign CRM</a></div>
-            </nav>
-        </div>
-    </header>
+    {# TODO CONSIDER NAVBAR WHEN NOT LOGGED IN #}
+{#    <header>#}
+{#        <div class="container">#}
+{#            <nav>#}
+{#                <div class="logo nav-links"><a href="{% url 'home:home' %}">VerAlign CRM</a></div>#}
+{#            </nav>#}
+{#        </div>#}
+{#    </header>#}
     {% include "sidebar.html" %}
 
     <!-- Main Content -->

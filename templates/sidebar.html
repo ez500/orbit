@@ -3,21 +3,13 @@
         <i class="fas fa-chevron-left"></i>
     </button>
 
+    <!-- TODO FIX THIS DUMB TITLE THING PROBLEM -->
     <div class="current-project p-4">
-        <h6 class="text-white-50 mb-2 hide-on-collapse text-nowrap">Current Project Name</h6>
+        <a class="text-white-50 hide-on-collapse text-nowrap" href="/"><h6>VerAlign CRM</h6></a>
         <h4 class="top-text mb-3 fw-bold hide-on-collapse">{{ title }}</h4>
     </div>
 
     <ul class="nav flex-column">
-        <li class="nav-item">
-            <a
-                    class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
-                    href="{% url 'home:home' %}"
-            >
-                <i class="fas fa-house"></i>
-                <span class="hide-on-collapse">Home</span>
-            </a>
-        </li>
         <li class="nav-item">
             <a
                     class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
@@ -29,7 +21,7 @@
         </li>
         <li class="nav-item">
             <a
-                    class="nav-link {% if request.resolver_match.url_name == 'team' %}active{% endif %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'my_teams' %}active{% endif %}"
                     href="{% url 'teams:my_teams' %}"
             >
                 <i class="fas fa-users"></i>
@@ -56,7 +48,7 @@
         </li>
         <li class="nav-item">
             <a
-                    class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'profile_view' %}active{% endif %}"
                     href="
                         {% if user.is_authenticated %}
                             {% url 'accounts:profile_view' username=user.username %}
