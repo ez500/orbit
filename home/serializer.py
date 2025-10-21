@@ -6,7 +6,7 @@ class TaskViewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['id', 'title', 'content', 'team', 'deadline', 'pub_date', 'color', 'project', 'users']
+        fields = ['id', 'title', 'content', 'team', 'deadline', 'pub_date', 'status', 'project', 'users']
         depth = 1
         
 class TaskCreateSerializer(serializers.ModelSerializer):

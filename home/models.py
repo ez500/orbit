@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
-def default_status():
+def default_color():
     return [0, 0, 0]
 
 # TODO SEPARATE TASKS & CALENDAR INTO SEPARATE APP
@@ -12,7 +12,7 @@ class Task(models.Model):
    team = models.IntegerField(default=-1)
    deadline = models.CharField(max_length=200)
    pub_date = models.CharField(max_length=200)
-   status = ArrayField(models.IntegerField(), size=3, blank=True, default=default_status) #ArrayField only works with PostgreSQL
+   status = ArrayField(models.IntegerField(), size=3, blank=True, default=default_color) #ArrayField only works with PostgreSQL
    project = models.IntegerField(default=-1)
    users = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
 
