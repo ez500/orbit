@@ -174,6 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Add task functionality
+  /*
   window.addNewTask = function (event) {
     event.preventDefault();
     const form = document.getElementById("addTaskForm");
@@ -243,4 +244,5 @@ document.addEventListener("DOMContentLoaded", function () {
     bootstrap.Modal.getInstance(document.getElementById("addTaskModal")).hide();
     form.reset();
   };
+  */
 });
