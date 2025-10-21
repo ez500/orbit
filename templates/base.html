@@ -1,71 +1,71 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>{% block title %}{{ title }} - VerAlign CRM{% endblock %}</title>
+        <title>{% block title %}{{ title }} - VerAlign CRM{% endblock %}</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 
-    <!-- Font Awesome for icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet"/>
+        <!-- Font Awesome for icons -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet"/>
 
-    <!-- Inter font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="{% static 'css/template.css' %}" />
-    {% block extra_css %}{% endblock %}
+        <!-- Inter font -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+        <link rel="stylesheet" href="{% static 'css/template.css' %}" />
+        {% block extra_css %}{% endblock %}
 
-    <!-- TODO IMPLEMENT COLOR SCHEMES -->
-    <style>
-        header {
-            background-color: {{ user.profile.accent_color|default:"#1E90FF" }};
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        <!-- TODO IMPLEMENT COLOR SCHEMES -->
+        <style>
+            header {
+                color: white;
+                padding: 1rem 0;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                background-color: {{ user.profile.accent_color|default:"#1E90FF" }};
+            }
 
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+            nav {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
+            .logo {
+                font-size: 1.5rem;
+                font-weight: bold;
+            }
 
-        .nav-links {
-            list-style: none;
-            display: flex;
-            gap: 2rem;
-        }
+            .nav-links {
+                list-style: none;
+                display: flex;
+                gap: 2rem;
+            }
 
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
+            .nav-links a {
+                color: white;
+                text-decoration: none;
+                transition: color 0.3s;
+            }
 
-        .nav-links a:hover {
-            color: #3498db;
-        }
+            .nav-links a:hover {
+                color: #3498db;
+            }
 
-        footer {
-            background-color: {{ user.profile.accent_color|default:"#1E90FF" }};
-            color: white;
-            text-align: center;
-            padding: 1rem 0;
-            margin-top: auto;
-        }
-    </style>
-</head>
-<body>
+            footer {
+                color: white;
+                text-align: center;
+                padding: 1rem 0;
+                margin-top: auto;
+                background-color: {{ user.profile.accent_color | default:"#1E90FF" }};
+            }
+        </style>
+    </head>
+<body class="app flex-row align-items-center">
     <header>
         <div class="container">
             <nav>
@@ -88,9 +88,7 @@
 
     <!-- Main Content -->
     <main class="main-content app flex-row align-items-center">
-        <div class="container">
         {% block content %}{% endblock %}
-        </div>
     </main>
 
     <footer>
