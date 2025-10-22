@@ -162,3 +162,10 @@ def settings(request):
         'profile_form': profile_form,
         'title': 'Settings'
     })
+
+@login_required
+def search(request):
+    search_users = request.POST['search_users']
+    users_found = User.objects.filter(username__icontains=search_users)
+    context = {'title': "Search Users", 'search_users': search_users, 'users_found': users_found}
+    return render(request, 'accounts/_search.html', context)

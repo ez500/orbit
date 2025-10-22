@@ -2,6 +2,14 @@
 
 {% block content %}
 
+    <div class="card" style="display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap;">
+        <form class="d-flex" method="POST" action="{% url 'accounts:user_search' %}" style="width: 100%">
+            {% csrf_token %}
+            <input class="form-control" type="text"
+                   placeholder="Search Users..." aria-label="Search" name="search_users">
+        </form>
+    </div>
+
     <!-- Header / About card -->
     <div class="card" style="display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap;">
         <div>

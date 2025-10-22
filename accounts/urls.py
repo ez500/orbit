@@ -14,6 +14,6 @@ urlpatterns = [
     path("password-reset/done", views.UserPasswordResetDoneView.as_view(), name='password_reset_done'),
     path("edit/", views.edit_user_profile, name='profile_edit'),
     path("settings/", views.settings, name="user_settings"),
+    path("search/", views.search, name="user_search"),
     path("<str:username>/", views.ProfileView.as_view(), name='profile_view'),
-    path("settings/", views.settings, name='settings'),
 ]

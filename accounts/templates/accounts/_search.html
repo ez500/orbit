@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% if users_found %}
+        {% for user in users_found %}
+            <div class="card">
+                <div class="card-header">
+                    {{ user.username }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card">
+            <div class="card-body">
+                <p class="card-text">No results found.</p>
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}
