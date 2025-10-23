@@ -16,4 +16,6 @@ urlpatterns = [
     path("settings/", views.settings, name="user_settings"),
     path("search/", views.search, name="user_search"),
     path("<str:username>/", views.ProfileView.as_view(), name='profile_view'),
+    path("add-connection/<str:username>/", views.add_connection, name='add_connection'),
+    path("remove-connection/<str:username>/", views.remove_connection, name='remove_connection'),
 ]

@@ -204,5 +204,31 @@ def search(request):
             Q(profile__connections=request.user.profile) |
             Q(profile=request.user.profile)
         )
-    context = {'title': "Search Users", 'user_search_query': user_search_query, 'users_found': users_found}
+    context = {
+        'title': "Search Users", 'requesting_user': request.user,
+        'user_search_query': user_search_query, 'users_found': users_found}
     return render(request, 'accounts/_search.html', context)
+
+@login_required
+def add_connection(request, username):
+    if request.method == 'POST':
+        profile = get_object_or_404(Profile, user__username=username)
+
+        if profile.connections.contains(request.user.profile):
+            messages.info(request, f"{profile} is already a connection.")
+        else:
+            profile.connections.add(request.user.profile)
+            messages.success(request, f'{profile} is now a connection.')
+    return redirect('accounts:profile_view', username=username)
+
+@login_required
+def remove_connection(request, username):
+    if request.method == 'POST':
+        profile = get_object_or_404(Profile, user__username=username)
+
+        if profile.connections.contains(request.user.profile):
+            profile.connections.remove(request.user.profile)
+            messages.success(request, f"{profile} is no longer a connection.")
+        else:
+            messages.error(request, f"{profile} is not a connection.")
+    return redirect('accounts:profile_view', username=request.user.username)
