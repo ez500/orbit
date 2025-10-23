@@ -20,14 +20,14 @@
         <link rel="stylesheet" href="{% static 'css/template.css' %}" />
         {% block extra_css %}{% endblock %}
 
-        <!-- TODO IMPLEMENT COLOR SCHEMES -->
-        <style>
-            header {
-                color: white;
-                padding: 1rem 0;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                background-color: {{ user.profile.accent_color|default:"#1E90FF" }};
-            }
+    <!-- TODO IMPLEMENT COLOR SCHEMES -->
+    <style>
+        header {
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-color: {{ user.profile.accent_color|default:"#222222" }};
+        }
 
             nav {
                 display: flex;
@@ -56,39 +56,36 @@
                 color: #3498db;
             }
 
-            footer {
-                color: white;
-                text-align: center;
-                padding: 1rem 0;
-                margin-top: auto;
-                background-color: {{ user.profile.accent_color | default:"#1E90FF" }};
-            }
-        </style>
-    </head>
-<body class="app flex-row align-items-center">
-    <header>
-        <div class="container">
-            <nav>
-                <div class="logo">VerAlign CRM</div>
-                <ul class="nav-links">
-                    <li><a href="{% url 'home:home' %}">Home</a></li>
-                    <li><a href="{% url 'teams:my_teams' %}">Teams</a></li>
-                    <li>
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'accounts:profile_view' username=user.username %}">Profile</a>
-                        {% else %}
-                            <a href="{% url 'accounts:login' %}">Profile</a>
-                        {% endif %}
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+        footer {
+            color: white;
+            text-align: center;
+            padding: 0.1rem 0;
+            margin-top: auto;
+            background-color: {{ user.profile.accent_color|default:"#222222" }};
+        }
+    </style>
+</head>
+<body>
+    {# TODO CONSIDER NAVBAR WHEN NOT LOGGED IN #}
+{#    <header>#}
+{#        <div class="container">#}
+{#            <nav>#}
+{#                <div class="logo nav-links"><a href="{% url 'home:home' %}">VerAlign CRM</a></div>#}
+{#            </nav>#}
+{#        </div>#}
+{#    </header>#}
     {% include "sidebar.html" %}
 
     <!-- Main Content -->
     <main class="main-content app flex-row align-items-center">
-        {% block content %}{% endblock %}
+        <div class="container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="card {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
     <footer>
