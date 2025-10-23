@@ -1,13 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.contrib.staticfiles.finders import searched_locations
-from django.http import Http404, HttpResponse
+from django.db.models import Q
+from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView
@@ -195,7 +195,14 @@ def settings(request):
 
 @login_required
 def search(request):
-    search_users = request.POST['search_users']
-    users_found = User.objects.filter(username__icontains=search_users).exclude(profile__visibility__icontains='HIDDEN')
-    context = {'title': "Search Users", 'search_users': search_users, 'users_found': users_found}
+    user_search_query = request.POST['user_search_query']
+    if request.user.is_staff or request.user.is_superuser:
+        users_found = User.objects.filter(username__icontains=user_search_query)
+    else:
+        users_found = User.objects.filter(username__icontains=user_search_query).filter(
+            ~Q(profile__visibility__icontains='HIDDEN') |
+            Q(profile__connections=request.user.profile) |
+            Q(profile=request.user.profile)
+        )
+    context = {'title': "Search Users", 'user_search_query': user_search_query, 'users_found': users_found}
     return render(request, 'accounts/_search.html', context)

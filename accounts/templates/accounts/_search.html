@@ -1,19 +1,30 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    {% if users_found %}
-        {% for user in users_found %}
-            <div class="card">
-                <div class="card-header">
-                    {{ user.username }}
+
+    <div class="card" style="display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap;">
+        <form class="d-flex" method="POST" action="{% url 'accounts:user_search' %}" style="width: 100%">
+            {% csrf_token %}
+            <input class="form-control" type="text"
+                   placeholder="Search Users..." aria-label="Search" name="user_search_query">
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <p><b>Search results for {{ user_search_query }}</b></p>
+        {% if users_found %}
+            {% for user in users_found %}
+                <div class="card">
+                    <div class="card-body">
+                        {{ user.username }}
+                    </div>
                 </div>
-            </div>
-        {% endfor %}
-    {% else %}
-        <div class="card">
-            <div class="card-body">
-                <p class="card-text">No results found.</p>
-            </div>
+            {% endfor %}
+        {% else %}
+            <p class="card-text">No results found.</p>
+        {% endif %}
         </div>
-    {% endif %}
+    </div>
+
 {% endblock content %}
