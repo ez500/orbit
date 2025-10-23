@@ -20,17 +20,17 @@
                         <div class="d-flex align-items-center">
                             <p class="me-auto text-start mb-0">{{ user.username }}</p>
                             {% if requesting_user.profile not in user.profile.connections.all %}
-                                <form action="{% url 'accounts:add_connection' user.profile %}" method="post">
+                                <form action="{% url 'accounts:add_connection' user.username %}" method="post">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-primary">Add Connection</button>
                                 </form>
                             {% else %}
-                                <form action="{% url 'accounts:remove_connection' user.profile %}" method="post">
+                                <form action="{% url 'accounts:remove_connection' user.username %}" method="post">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-danger">Remove Connection</button>
                                 </form>
                             {% endif %}
-                            <a href="{% url 'accounts:profile_view' user.profile %}" class="btn btn-secondary ms-2">
+                            <a href="{% url 'accounts:profile_view' user.username %}" class="btn btn-secondary ms-2">
                                 View Profile
                             </a>
                         </div>

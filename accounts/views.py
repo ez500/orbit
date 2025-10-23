@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView, DetailView
 
 from accounts import models
@@ -93,7 +94,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
         searched_is_visible = searched_profile.visibility != models.Profile.Visibility.HIDDEN.name
         requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
-        is_connection = requesting_user.profile.connections.contains(searched_profile)
+        is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
         is_self = requesting_user.profile == searched_profile
         return searched_is_visible or requesting_is_staff or is_connection or is_self
 
@@ -103,7 +104,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
         searched_is_public = searched_profile.visibility == models.Profile.Visibility.PUBLIC.name
         requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
-        is_connection = requesting_user.profile.connections.contains(searched_profile)
+        is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
         is_self = requesting_user.profile == searched_profile
         return searched_is_public or requesting_is_staff or is_connection or is_self
 
@@ -194,8 +195,9 @@ def settings(request):
     })
 
 @login_required
+@require_http_methods(['POST'])
 def search(request):
-    user_search_query = request.POST['user_search_query']
+    user_search_query = request.POST.get('user_search_query', '')
     if request.user.is_staff or request.user.is_superuser:
         users_found = User.objects.filter(username__icontains=user_search_query)
     else:
@@ -214,7 +216,7 @@ def add_connection(request, username):
     if request.method == 'POST':
         profile = get_object_or_404(Profile, user__username=username)
 
-        if profile.connections.contains(request.user.profile):
+        if profile.connections.filter(pk=request.user.profile.pk).exists():
             messages.info(request, f"{profile} is already a connection.")
         else:
             profile.connections.add(request.user.profile)
@@ -226,7 +228,7 @@ def remove_connection(request, username):
     if request.method == 'POST':
         profile = get_object_or_404(Profile, user__username=username)
 
-        if profile.connections.contains(request.user.profile):
+        if profile.connections.filter(pk=request.user.profile.pk).exists():
             profile.connections.remove(request.user.profile)
             messages.success(request, f"{profile} is no longer a connection.")
         else:
