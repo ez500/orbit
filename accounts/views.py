@@ -1,19 +1,22 @@
+from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, \
-    PasswordResetConfirmView
-from django.contrib.messages.views import SuccessMessageMixin
-from django.contrib import messages
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView
+from django.contrib.auth.views import PasswordResetConfirmView
+from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.staticfiles.finders import searched_locations
+from django.http import Http404, HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView
 
+from accounts import models
 from accounts.forms import RegistrationForm, UpdateUserForm, UpdateProfileForm, ChangePasswordForm
 from accounts.models import Profile
 from teams.models import Team
+
 
 # Create your views here.
 class UserRegisterView(CreateView):
@@ -70,11 +73,39 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context['companies'] = profile.companies.all()
         context['teams'] = Team.objects.filter(members=profile.user).order_by("name")
         context['projects'] = profile.projects.all()
+        context['can_view'] = self.can_view_private_info()
         return context
 
     def get_object(self, queryset=None):
         user = get_object_or_404(User, username=self.kwargs['username'])
         return user.profile
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.can_access():
+            raise Http404(
+                "User %s is hidden." % self.kwargs['username']
+            )
+        return super().dispatch(request, *args, **kwargs)
+
+    def can_access(self):
+        searched_profile = self.get_object()
+        requesting_user = self.request.user
+
+        searched_is_visible = searched_profile.visibility != models.Profile.Visibility.HIDDEN.name
+        requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
+        is_connection = requesting_user.profile.connections.contains(searched_profile)
+        is_self = requesting_user.profile == searched_profile
+        return searched_is_visible or requesting_is_staff or is_connection or is_self
+
+    def can_view_private_info(self):
+        searched_profile = self.get_object()
+        requesting_user = self.request.user
+
+        searched_is_public = searched_profile.visibility == models.Profile.Visibility.PUBLIC.name
+        requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
+        is_connection = requesting_user.profile.connections.contains(searched_profile)
+        is_self = requesting_user.profile == searched_profile
+        return searched_is_public or requesting_is_staff or is_connection or is_self
 
 
 @login_required
@@ -108,7 +139,6 @@ def edit_user_profile(request):
 @login_required
 def settings(request):
     from django.http import JsonResponse
-    import json
 
     if request.method == 'POST':
         user_form = UpdateUserForm(request.POST, instance=request.user)
@@ -166,6 +196,6 @@ def settings(request):
 @login_required
 def search(request):
     search_users = request.POST['search_users']
-    users_found = User.objects.filter(username__icontains=search_users).exclude(profile__visibility__icontains='Hidden')
+    users_found = User.objects.filter(username__icontains=search_users).exclude(profile__visibility__icontains='HIDDEN')
     context = {'title': "Search Users", 'search_users': search_users, 'users_found': users_found}
     return render(request, 'accounts/_search.html', context)
