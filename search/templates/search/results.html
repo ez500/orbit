@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-3">Search</h1>
+  <form method="get" class="row g-2 align-items-end mb-4">
+    <div class="col-md-6">{{ form.q.label_tag }}{{ form.q }}</div>
+    <div class="col-md-2">{{ form.team.label_tag }}{{ form.team }}</div>
+    <div class="col-md-2">{{ form.company.label_tag }}{{ form.company }}</div>
+    <div class="col-md-2">{{ form.project.label_tag }}{{ form.project }}</div>
+    <div class="col-12">
+      <button class="btn btn-primary">Search</button>
+      <a class="btn btn-outline-secondary" href="{% url 'search:results' %}">Reset</a>
+    </div>
+  </form>
+
+  {% if q or form.team.value or form.company.value or form.project.value %}
+  <p class="text-muted">Showing results for <strong>{{ q|default:'(no keywords)' }}</strong></p>
+  {% endif %}
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5>Users & Profiles</h5>
+      {% if profiles_page.object_list %}
+        <ul>
+          {% for p in profiles_page %}
+          <li><a href="{% url 'accounts:profile_view' username=p.user.username %}">@{{ p.user.username }}</a></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No users found.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5>Teams</h5>
+      {% if teams_page.object_list %}
+        <ul>
+          {% for t in teams_page %}
+          <li><a href="{% url 'teams:detail' t.pk %}">{{ t.name }}</a></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No teams found.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5>Companies</h5>
+      {% if companies_page.object_list %}
+        <ul>
+          {% for c in companies_page %}
+          <li>{{ c.name }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No companies found.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5>Projects</h5>
+      {% if projects_page.object_list %}
+        <ul>
+          {% for p in projects_page %}
+          <li>{{ p.name }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No projects found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

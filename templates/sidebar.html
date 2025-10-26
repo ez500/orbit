@@ -12,17 +12,17 @@
     <ul class="nav flex-column">
 	<li class="nav_item">
          <!--TODO Implement search app-->
-           <div class="nav-link search-wrapper">
-             <i class="fas fa-search"></i>
-             <input
-               type="search"
-               name="q"
-               placeholder="Search..."
-               value="{{ request.GET.q|default_if_none:'' }}"
-               class="nav-search-input"
-               autocomplete="off"
-             />
-           </div>
+         <form action="{% url 'search:results' %}" method="get" class="nav-link search-wrapper d-flex align-items-center">
+  	 <i class="fas fa-search me-2"></i>
+  	 	<input
+    		type="search"
+    		name="q"
+    		placeholder="Search..."
+    		value="{{ request.GET.q|default_if_none:'' }}"
+    		class="nav-search-input form-control form-control-sm"
+    		autocomplete="off"
+  	 	/>
+	 </form>
         </li>
         <li class="nav-item">
             <a
