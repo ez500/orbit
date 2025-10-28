@@ -1,11 +1,25 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
-from django.views.generic import DetailView
+from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import DetailView, CreateView
 
-from company.models import Company
+from company.forms import CompanyRegistrationForm
+from company.models import Company, CompanyMembership
 
 
 # Create your views here.
+
+class RegisterCompany(LoginRequiredMixin, CreateView):
+    model = Company
+    form_class = CompanyRegistrationForm
+    template_name = 'company/register.html'
+    extra_context = {'title': 'Register Company'}
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        self.object = form.save()
+        CompanyMembership.objects.create(company=self.object, user=self.request.user)
+        return redirect("company:company", name=self.object.name)
+
 
 class CompanyView(LoginRequiredMixin, DetailView):
     model = Company

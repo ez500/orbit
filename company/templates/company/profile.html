@@ -29,10 +29,10 @@
                 {% else %} — {% endif %}
             </p>
 
-            {% if user.profile == company.owner %}
+            {% if user == company.owner %}
                 <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap;"><!-- TODO EDIT COMPANY PROFILE -->
-                    <a href="{% url '' %}" class="btn btn-primary">
-                        <i class="fas fa-user"></i>
+                    <a href="{% url 'company:company' company %}" class="btn btn-primary">
+                        <i class="fas fa-building"></i>
                         <span>Edit Company</span>
                     </a>
                 </div><!-- TODO DELETE COMPANY PROFILE -->

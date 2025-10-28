@@ -19,6 +19,7 @@ from django.views.generic.detail import SingleObjectMixin
 from accounts import models
 from accounts.forms import RegistrationForm, UpdateUserForm, UpdateProfileForm, ChangePasswordForm
 from accounts.models import Profile
+from company.models import Company
 from teams.models import Team
 
 
@@ -74,7 +75,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
         context['title'] = f'{profile}\'s Profile'
         context['connections'] = profile.connections.all()
-        context['companies'] = profile.companies.all().order_by("name")
+        context['companies'] = Company.objects.filter(members=profile.user).order_by("name")
         context['teams'] = Team.objects.filter(members=profile.user).order_by("name")
         context['projects'] = profile.projects.all()
         context['can_view'] = self.can_view_private_info()
@@ -113,6 +114,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
 
 class CompanyListView(LoginRequiredMixin, ListView):
+    context_object_name = "companies"
     template_name = "company/list.html"
     paginate_by = 10
 
@@ -120,7 +122,7 @@ class CompanyListView(LoginRequiredMixin, ListView):
         return get_object_or_404(Profile, user__username=self.kwargs['username'])
 
     def get_queryset(self):
-        return self.get_object().companies.all()
+        return Company.objects.filter(members=self.get_object().user).order_by("name")
 
     def get_context_data(self, **kwargs):
         profile = self.get_object()
