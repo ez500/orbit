@@ -11,12 +11,12 @@ from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
-from django.views.generic import CreateView, DetailView
+from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic.detail import SingleObjectMixin
 
 from accounts import models
 from accounts.forms import RegistrationForm, UpdateUserForm, UpdateProfileForm, ChangePasswordForm
 from accounts.models import Profile
-from teams.models import Team
 
 
 # Create your views here.
@@ -71,8 +71,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
         context['title'] = f'{profile}\'s Profile'
         context['connections'] = profile.connections.all()
-        context['companies'] = profile.companies.all()
-        context['teams'] = Team.objects.filter(members=profile.user).order_by("name")
+        context['companies'] = profile.companies.all().order_by("name")
+        context['teams'] = profile.teams.all().order_by("name")
         context['projects'] = profile.projects.all()
         context['can_view'] = self.can_view_private_info()
         return context
@@ -234,3 +234,21 @@ def remove_connection(request, username):
         else:
             messages.error(request, f"{profile} is not a connection.")
     return redirect('accounts:profile_view', username=request.user.username)
+
+
+class CompanyListView(LoginRequiredMixin, SingleObjectMixin, ListView):
+    template_name = "company/list.html"
+    paginate_by = 10
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object(queryset=Profile.objects.all())
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.object.companies_set.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['profile'] = self.object
+        context['title'] = f'{self.object}\'s Company Info'
+        return context
