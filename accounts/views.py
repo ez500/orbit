@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -17,6 +19,7 @@ from django.views.generic.detail import SingleObjectMixin
 from accounts import models
 from accounts.forms import RegistrationForm, UpdateUserForm, UpdateProfileForm, ChangePasswordForm
 from accounts.models import Profile
+from teams.models import Team
 
 
 # Create your views here.
@@ -72,7 +75,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context['title'] = f'{profile}\'s Profile'
         context['connections'] = profile.connections.all()
         context['companies'] = profile.companies.all().order_by("name")
-        context['teams'] = profile.teams.all().order_by("name")
+        context['teams'] = Team.objects.filter(members=profile.user).order_by("name")
         context['projects'] = profile.projects.all()
         context['can_view'] = self.can_view_private_info()
         return context
@@ -80,6 +83,53 @@ class ProfileView(LoginRequiredMixin, DetailView):
     def get_object(self, queryset=None):
         user = get_object_or_404(User, username=self.kwargs['username'])
         return user.profile
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.can_access():
+            raise Http404(
+                "User %s is hidden." % self.kwargs['username']
+            )
+        return super().dispatch(request, *args, **kwargs)
+
+    def can_access(self):
+        searched_profile = self.get_object()
+        requesting_user = self.request.user
+
+        searched_is_visible = searched_profile.visibility != models.Profile.Visibility.HIDDEN.name
+        requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
+        is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
+        is_self = requesting_user.profile == searched_profile
+        return searched_is_visible or requesting_is_staff or is_connection or is_self
+
+    def can_view_private_info(self):
+        searched_profile = self.get_object()
+        requesting_user = self.request.user
+
+        searched_is_public = searched_profile.visibility == models.Profile.Visibility.PUBLIC.name
+        requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
+        is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
+        is_self = requesting_user.profile == searched_profile
+        return searched_is_public or requesting_is_staff or is_connection or is_self
+
+
+class CompanyListView(LoginRequiredMixin, ListView):
+    template_name = "company/list.html"
+    paginate_by = 10
+
+    def get_object(self):
+        return get_object_or_404(Profile, user__username=self.kwargs['username'])
+
+    def get_queryset(self):
+        return self.get_object().companies.all()
+
+    def get_context_data(self, **kwargs):
+        profile = self.get_object()
+        context = super().get_context_data(**kwargs)
+
+        context['profile'] = profile
+        context['title'] = f'{profile}\'s Company Info'
+        context['can_view'] = self.can_view_private_info()
+        return context
 
     def dispatch(self, request, *args, **kwargs):
         if not self.can_access():
@@ -234,21 +284,3 @@ def remove_connection(request, username):
         else:
             messages.error(request, f"{profile} is not a connection.")
     return redirect('accounts:profile_view', username=request.user.username)
-
-
-class CompanyListView(LoginRequiredMixin, SingleObjectMixin, ListView):
-    template_name = "company/list.html"
-    paginate_by = 10
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object(queryset=Profile.objects.all())
-        return super().get(request, *args, **kwargs)
-
-    def get_queryset(self):
-        return self.object.companies_set.all()
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['profile'] = self.object
-        context['title'] = f'{self.object}\'s Company Info'
-        return context

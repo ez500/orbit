@@ -1,1 +1,42 @@
 {% extends 'base.html' %}
+
+{% block content %}
+
+    <!-- Header / About card -->
+    <div class="card" style="display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap;">
+        <div>
+            {% if company.profile_picture %}
+                <img src="{{ company.profile_picture.url }}" alt="{{ company }}'s profile picture"
+                     style="width:120px; height:120px; object-fit:cover; border-radius:12px; border:1px solid #333;"/>
+            {% else %}
+                <div style="width:120px; height:120px; border-radius:12px; border:1px dashed #555; display:grid; place-items:center; font-size:2rem; opacity:.7;">
+                    {{ company.name|first|upper }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div style="flex:1 1 320px; min-width:280px;">
+            <h1 style="margin:0 0 .25rem 0;">{{ company }}</h1>
+            <p style="margin:.25rem 0;">
+                <b>Description:</b>
+                <span>{{ company.description|linebreaksbr|default:"No bio yet." }}</span>
+            </p>
+            <p style="margin:.25rem 0;"><b>Location:</b> {{ company.location|default:"—" }}</p>
+            <p style="margin:.25rem 0;">
+                <b>Website:</b>
+                {% if company.website %}
+                    <a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>
+                {% else %} — {% endif %}
+            </p>
+
+            {% if user.profile == company.owner %}
+                <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap;"><!-- TODO EDIT COMPANY PROFILE -->
+                    <a href="{% url '' %}" class="btn btn-primary">
+                        <i class="fas fa-user"></i>
+                        <span>Edit Company</span>
+                    </a>
+                </div><!-- TODO DELETE COMPANY PROFILE -->
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

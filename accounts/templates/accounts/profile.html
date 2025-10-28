@@ -43,6 +43,8 @@
                 </p>
             {% endif %}
 
+            <!-- TODO ADD ADD/REMOVE CONNECTION BUTTON HERE -->
+
             {% if user.profile == profile %}
                 <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap;">
                     <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
@@ -89,7 +91,7 @@
                         {% for company in companies %}
                             <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
                                 {% if company.url %}
-                                    <a href="{{ company.url }}">{{ company }}</a>
+                                    <a href="{{ company.website }}">{{ company }}</a>
                                 {% else %}
                                     {{ company }}
                                 {% endif %}
