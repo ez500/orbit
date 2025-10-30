@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     "home.apps.HomeConfig",
     "accounts.apps.AccountsConfig",
     "teams.apps.TeamsConfig",
-    "contact.apps.ContactConfig",
 
     "widget_tweaks",
     "django.contrib.admin",
@@ -144,6 +143,8 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
 EMAIL_CONNECTION_CLASS = config('EMAIL_CONNECTION_CLASS', default='django.core.mail.backends.smtp.EmailBackend')
+
+RECIPIENT_ADDRESS = ""
 
 
 # Login/logout + redirect URLs
