@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "home.apps.HomeConfig",
     "accounts.apps.AccountsConfig",
     "teams.apps.TeamsConfig",
+    "contact.apps.ContactConfig",
 
     "widget_tweaks",
     "django.contrib.admin",
