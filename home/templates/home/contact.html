@@ -84,7 +84,13 @@
                     </div>
                 </div>
             </form>
+            <div id="form-message-warning"></div>
+            <div id="form-message-success">Your message was sent!</div>
         </div>
     </div>
 </div>
 {% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'js/contact.js' %}"></script>
+{% endblock %}

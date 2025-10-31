@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.views.generic import FormView
 
 from rest_framework.views import APIView
@@ -80,7 +81,7 @@ class TaskDeleteAPIView(APIView):
             return Response({'message': 'Task deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
         except Task.DoesNotExist:
             return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
-        
+
 class ContactView(FormView):
     template_name = "home/contact.html"
     form_class = ContactForm
@@ -88,4 +89,4 @@ class ContactView(FormView):
     def form_valid(self, form):
         # Calling custom send method
         form.send()
-        return super().form_valid(form)
+        return HttpResponse("Form sent!")
