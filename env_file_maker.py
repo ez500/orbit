@@ -29,12 +29,13 @@ POSTGRES_PASSWORD=%s
 DB_HOST=localhost
 
 # DEFAULT_FROM_EMAIL=
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=<YOUR_EMAIL_ADDRESS>
-EMAIL_HOST_PASSWORD=<YOUR_EMAIL_PASSWORD>
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = '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'
+EMAIL_CONNECTION_CLASS = 'django.core.mail.backends.smtp.EmailBackend'
 """.strip()
     % (secret_key, password, password)
 )
