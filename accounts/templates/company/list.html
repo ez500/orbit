@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <!-- Header / About card -->
+        {% if can_view %}
+            <!-- Companies -->
+            {% if companies %}
+                <ul style="list-style:none; padding:0; margin:0;">
+                    {% for company in companies %}
+                        <li class="card d-flex align-items-center">
+                            <p class="me-auto text-start mb-0">
+                                {{ company }}
+                                {% if company.url %}
+                                    <a href="{{ company.website }}" class="btn btn-secondary ms-2">
+                                        Website
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'company:company' company %}" class="btn btn-secondary ms-2">
+                                    View Profile
+                                </a>
+                            </p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="opacity:.8;">No companies yet.</p>
+            {% endif %}
+        {% else %}
+            <div class="card">
+                <p>
+                    <b>{{ profile }}'s profile is private.</b>
+                </p>
+            </div>
+        {% endif %}
+{% endblock %}

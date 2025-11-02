@@ -39,6 +39,7 @@ ALLOWED_HOSTS = ['*']  # Allow all hosts in development
 INSTALLED_APPS = [
     "home.apps.HomeConfig",
     "accounts.apps.AccountsConfig",
+    "company.apps.CompanyConfig",
     "teams.apps.TeamsConfig",
     "search.apps.SearchConfig",
     "projects",
@@ -49,6 +50,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "message",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -129,17 +132,19 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Email configs
 
-EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 
-EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.sendgrid.net')
 
-EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True)
 
-EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
+EMAIL_PORT = config('EMAIL_PORT', default=587)
 
-EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+
+EMAIL_CONNECTION_CLASS = config('EMAIL_CONNECTION_CLASS', default='django.core.mail.backends.smtp.EmailBackend')
 
 
 # Login/logout + redirect URLs

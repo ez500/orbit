@@ -45,7 +45,7 @@ class Profile(models.Model):
     location = models.CharField(max_length=100, blank=True)
     website = models.URLField(blank=True)
     connections = models.ManyToManyField('self')
-    companies = models.ManyToManyField("home.Company")
+    companies = models.ManyToManyField("company.Company")
     projects = models.ManyToManyField("home.Project")
     tasks = models.ManyToManyField("home.Task")
     theme_color = models.CharField(max_length=20, choices=THEME_CHOICES, default='dark')
@@ -59,4 +59,3 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
-

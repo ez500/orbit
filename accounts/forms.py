@@ -2,7 +2,10 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, SetPasswordMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import PasswordChangeForm as DefaultChangePasswordForm
+
 from .models import Profile
+from .validators import validate_email
+
 
 class RegistrationForm(UserCreationForm):
     first_name = forms.CharField(
@@ -16,7 +19,8 @@ class RegistrationForm(UserCreationForm):
     email = forms.EmailField(
         label='E-mail',
         max_length=254,
-        help_text='Required. Must be a valid E-mail address.',
+        help_text='Must be a valid E-mail address.',
+        validators=[validate_email]
     )
 
     class Meta:
@@ -35,7 +39,8 @@ class UpdateUserForm(forms.ModelForm):
    email = forms.CharField(
         label='E-mail',
         max_length=254,
-        help_text='Required. Must be a valid E-mail address.',
+        help_text='Must be a valid E-mail address.',
+        validators=[validate_email]
     )
 
    class Meta:
