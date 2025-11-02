@@ -64,6 +64,7 @@ class UserPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'accounts/password_reset_done.html'
     extra_context = {'title': 'Successful Password Reset'}
 
+
 class ProfileView(LoginRequiredMixin, DetailView):
     model = Profile
     template_name = "accounts/profile.html"
@@ -189,6 +190,7 @@ def edit_user_profile(request):
         'password_form': password_form
     })
 
+
 # TODO MANAGE SETTINGS ALLOCATION
 @login_required
 def settings(request):
@@ -247,6 +249,7 @@ def settings(request):
         'title': 'Settings'
     })
 
+
 @login_required
 @require_http_methods(['POST'])
 def search(request):
@@ -264,6 +267,7 @@ def search(request):
         'user_search_query': user_search_query, 'users_found': users_found}
     return render(request, 'accounts/_search.html', context)
 
+
 @login_required
 def add_connection(request, username):
     if request.method == 'POST':
@@ -275,6 +279,7 @@ def add_connection(request, username):
             profile.connections.add(request.user.profile)
             messages.success(request, f'{profile} is now a connection.')
     return redirect('accounts:profile_view', username=username)
+
 
 @login_required
 def remove_connection(request, username):
