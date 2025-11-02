@@ -9,7 +9,5 @@ urlpatterns = [
     path("create/", views.project_create, name="project_create"),
     path("<int:pk>/add-collaborator/", views.add_collaborator, name="add_collaborator"),
     path("<int:pk>/dashboard/", views.project_dashboard, name="project_dashboard"),
-    path("<int:pk>/add-collaborator/", views.add_collaborator, name="add_collaborator"),
-
 ]
 
