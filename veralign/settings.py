@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "teams.apps.TeamsConfig",
     "search.apps.SearchConfig",
+    "projects",
     "widget_tweaks",
     "django.contrib.admin",
     "django.contrib.auth",
