@@ -161,6 +161,7 @@ class CompanyListView(LoginRequiredMixin, ListView):
         return searched_is_public or requesting_is_staff or is_connection or is_self
 
 
+# TODO DELETE USER ACCOUNT VIEW/CONFIG
 @login_required
 def edit_user_profile(request):
     if request.method == 'POST':
