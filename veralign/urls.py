@@ -29,7 +29,7 @@ urlpatterns = [
     path("projects/", include("projects.urls", namespace="projects")),
     path('', include("home.urls")),
     path("message/", include("message.urls", namespace="message")),
-    path('', include("home.urls")),
+    #path('', include("home.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Serve static files during development

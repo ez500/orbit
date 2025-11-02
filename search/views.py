@@ -6,7 +6,7 @@ from django.shortcuts import render
 
 from accounts.models import Profile
 from teams.models import Team
-#from home.models import Company
+from company.models import Company
 from projects.models import Project
 
 
@@ -43,15 +43,15 @@ def search_results(request):
         ).order_by("id")
 
     # === COMPANIES ===
-    #if not query:
-        #companies = Company.objects.all().order_by("id")
-    #else:
-        #companies = Company.objects.filter(
-            #Q(name__icontains=query)
-            #| Q(address__icontains=query)
-            #| Q(email__icontains=query)
-            #| Q(phone__icontains=query)
-        #).order_by("id")
+    if not query:
+        companies = Company.objects.all().order_by("id")
+    else:
+        companies = Company.objects.filter(
+            Q(name__icontains=query)
+            | Q(address__icontains=query)
+            | Q(email__icontains=query)
+            | Q(phone__icontains=query)
+        ).order_by("id")
 
     # === PROJECTS ===
     if not query:
@@ -86,7 +86,7 @@ def search_results(request):
         "query": query,
         "users": users,
         "teams": teams,
-        #"companies": companies,
+        "companies": companies,
         "projects": projects,
         "page_obj": page_obj,
     }
