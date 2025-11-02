@@ -25,17 +25,17 @@ class SearchForm(forms.Form):
 	)
 
 
-#company = forms.ModelChoiceField(
-#label="Company",
-#required=False,
-#queryset=Company.objects.order_by("name"),
-#widget=forms.Select(attrs={"class": "form-select"}),
-#)
+	#company = forms.ModelChoiceField(
+	#label="Company",
+	#required=False,
+	#queryset=Company.objects.order_by("name"),
+	#widget=forms.Select(attrs={"class": "form-select"}),
+	#)
 
 
-#project = forms.ModelChoiceField(
-#label="Project",
-#required=False,
-#queryset=Project.objects.order_by("name"),
-#widget=forms.Select(attrs={"class": "form-select"}),
-#)
+	project = forms.ModelChoiceField(
+	label="Project",
+	required=False,
+	queryset=Project.objects.order_by("name"),
+	widget=forms.Select(attrs={"class": "form-select"}),
+	)
