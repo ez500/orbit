@@ -7,7 +7,7 @@ const removeElementById = (id) => {
 
 function fadeOut(el) {
     el.style.opacity = 1;
-    
+
     (function fade() {
         if ((el.style.opacity -= 0.1) < 0) {
             el.style.display = "none";
@@ -91,7 +91,7 @@ function validateForm() {
 }
 
 const contactForm = document.getElementById("contactForm");
-contactForm.addEventListener("submit", function (event) {
+contactForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     if (contactForm.childElementCount > 0) {
@@ -102,12 +102,20 @@ contactForm.addEventListener("submit", function (event) {
             submit.innerText = "Submitting...";
 
             const formData = new FormData(contactForm);
-            fetch("/", {
-                method: "POST",
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
+            const csrfToken = formData.get("csrfmiddlewaretoken");
+
+            try {
+                const response = await fetch("/contact/", {
+                    method: "POST",
+                    headers: { "X-CSRFToken": csrfToken },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
                 console.log("Success:", data);
                 document.getElementById("form-message-warning").style.display = "none";
                 setTimeout(function () {
@@ -116,13 +124,13 @@ contactForm.addEventListener("submit", function (event) {
                 setTimeout(function () {
                     fadeIn(document.getElementById("form-message-success"));
                 }, 1400);
-            })
-            .catch(error => {
+            }
+            catch (error) {
                 console.error("Error:", error);
                 document.getElementById("form-message-warning").innerHTML = "Something went wrong. Please try again.";
                 fadeIn(document.getElementById("form-message-warning"), "block");
                 submit.setAttribute("display", "none");
-            });
+            }
         }
     }
 });

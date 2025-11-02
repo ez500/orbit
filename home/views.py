@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.views.generic import FormView
 
 from rest_framework.views import APIView
@@ -89,4 +89,4 @@ class ContactView(FormView):
     def form_valid(self, form):
         # Calling custom send method
         form.send()
-        return HttpResponse("Form sent!")
+        return JsonResponse({"message": "Form sent!"})
