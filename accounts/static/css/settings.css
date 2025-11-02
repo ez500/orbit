@@ -1,8 +1,16 @@
+/* Theme Variables */
 :root {
   /* Theme colors */
   --accent-color: #1e90ff;
   --accent-text: #ffffff;
   --theme-mode: dark;
+
+  /* Bootstrap Dark Theme Overrides */
+  --bs-dark-rgb: 18, 18, 18;
+  --bs-body-bg-rgb: 24, 24, 24;
+  --bs-body-bg: rgb(var(--bs-body-bg-rgb));
+  --section-spacing: 2rem;
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   /* Sidebar specific */
   --sidebar-bg: #1a1a1a;
@@ -140,6 +148,570 @@ body {
 .form-text,
 .text-muted {
   color: var(--text-muted) !important;
+}
+
+/* Settings Layout */
+.modern-settings {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: var(--text-color);
+}
+
+.settings-section {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-header {
+  margin-bottom: 1.5rem;
+}
+
+.section-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.section-description {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Settings Card */
+.settings-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Settings Sections */
+.settings-section {
+  padding: 2rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+}
+
+.settings-section h3 {
+  color: var(--text-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+/* Appearance Section Styles */
+.appearance-section {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: var(--section-spacing);
+  box-shadow: var(--card-shadow);
+}
+
+.appearance-section h3 {
+  color: var(--text-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+/* Theme Options */
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.theme-card {
+  position: relative;
+}
+
+.theme-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.theme-preview {
+  display: block;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.theme-preview:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-color);
+}
+
+.theme-card.active .theme-preview {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.preview-header {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-header i {
+  font-size: 1.25rem;
+  color: var(--accent-color);
+}
+
+.preview-header span {
+  font-weight: 500;
+}
+
+.preview-content {
+  padding: 1rem;
+  height: 160px;
+  position: relative;
+}
+
+/* Theme Preview Mockups */
+.mock-navbar {
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 0.75rem;
+  border-radius: 4px;
+}
+
+.mock-sidebar {
+  position: absolute;
+  left: 1rem;
+  top: 2.5rem;
+  bottom: 1rem;
+  width: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.mock-content {
+  margin-left: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mock-card {
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.theme-option {
+  position: relative;
+}
+
+.theme-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.theme-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--card-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-option input[type="radio"]:checked + .theme-label {
+  border-color: var(--accent-color);
+  background: rgba(var(--accent-color-rgb), 0.1);
+}
+
+.theme-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  margin-bottom: 0.5rem;
+}
+
+.theme-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theme-option.active {
+  border-color: var(--accent-color);
+  background-color: rgba(30, 144, 255, 0.1);
+}
+
+.theme-option input[type="radio"] {
+  display: none;
+}
+
+.theme-option-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.theme-option-label {
+  display: block;
+  color: var(--text-color);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Color Palette */
+.color-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.color-option {
+  position: relative;
+}
+
+.color-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.color-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: var(--color);
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.color-button i {
+  color: white;
+  font-size: 1.2rem;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s ease;
+}
+
+.color-option.active .color-button {
+  border-color: white;
+  transform: scale(1.1);
+}
+
+.color-option.active .color-button i {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.color-button:hover {
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.color-tooltip {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.color-button:hover + .color-tooltip {
+  opacity: 1;
+}
+
+.color-scheme-option {
+  position: relative;
+}
+
+.color-scheme-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.color-option-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.color-swatch {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid var(--card-border);
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-scheme-option
+  input[type="radio"]:checked
+  + .color-option-label
+  .color-swatch {
+  border-color: var(--text-color);
+  transform: scale(1.1);
+}
+
+.color-check {
+  color: white;
+  font-size: 1.2rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-name {
+  color: var(--text-color);
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* Accessibility Options */
+.accessibility-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.option-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.option-group:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.option-label {
+  flex: 1;
+}
+
+.option-label label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  color: var(--text-color);
+}
+
+.option-description {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.option-control {
+  min-width: 120px;
+}
+
+/* Form Controls */
+select.form-select {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+select.form-select:hover {
+  border-color: var(--accent-color);
+}
+
+select.form-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.25);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 34px;
+  transition: 0.4s;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.4s;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--accent-color);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+
+.accessibility-option {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.setting-label {
+  color: var(--text-color);
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.setting-control {
+  position: relative;
+}
+
+.setting-help {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+/* Form Controls */
+select.form-select {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--card-border);
+  color: var(--text-color);
+  padding: 0.5rem;
+  border-radius: 6px;
+  width: 100%;
+}
+
+select.form-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.25);
+}
+
+/* Custom Checkbox */
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5rem;
+}
+
+.accessibility-option label {
+  color: var(--text-color);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.accessibility-option .form-text {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+/* Preview Section */
+.preview-section {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: var(--section-spacing);
+}
+
+.preview-content {
+  padding: 1rem;
+  border: 1px dashed var(--card-border);
+  border-radius: 6px;
+  margin-top: 1rem;
+}
+
+.preview-text {
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+
+.preview-elements {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Settings Save Bar */
+.settings-save-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--card-border);
 }
 
 /* Buttons */
@@ -461,12 +1033,29 @@ a:hover {
   box-shadow: 0 0 0 2px #fff inset;
 }
 
+/* Hover Effects */
+.theme-label:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+  border-color: var(--text-color);
+}
+
+.accessibility-option:hover {
+  border-color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 /* Global transitions */
-.sidebar,
-.navbar,
-.card,
+.theme-label,
+.color-swatch,
+.accessibility-option,
 .form-control,
 .btn,
-.nav-link {
-  transition: all 0.3s ease;
+select.form-select {
+  transition: all 0.2s ease-in-out;
 }

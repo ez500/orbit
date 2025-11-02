@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Settings{% endblock title %}
+{% block title %}Settings{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/settings.css' %}">
-{% endblock extra_css %}
+<link rel="stylesheet" href="{% static 'css/settings.css' %}" />
+{% endblock %}
 
 {% block content %}
 <div class="settings-container">
@@ -20,8 +20,8 @@
     enctype="multipart/form-data"
     class="settings-content"
   >
-    {% csrf_token %} {{
-    profile_form.instance.get_profile_data|json_script:"profile-data" }}
+    {% csrf_token %}
+    {{ profile_form.instance.get_profile_data|json_script:"profile-data" }}
 
     <div class="row">
       <div class="col-lg-3 settings-nav">
@@ -145,95 +145,138 @@
 
           <!-- Appearance Tab -->
           <div class="tab-pane fade" id="appearance" role="tabpanel">
-            <div class="appearance-section">
-              <h3>Theme</h3>
-              <div class="theme-grid">
-                {% for value, label in theme_choices %}
-                <div class="theme-option{% if profile_form.instance.theme_color|stringformat:"s" == value %} active{% endif %}">
-                  <input type="radio" name="theme_color" id="theme_{{ value }}" value="{{ value }}" {% if profile_form.instance.theme_color|stringformat:"s" == value %}checked{% endif %}>
-                  <label for="theme_{{ value }}">
-                    <i class="theme-option-icon fas {% if value == 'dark' %}fa-moon{% elif value == 'light' %}fa-sun{% else %}fa-laptop{% endif %}"></i>
-                    <span class="theme-option-label">{{ label }}</span>
-                  </label>
-                </div>
-                {% endfor %}
-              </div>
-            </div>
+            <div class="card mb-4">
+              <div class="card-body">
+                <h5 class="card-title mb-4">Theme Preferences</h5>
 
-            <div class="appearance-section">
-              <h3>Color Scheme</h3>
-              <div class="color-schemes">
-                {% for value, label in accent_choices %}
-                <div class="color-option">
-                  <input type="radio" name="accent_color" id="accent_{{ forloop.counter }}" value="{{ value }}" {% if profile_form.instance.accent_color == value %}checked{% endif %}>
-                  <label for="accent_{{ forloop.counter }}" class="color-swatch" style="background-color: {{ value }}" title="{{ label }}"></label>
-                  <span class="color-name">{{ label }}</span>
+                <!-- Theme Options -->
+                <div class="appearance-section">
+                  <h3>Select Theme</h3>
+                  <div class="theme-grid">
+                    {% for value, label in theme_choices %}
+                    {% with theme_str=profile_form.instance.theme_color|stringformat:'s' %}
+                    <div class="theme-option{% if theme_str == value %} active{% endif %}">
+                      <input
+                        type="radio"
+                        name="theme_color"
+                        id="theme_{{ value }}"
+                        value="{{ value }}"
+                        {% if theme_str == value %}checked{% endif %}
+                      >
+                      <label for="theme_{{ value }}">
+                        <i class="theme-option-icon fas {% if value == 'dark' %}fa-moon{% elif value == 'light' %}fa-sun{% else %}fa-laptop{% endif %}"></i>
+                        <span class="theme-option-label">{{ label }}</span>
+                      </label>
+                    </div>
+                    {% endwith %}
+                    {% endfor %}
+                  </div>
                 </div>
-                {% endfor %}
-              </div>
-            </div>
 
-            <div class="appearance-section">
-              <h3>Accessibility</h3>
-              <div class="accessibility-options">
-                <div class="accessibility-option">
-                  <label>Font Size</label>
-                  {{ profile_form.font_size }}
-                  <small class="form-text"
-                    >Adjust text size for better readability</small
+                <!-- Color Scheme -->
+                <div class="appearance-section">
+                  <h3>Accent Color</h3>
+                  <div class="color-schemes">
+                    {% for value, label in accent_choices %}
+                    {% with selected=profile_form.instance.accent_color|stringformat:'s' %}
+                    <div class="color-option">
+                      <input
+                        type="radio"
+                        name="accent_color"
+                        id="accent_{{ forloop.counter }}"
+                        value="{{ value }}"
+                        {% if selected == value %}checked{% endif %}
+                      />
+                      <label
+                        for="accent_{{ forloop.counter }}"
+                        class="color-swatch"
+                        style="background-color: {{ value }}"
+                        data-bs-toggle="tooltip"
+                        title="{{ label }}"
+                      ></label>
+                      <span class="color-name">{{ label }}</span>
+                    </div>
+                    {% endwith %}
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <!-- Accessibility -->
+                <div class="appearance-section">
+                  <h3>Accessibility Settings</h3>
+                  <div class="accessibility-options">
+                    <div class="accessibility-option">
+                      <label class="form-label">Font Size</label>
+                      {{ profile_form.font_size }}
+                      <div class="form-text mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Adjust text size for better readability
+                      </div>
+                    </div>
+
+                    <div class="accessibility-option">
+                      <label class="form-label">Text Spacing</label>
+                      {{ profile_form.spacing }}
+                      <div class="form-text mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Control the space between lines of text
+                      </div>
+                    </div>
+
+                    <div class="accessibility-option">
+                      <div class="form-check form-switch">
+                        {{ profile_form.high_contrast }}
+                        <label class="form-check-label ms-2"
+                          >High Contrast Mode</label
+                        >
+                      </div>
+                      <div class="form-text mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Increase contrast for better visibility
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Live Preview -->
+                <div class="preview-section">
+                  <h3>Live Preview</h3>
+                  <div class="preview-content">
+                    <div class="preview-text">
+                      <h6 class="mb-3">Sample Content</h6>
+                      <p class="text-body">
+                        This is how your content will look with the selected
+                        theme and settings. The preview updates automatically as
+                        you make changes.
+                      </p>
+                    </div>
+                    <div class="preview-elements">
+                      <button class="btn btn-primary">
+                        <i class="fas fa-check me-2"></i>Sample Button
+                      </button>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Sample Input"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Save/Reset Bar -->
+                <div class="settings-save-bar">
+                  <button
+                    id="reset-theme-btn"
+                    type="button"
+                    class="btn btn-outline-secondary"
                   >
-                </div>
-
-                <div class="accessibility-option">
-                  <label>Text Spacing</label>
-                  {{ profile_form.spacing }}
-                  <small class="form-text"
-                    >Control the space between lines of text</small
-                  >
-                </div>
-
-                <div class="accessibility-option">
-                  <label class="d-flex align-items-center gap-2">
-                    {{ profile_form.high_contrast }} High Contrast Mode
-                  </label>
-                  <small class="form-text"
-                    >Increase contrast for better visibility</small
-                  >
+                    <i class="fas fa-undo me-2"></i>Reset to Default
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Save Changes
+                  </button>
                 </div>
               </div>
-            </div>
-
-            <div class="preview-section">
-              <h3>Preview</h3>
-              <div class="preview-content">
-                <div class="preview-text">
-                  <p>
-                    This is how your content will look with the selected theme
-                    and settings.
-                  </p>
-                </div>
-                <div class="preview-elements">
-                  <button class="btn btn-primary">Sample Button</button>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Sample Input"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="settings-save-bar">
-              <button
-                id="reset-theme-btn"
-                type="button"
-                class="btn btn-outline-secondary"
-              >
-                Reset to Default
-              </button>
-              <button type="submit" class="btn btn-primary">
-                Save Changes
-              </button>
             </div>
           </div>
 
@@ -279,4 +322,4 @@
 
   <script src="{% static 'js/settings.js' %}"></script>
 </div>
-{% endblock content %}
+{% endblock %}
