@@ -1,0 +1,151 @@
+:root {
+  --accent-color: #1e90ff;
+  --accent-text: #ffffff;
+  --user-font-size: 16px;
+  --bg-main: #ffffff;
+  --text-main: #000000;
+  --border-color: #dee2e6;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --sidebar-bg: #f8f9fa;
+  --sidebar-text: #212529;
+  --sidebar-hover: #e9ecef;
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg-main: #ffffff;
+  --text-main: #000000;
+  --border-color: #dee2e6;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --sidebar-bg: #f8f9fa;
+  --sidebar-text: #212529;
+  --sidebar-hover: #e9ecef;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-main: #1a1a1a;
+  --text-main: #ffffff;
+  --border-color: #404040;
+  --bg-card: #2d2d2d;
+  --bg-input: #333333;
+  --sidebar-bg: #2d2d2d;
+  --sidebar-text: #ffffff;
+  --sidebar-hover: #404040;
+}
+
+/* System theme */
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --bg-main: #1a1a1a;
+    --text-main: #ffffff;
+    --border-color: #404040;
+    --bg-card: #2d2d2d;
+    --bg-input: #333333;
+    --sidebar-bg: #2d2d2d;
+    --sidebar-text: #ffffff;
+    --sidebar-hover: #404040;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --bg-main: #ffffff;
+    --text-main: #000000;
+    --border-color: #dee2e6;
+    --bg-card: #ffffff;
+    --bg-input: #ffffff;
+    --sidebar-bg: #f8f9fa;
+    --sidebar-text: #212529;
+    --sidebar-hover: #e9ecef;
+  }
+}
+
+/* High contrast modifications */
+.high-contrast {
+  --bg-main: #000000;
+  --text-main: #ffffff;
+  --border-color: #ffffff;
+  --bg-card: #1a1a1a;
+  --bg-input: #000000;
+  --sidebar-bg: #000000;
+  --sidebar-text: #ffffff;
+  --sidebar-hover: #333333;
+}
+
+/* Apply variables */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+.form-control,
+.form-select {
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--bg-input);
+  color: var(--text-main);
+  border-color: var(--accent-color);
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--accent-text);
+}
+
+.sidebar {
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+}
+
+.sidebar .nav-link {
+  color: var(--sidebar-text);
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--sidebar-hover);
+}
+
+.table {
+  color: var(--text-main);
+}
+
+.modal-content {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+}
+
+/* Ensure text remains readable */
+.text-dark {
+  color: var(--text-main) !important;
+}
+.text-body {
+  color: var(--text-main) !important;
+}
+a {
+  color: var(--accent-color);
+}
+a:hover {
+  color: var(--accent-color);
+  filter: brightness(120%);
+}
+
+/* High contrast focus states */
+.high-contrast .form-control:focus,
+.high-contrast .form-select:focus {
+  box-shadow: 0 0 0 3px #ffffff;
+}

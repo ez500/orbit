@@ -1,0 +1,192 @@
+/* Settings Page Styles */
+.settings-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.settings-header {
+  margin-bottom: 2rem;
+}
+
+/* Appearance Tab Styles */
+.appearance-section {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.appearance-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.theme-option {
+  position: relative;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--card-bg);
+}
+
+.theme-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.theme-option.active {
+  border-color: var(--accent-color);
+  background: var(--accent-color);
+  color: var(--accent-text);
+}
+
+.theme-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.theme-option-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.theme-option-label {
+  font-weight: 500;
+  display: block;
+  text-align: center;
+}
+
+/* Color Scheme Section */
+.color-schemes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.color-option {
+  position: relative;
+  text-align: center;
+}
+
+.color-swatch {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  margin: 0 auto 0.5rem;
+  cursor: pointer;
+  border: 2px solid var(--border-color);
+  transition: transform 0.2s ease;
+  position: relative;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-option input[type="radio"]:checked + .color-swatch {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.color-option input[type="radio"]:checked + .color-swatch::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Accessibility Options */
+.accessibility-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.accessibility-option {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.accessibility-option label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.accessibility-option select,
+.accessibility-option input[type="checkbox"] {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+/* Preview Section */
+.preview-section {
+  margin-top: 2rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+}
+
+.preview-content {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-text {
+  flex: 1;
+}
+
+.preview-elements {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Transition Effects */
+.theme-option,
+.color-swatch,
+.accessibility-option,
+.preview-section {
+  transition: all 0.3s ease;
+}
+
+/* Save Bar */
+.settings-save-bar {
+  position: sticky;
+  bottom: 0;
+  background: var(--card-bg);
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+}

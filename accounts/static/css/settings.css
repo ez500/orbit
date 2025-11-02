@@ -1,0 +1,472 @@
+:root {
+  /* Theme colors */
+  --accent-color: #1e90ff;
+  --accent-text: #ffffff;
+  --theme-mode: dark;
+
+  /* Sidebar specific */
+  --sidebar-bg: #1a1a1a;
+  --sidebar-text: #ffffff;
+  --sidebar-hover: rgba(255, 255, 255, 0.1);
+  --sidebar-active: var(--accent-color);
+  --sidebar-border: #333333;
+
+  /* Header specific */
+  --header-bg: #2d2d2d;
+  --header-text: #ffffff;
+  --header-border: #404040;
+
+  /* Search bar */
+  --search-bg: #333333;
+  --search-text: #ffffff;
+  --search-placeholder: #808080;
+  --search-border: #404040;
+}
+
+.theme-dark {
+  /* Main theme colors */
+  --bg-color: #1a1a1a;
+  --text-color: #ffffff;
+  --text-muted: #a0a0a0;
+
+  /* Card and container colors */
+  --card-bg: #2d2d2d;
+  --card-border: #404040;
+
+  /* Form controls */
+  --input-bg: #333;
+  --input-border: #404040;
+  --input-text: #ffffff;
+  --input-placeholder: #808080;
+
+  /* Links and accents */
+  --link-color: #66b3ff;
+  --link-hover: #99ccff;
+
+  /* Sidebar specific */
+  --sidebar-bg: #1a1a1a;
+  --sidebar-text: #ffffff;
+  --sidebar-hover: rgba(255, 255, 255, 0.1);
+  --sidebar-border: #333333;
+
+  /* Header specific */
+  --header-bg: #2d2d2d;
+  --header-text: #ffffff;
+  --header-border: #404040;
+
+  /* Search bar */
+  --search-bg: #333333;
+  --search-text: #ffffff;
+  --search-placeholder: #808080;
+  --search-border: #404040;
+}
+
+.theme-light {
+  /* Main theme colors */
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --text-muted: #666666;
+
+  /* Card and container colors */
+  --card-bg: #ffffff;
+  --card-border: #dee2e6;
+
+  /* Form controls */
+  --input-bg: #ffffff;
+  --input-border: #ced4da;
+  --input-text: #000000;
+  --input-placeholder: #6c757d;
+
+  /* Links and accents */
+  --link-color: #0056b3;
+  --link-hover: #003d80;
+
+  /* Sidebar specific */
+  --sidebar-bg: #f8f9fa;
+  --sidebar-text: #212529;
+  --sidebar-hover: rgba(0, 0, 0, 0.05);
+  --sidebar-border: #dee2e6;
+
+  /* Header specific */
+  --header-bg: #ffffff;
+  --header-text: #212529;
+  --header-border: #dee2e6;
+
+  /* Search bar */
+  --search-bg: #ffffff;
+  --search-text: #212529;
+  --search-placeholder: #6c757d;
+  --search-border: #ced4da;
+}
+.high-contrast {
+  --text-color: #ffffff;
+  --text-muted: #ffffff;
+  --bg-color: #000000;
+  --card-bg: #000000;
+  --card-border: #ffffff;
+  --input-border: #ffffff;
+  --input-text: #ffffff;
+  --link-color: #ffffff;
+  --link-hover: #ffffff;
+}
+
+/* Base styles */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Cards */
+.card {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Form controls */
+.form-control,
+.form-select {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border-color: var(--input-border);
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+
+.form-control::placeholder {
+  color: var(--input-placeholder);
+}
+
+.form-text,
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--accent-text);
+}
+
+.btn-primary:hover {
+  filter: brightness(85%);
+}
+
+.btn-outline-secondary {
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--text-muted);
+  color: var(--bg-color);
+}
+
+/* Navigation */
+.nav-pills .nav-link {
+  color: var(--text-color);
+}
+
+.nav-pills .nav-link:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+.nav-pills .nav-link.active {
+  background-color: var(--accent-color);
+  color: var(--accent-text);
+}
+
+/* Links */
+a {
+  color: var(--link-color);
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+/* High contrast enhancements */
+.high-contrast .btn-primary {
+  box-shadow: 0 0 0 2px #fff inset;
+}
+
+.high-contrast .form-control,
+.high-contrast .form-select {
+  border-width: 2px;
+}
+
+/* Accent color grid layout */
+.accent-colors-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.accent-color-option {
+  position: relative;
+  cursor: pointer;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.accent-color-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent-color);
+}
+
+.accent-color-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.color-swatch {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  position: relative;
+  transition: transform 0.2s;
+  border: 2px solid transparent;
+}
+
+.accent-color-option:hover .color-swatch {
+  transform: scale(1.1);
+}
+
+.accent-color-option input[type="radio"]:checked + .color-swatch {
+  border-color: var(--text-color);
+}
+
+.accent-color-option input[type="radio"]:checked + .color-swatch::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--accent-text);
+  font-size: 1.2rem;
+}
+
+.color-name {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.mockup-card {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.mockup-btn {
+  background: var(--accent-color);
+  color: var(--accent-text);
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.accent-color-option.active {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.accent-color-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Ensure text is always legible */
+.settings-container {
+  color: var(--text-color) !important;
+}
+
+.card-title,
+.form-label {
+  color: var(--text-color) !important;
+  font-weight: 600;
+}
+
+.form-text {
+  color: var(--text-muted) !important;
+  opacity: 0.9;
+}
+
+.mockup-input {
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.mockup-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  text-align: center;
+}
+
+.accent-color-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.accent-color-option.active {
+  box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.accent-color-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.accent-color-label {
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+/* Accent color text adjustments */
+[data-color="#FFD700"] .mockup-btn,  /* Gold */
+[data-color="#FFFF00"] .mockup-btn {
+  /* Yellow */
+  color: #000000 !important;
+}
+
+/* Light color backgrounds need dark text */
+[data-color="#FFD700"],  /* Gold */
+[data-color="#FFFF00"] {
+  /* Yellow */
+  --accent-text: #000000;
+}
+
+/* Sidebar styling */
+.sidebar {
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  color: var(--sidebar-text);
+  transition: all 0.3s ease;
+}
+
+.sidebar .nav-link {
+  color: var(--sidebar-text);
+  transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--sidebar-hover);
+}
+
+.sidebar .nav-link.active {
+  background-color: var(--sidebar-active);
+  color: var(--accent-text);
+}
+
+/* Search bar styling */
+.search-bar {
+  background-color: var(--search-bg);
+  border: 1px solid var(--search-border);
+  color: var(--search-text);
+}
+
+.search-bar::placeholder {
+  color: var(--search-placeholder);
+}
+
+/* Header styling */
+.navbar {
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+}
+
+.navbar-brand {
+  color: var(--header-text);
+}
+
+.navbar .nav-link {
+  color: var(--header-text);
+}
+
+/* Team chats section */
+.team-chats {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-color);
+}
+
+.team-chat-item {
+  border-bottom: 1px solid var(--card-border);
+  transition: background-color 0.3s ease;
+}
+
+.team-chat-item:hover {
+  background-color: var(--sidebar-hover);
+}
+
+/* Logo and branding */
+.logo-text {
+  color: var(--header-text);
+}
+
+/* Misc UI elements */
+.dropdown-menu {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+}
+
+.dropdown-item {
+  color: var(--text-color);
+}
+
+.dropdown-item:hover {
+  background-color: var(--sidebar-hover);
+}
+
+/* High contrast mode overrides */
+.high-contrast {
+  --sidebar-bg: #000000;
+  --sidebar-text: #ffffff;
+  --sidebar-hover: rgba(255, 255, 255, 0.2);
+  --sidebar-border: #ffffff;
+  --header-bg: #000000;
+  --header-text: #ffffff;
+  --header-border: #ffffff;
+  --search-bg: #000000;
+  --search-text: #ffffff;
+  --search-border: #ffffff;
+}
+
+.high-contrast .sidebar .nav-link.active {
+  box-shadow: 0 0 0 2px #fff inset;
+}
+
+/* Global transitions */
+.sidebar,
+.navbar,
+.card,
+.form-control,
+.btn,
+.nav-link {
+  transition: all 0.3s ease;
+}

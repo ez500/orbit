@@ -10,6 +10,7 @@ def create_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
+    # Ensure a Profile exists for the user, but avoid saving the profile on every
+    # user post_save (which can cause unexpected UPDATEs and integrity errors).
     Profile.objects.get_or_create(user=instance)
-    instance.profile.save()
 
