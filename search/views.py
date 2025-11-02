@@ -1,69 +1,94 @@
-from django.shortcuts import render
-from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.shortcuts import render
+
 from accounts.models import Profile
 from teams.models import Team
-from home.models import Company
+#from home.models import Company
 from projects.models import Project
 
 
 @login_required
 def search_results(request):
-    """
-    Universal Search View
-    ---------------------
-    - Searches across Users (Profiles), Teams, Companies, and Projects.
-    - If no query is entered, shows all items.
-    - Handles related User fields correctly (user__username, etc.).
-    """
-
     query = request.GET.get("q", "").strip()
 
-    # If query is empty → show all
+    # === USERS (Profiles) ===
     if not query:
         users = Profile.objects.all().order_by("id")
-        teams = Team.objects.all().order_by("id")
-        companies = Company.objects.all().order_by("id")
-        projects = Project.objects.all().order_by("id")
-
     else:
-        # ===== Users (Profiles) =====
+        # Step 1: Find matching users in the User model
+        user_matches = User.objects.filter(
+            Q(username__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(last_name__icontains=query)
+            | Q(email__icontains=query)
+        ).values_list("id", flat=True)
+
+        # Step 2: Find matching profiles
         users = Profile.objects.filter(
-            Q(user__username__icontains=query)
-            | Q(user__first_name__icontains=query)
-            | Q(user__last_name__icontains=query)
-            | Q(user__email__icontains=query)
+            Q(user_id__in=user_matches)
             | Q(bio__icontains=query)
             | Q(location__icontains=query)
         ).order_by("id")
 
-        # ===== Teams =====
+    # === TEAMS ===
+    if not query:
+        teams = Team.objects.all().order_by("id")
+    else:
         teams = Team.objects.filter(
-            Q(name__icontains=query) | Q(description__icontains=query)
+            Q(name__icontains=query)
+            | Q(description__icontains=query)
         ).order_by("id")
 
-        # ===== Companies =====
+    # === COMPANIES ===
+    #if not query:
+        #companies = Company.objects.all().order_by("id")
+    #else:
         #companies = Company.objects.filter(
-            #Q(name__icontains=query) | Q(description__icontains=query)
+            #Q(name__icontains=query)
+            #| Q(address__icontains=query)
+            #| Q(email__icontains=query)
+            #| Q(phone__icontains=query)
         #).order_by("id")
 
-        # ===== Projects =====
+    # === PROJECTS ===
+    if not query:
+        projects = Project.objects.all().order_by("id")
+    else:
+        # Reuse user_matches/profile_matches from above
+        user_matches = User.objects.filter(
+            Q(username__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(last_name__icontains=query)
+            | Q(email__icontains=query)
+        ).values_list("id", flat=True)
+
+        profile_matches = Profile.objects.filter(
+            user_id__in=user_matches
+        ).values_list("id", flat=True)
+
         projects = Project.objects.filter(
             Q(name__icontains=query)
             | Q(description__icontains=query)
-            | Q(lead__user__username__icontains=query)
-            | Q(lead__user__first_name__icontains=query)
-            | Q(lead__user__last_name__icontains=query)
-        ).order_by("id")
+            | Q(lead_id__in=profile_matches)
+            | Q(collaborators__in=profile_matches)
+        ).distinct().order_by("id")
 
-    # ===== Context for template =====
+    # === Combine results for pagination ===
+    queryset = list(users) + list(teams) + list(projects) #companies awaiting to be added
+    paginator = Paginator(queryset, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     context = {
         "query": query,
         "users": users,
         "teams": teams,
-        "companies": companies,
+        #"companies": companies,
         "projects": projects,
+        "page_obj": page_obj,
     }
 
     return render(request, "search/results.html", context)
-
