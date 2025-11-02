@@ -42,23 +42,52 @@ class UpdateUserForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
 
-# TODO MANAGE THEME, NOTIFICATION PREFERENCES SEPARATELY
 class UpdateProfileForm(forms.ModelForm):
     bio = forms.CharField(label='Bio', max_length=127, required=False)
     profile_picture = forms.ImageField(label='Profile Picture', required=False)
     location = forms.CharField(label='Location', max_length=100, required=False)
     website = forms.URLField(label='Website', required=False)
-    # theme_color = forms.ChoiceField(label='Theme Color')
-    # accent_color = forms.ChoiceField(label='Accent Color')
-    visibility = forms.ChoiceField(label='Profile Visibility',
-                                   choices=[(tag.name, tag.value) for tag in Profile.Visibility],
-                                   initial=Profile.Visibility.PUBLIC.name)
-    # notification_email = forms.BooleanField()
-    # notification_web = forms.BooleanField()
+    theme_color = forms.ChoiceField(
+        label='Theme Color', 
+        choices=Profile.THEME_CHOICES, 
+        initial='dark',
+        required=False
+    )
+    accent_color = forms.ChoiceField(
+        label='Accent Color', 
+        choices=Profile.ACCENT_CHOICES, 
+        initial='#1E90FF',
+        required=False
+    )
+    visibility = forms.ChoiceField(
+        label='Profile Visibility',
+        choices=[(tag.name, tag.value) for tag in Profile.Visibility],
+        initial=Profile.Visibility.PUBLIC.name
+    )
+    # Accessibility / appearance preferences
+    high_contrast = forms.BooleanField(label='High Contrast', required=False)
+    font_size = forms.ChoiceField(
+        label='Font size', 
+        choices=Profile.FONT_SIZE_CHOICES, 
+        initial='medium',
+        required=False
+    )
+    spacing = forms.ChoiceField(
+        label='Spacing', 
+        choices=Profile.SPACING_CHOICES, 
+        initial='normal',
+        required=False
+    )
+    notification_email = forms.BooleanField(label='Email Notifications', required=False, initial=True)
+    notification_web = forms.BooleanField(label='Web Notifications', required=False, initial=True)
 
     class Meta:
         model = Profile
-        fields = ['bio', 'profile_picture', 'location', 'website', 'visibility']
+        fields = [
+            'bio', 'profile_picture', 'location', 'website', 'visibility',
+            'theme_color', 'accent_color', 'high_contrast', 'font_size', 'spacing',
+            'notification_email', 'notification_web'
+        ]
         widgets = {
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'profile_picture': forms.FileInput(attrs={'class': 'form-control'}),
@@ -67,6 +96,13 @@ class UpdateProfileForm(forms.ModelForm):
             # 'theme_color': forms.Select(attrs={'class': 'form-select'}),
             # 'accent_color': forms.RadioSelect(attrs={'class': 'accent-color-select'}),
             'visibility': forms.Select(attrs={'class': 'form-select'}),
+            'theme_color': forms.Select(attrs={'class': 'form-select'}),
+            'accent_color': forms.RadioSelect(attrs={'class': 'accent-color-select'}),
+            'high_contrast': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'font_size': forms.Select(attrs={'class': 'form-select'}),
+            'spacing': forms.Select(attrs={'class': 'form-select'}),
+            'notification_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'notification_web': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             # 'notification_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             # 'notification_web': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
