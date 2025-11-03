@@ -129,7 +129,7 @@ contactForm.addEventListener("submit", async function (event) {
                 console.error("Error:", error);
                 document.getElementById("form-message-warning").innerHTML = "Something went wrong. Please try again.";
                 fadeIn(document.getElementById("form-message-warning"), "block");
-                submit.setAttribute("display", "none");
+                submit.setAttribute("style", "display: none");
             }
         }
     }
