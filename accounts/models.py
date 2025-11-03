@@ -46,8 +46,8 @@ class Profile(models.Model):
     website = models.URLField(blank=True)
     connections = models.ManyToManyField('self')
     companies = models.ManyToManyField("company.Company")
-    projects = models.ManyToManyField("home.Project")
-    tasks = models.ManyToManyField("home.Task")
+    projects = models.ManyToManyField("projects.Project")
+    tasks = models.ManyToManyField("dashboard.Task")
     theme_color = models.CharField(max_length=20, choices=THEME_CHOICES, default='dark')
     accent_color = models.CharField(max_length=7, choices=ACCENT_CHOICES, default='#1E90FF')
     visibility = models.CharField(max_length=20, choices=[(tag.name, tag.value) for tag in Visibility],

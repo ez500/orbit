@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Task
 
+
 class TaskViewSerializer(serializers.ModelSerializer):
     users = serializers.ListField(child=serializers.IntegerField())
 
@@ -8,7 +9,8 @@ class TaskViewSerializer(serializers.ModelSerializer):
         model = Task
         fields = ['id', 'title', 'content', 'team', 'deadline', 'pub_date', 'status', 'project', 'users']
         depth = 1
-        
+
+
 class TaskCreateSerializer(serializers.ModelSerializer):
     users = serializers.ListField(
         child=serializers.IntegerField(), write_only=True
@@ -23,4 +25,4 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         task = Task.objects.create(**validated_data)
         task.users = users  # Assuming your model supports assigning list directly
         task.save()
-        return task 
+        return task
