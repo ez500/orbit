@@ -9,8 +9,8 @@ class Company(models.Model):
     profile_picture = models.ImageField(upload_to='company_profile_pictures', default='default_company.png')
     email = models.EmailField(blank=True, unique=True)
     website = models.URLField(blank=True)
-    phone = models.CharField(blank=True)
-    location = models.CharField(max_length=200)
+    phone = models.CharField(blank=True, max_length=20)
+    location = models.CharField(max_length=200, blank=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owner_set')
     members = models.ManyToManyField(User, through='CompanyMembership')
 

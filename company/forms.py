@@ -1,6 +1,4 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, SetPasswordMixin
-from django.contrib.auth.forms import PasswordChangeForm as DefaultChangePasswordForm
 
 from .models import Company
 from .validators import validate_email

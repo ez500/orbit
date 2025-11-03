@@ -1,5 +1,3 @@
-from typing import Any
-
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -14,7 +12,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView, DetailView, ListView
-from django.views.generic.detail import SingleObjectMixin
 
 from accounts import models
 from accounts.forms import RegistrationForm, UpdateUserForm, UpdateProfileForm, ChangePasswordForm

@@ -1,7 +1,8 @@
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+
+from company.models import Company
 
 
 def validate_email(value):
-    if User.objects.filter(email=value).exists():
+    if Company.objects.filter(email=value).exists():
         raise ValidationError(f'{value} is already taken.')
