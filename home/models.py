@@ -31,16 +31,6 @@ class Event(models.Model):
    datetime = models.DateTimeField(max_length=200)
    users = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
 
-class Company(models.Model):
-   id = models.IntegerField(primary_key=True)
-   name = models.CharField(max_length=200)
-   email = models.EmailField(unique=True)
-   phone = models.CharField(max_length=15)
-   address = models.CharField(max_length=200)
-   owner = models.IntegerField()
-   admins = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
-   users = ArrayField(models.IntegerField(), blank=True, default=list) #ArrayField only works with PostgreSQL
-
 class Project(models.Model):
    id = models.IntegerField(primary_key=True)
    name = models.CharField(max_length=200)

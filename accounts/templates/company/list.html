@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <!-- Header / About card -->
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <h2 class="me-auto text-start mb-0">{{ profile }}'s Company Info</h2>
+                {% if profile.user == user %}
+                    <a href="{% url 'company:register' %}" class="btn btn-primary">
+                        Register Company
+                    </a>
+                {% endif %}
+                <a href="{% url 'accounts:profile_view' profile %}" class="btn btn-outline-primary ms-2">
+                    Back to Profile
+                </a>
+            </div>
+        </div>
+    </div>
+    {% if can_view %}
+        <!-- Companies -->
+        {% if companies %}
+            {% for company in companies %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <p class="me-auto text-start mb-0">{{ company }}</p>
+                            {% if company.website %}
+                                <a href="{{ company.website }}" class="btn btn-secondary ms-2">
+                                    Website
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'company:company' company %}" class="btn btn-secondary ms-2">
+                                View Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="card">
+                {{ profile }} is not part of any companies yet.
+            </p>
+        {% endif %}
+    {% else %}
+        <div class="card">
+            <div class="card-body">
+                <p><b>{{ profile }}'s profile is private.</b></p>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

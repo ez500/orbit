@@ -2,7 +2,10 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, SetPasswordMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import PasswordChangeForm as DefaultChangePasswordForm
+
 from .models import Profile
+from .validators import validate_email
+
 
 class RegistrationForm(UserCreationForm):
     first_name = forms.CharField(
@@ -16,31 +19,35 @@ class RegistrationForm(UserCreationForm):
     email = forms.EmailField(
         label='E-mail',
         max_length=254,
-        help_text='Required. Must be a valid E-mail address.',
+        help_text='Must be a valid E-mail address.',
+        validators=[validate_email]
     )
 
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2']
 
+
 class UpdateUserForm(forms.ModelForm):
-   first_name = forms.CharField(
+    first_name = forms.CharField(
         label='First Name',
         max_length=30,
         required=False,
         widget=forms.TextInput(attrs={'autofocus': 'autofocus'})
     )
-   last_name = forms.CharField(label='Last Name', max_length=30, required=False)
-   username = forms.CharField(label='Username', max_length=150)
-   email = forms.CharField(
+    last_name = forms.CharField(label='Last Name', max_length=30, required=False)
+    username = forms.CharField(label='Username', max_length=150)
+    email = forms.CharField(
         label='E-mail',
         max_length=254,
-        help_text='Required. Must be a valid E-mail address.',
+        help_text='Must be a valid E-mail address.',
+        validators=[validate_email]
     )
 
-   class Meta:
+    class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
+
 
 # TODO MANAGE THEME, NOTIFICATION PREFERENCES SEPARATELY
 class UpdateProfileForm(forms.ModelForm):
@@ -70,6 +77,7 @@ class UpdateProfileForm(forms.ModelForm):
             # 'notification_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             # 'notification_web': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
+
 
 class ChangePasswordForm(DefaultChangePasswordForm):
     old_password = forms.CharField(
