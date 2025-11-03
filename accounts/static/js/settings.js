@@ -162,8 +162,9 @@
       form.querySelector('[name="font_size"]').value = defaults.font_size;
       form.querySelector('[name="spacing"]').value = defaults.spacing;
 
-      // Apply preview
+      // Apply preview and dispatch event
       applyPreview(defaults);
+      window.dispatchEvent(new CustomEvent("themeupdate", { detail: defaults }));
     });
   }
 
@@ -192,18 +193,6 @@
   // Call initialize after DOM is loaded and when form values change
   document.addEventListener("DOMContentLoaded", initializeUI);
 
-  // Function to save and apply theme
-  function saveAndApplyTheme(themeData) {
-    // Save to localStorage
-    localStorage.setItem("theme", JSON.stringify(themeData));
-
-    // Apply theme immediately
-    applyPreview(themeData);
-
-    // Trigger a theme update event for other pages
-    window.dispatchEvent(new CustomEvent("themeupdate", { detail: themeData }));
-  }
-
   // Save settings with visual feedback
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -223,24 +212,19 @@
       "csrfmiddlewaretoken",
       formData.get("csrfmiddlewaretoken")
     );
-    [
-      "theme_color",
-      "accent_color",
-      "high_contrast",
-      "font_size",
-      "spacing",
-    ].forEach((field) => {
-      const formElement = form.elements[field];
-      if (formElement) {
-        const value =
-          formElement.type === "checkbox"
-            ? formElement.checked
-            : formElement.value;
-        appearanceData.append(field, value);
-      }
-    });
 
-    // Log the data being sent
+    // Get current values properly
+    const themeValues = getCurrentValues();
+
+    // Append each field
+    appearanceData.append("theme_color", themeValues.theme_color);
+    appearanceData.append("accent_color", themeValues.accent_color);
+    appearanceData.append("high_contrast", themeValues.high_contrast);
+    appearanceData.append("font_size", themeValues.font_size);
+    appearanceData.append("spacing", themeValues.spacing);
+
+    // Log the data being sent for debugging
+    console.log("=== Saving theme settings ===");
     for (let pair of appearanceData.entries()) {
       console.log(pair[0] + ": " + pair[1]);
     }
@@ -266,7 +250,13 @@
       .then((data) => {
         // Save theme to localStorage
         const themeValues = getCurrentValues();
+        console.log("=== Theme saved successfully ===");
+        console.log("Saved values:", themeValues);
         localStorage.setItem("theme", JSON.stringify(themeValues));
+
+        // Dispatch themeupdate event to notify other pages/tabs
+        console.log("Dispatching themeupdate event...");
+        window.dispatchEvent(new CustomEvent("themeupdate", { detail: themeValues }));
 
         // Show success message
         const alertHtml = `

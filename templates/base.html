@@ -134,7 +134,7 @@
     {% block extra_js %}{% endblock %} {% if user.is_authenticated %}
     <script>
       // Initialize theme data from Django template context
-      const themeData = {
+      const serverThemeData = {
         theme_color: "{{ user.profile.theme_color|default:'dark' }}",
         accent_color: "{{ user.profile.accent_color|default:'#1E90FF' }}",
         high_contrast: {% if user.profile.high_contrast %}true{% else %}false{% endif %},
@@ -143,10 +143,17 @@
       };
 
       // Store theme data globally
-      window.THEME_DATA = themeData;
+      window.THEME_DATA = serverThemeData;
 
-      // Apply theme immediately
-      window.dispatchEvent(new CustomEvent('themeupdate', { detail: themeData }));
+      // Only apply server theme if localStorage doesn't have a theme
+      // This prevents overwriting user's unsaved changes
+      const savedTheme = localStorage.getItem('theme');
+      if (!savedTheme) {
+        console.log("[base.html] No localStorage theme, using server data:", serverThemeData);
+        localStorage.setItem('theme', JSON.stringify(serverThemeData));
+      } else {
+        console.log("[base.html] localStorage theme exists, skipping server data dispatch");
+      }
     </script>
     {% endif %}
   </body>

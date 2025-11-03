@@ -22,12 +22,14 @@
   }
 
   function applyTheme(themeData) {
+    console.log("[theme.js] Applying theme:", themeData);
+
     // Clean up existing classes
     document.documentElement.classList.remove('theme-dark', 'theme-light', 'theme-system', 'high-contrast');
-    
+
     // Apply theme mode
-    const isDark = themeData.theme_color === 'dark' || 
-                  (themeData.theme_color === 'system' && 
+    const isDark = themeData.theme_color === 'dark' ||
+                  (themeData.theme_color === 'system' &&
                    window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     // Set theme attributes
@@ -81,7 +83,10 @@
     document.body.style.display = '';
 
     // Store theme in localStorage
-    localStorage.setItem('theme', JSON.stringify(themeData));  // Update UI elements to reflect current theme
+    localStorage.setItem('theme', JSON.stringify(themeData));
+  }
+
+  // Update UI elements to reflect current theme
   function updateThemeUI(themeData) {
     // Update theme option buttons
     document.querySelectorAll(".theme-option").forEach((option) => {
@@ -107,7 +112,9 @@
     if (preview) {
       preview.style.setProperty("--preview-accent", themeData.accent_color);
     }
-  } // Initialize theme from localStorage or server-side data
+  }
+
+  // Initialize theme from localStorage or server-side data
   function initializeTheme() {
     let themeData;
     try {
@@ -115,7 +122,9 @@
       const savedTheme = localStorage.getItem("theme");
       if (savedTheme) {
         themeData = JSON.parse(savedTheme);
+        console.log("[theme.js] Initializing from localStorage:", themeData);
       } else {
+        console.log("[theme.js] No localStorage, using server defaults");
         // Fall back to server-side data embedded in the page
         themeData = {
           theme_color:
@@ -140,6 +149,7 @@
   window.addEventListener("themeupdate", (event) => {
     try {
       const themeData = event.detail;
+      console.log("[theme.js] Received themeupdate event:", themeData);
       applyTheme(themeData);
       localStorage.setItem("theme", JSON.stringify(themeData));
     } catch (e) {
