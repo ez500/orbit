@@ -11,11 +11,12 @@ from django.http import Http404, JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
-from django.views.generic import CreateView, DetailView
+from django.views.generic import CreateView, DetailView, ListView
 
 from accounts import models
 from accounts.forms import RegistrationForm, UpdateUserForm, UpdateProfileForm, ChangePasswordForm
 from accounts.models import Profile
+from company.models import Company
 from teams.models import Team
 
 
@@ -60,6 +61,7 @@ class UserPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'accounts/password_reset_done.html'
     extra_context = {'title': 'Successful Password Reset'}
 
+
 class ProfileView(LoginRequiredMixin, DetailView):
     model = Profile
     template_name = "accounts/profile.html"
@@ -71,7 +73,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
         context['title'] = f'{profile}\'s Profile'
         context['connections'] = profile.connections.all()
-        context['companies'] = profile.companies.all()
+        context['companies'] = Company.objects.filter(members=profile.user).order_by("name")
         context['teams'] = Team.objects.filter(members=profile.user).order_by("name")
         context['projects'] = profile.projects.all()
         context['can_view'] = self.can_view_private_info()
@@ -109,6 +111,55 @@ class ProfileView(LoginRequiredMixin, DetailView):
         return searched_is_public or requesting_is_staff or is_connection or is_self
 
 
+class CompanyListView(LoginRequiredMixin, ListView):
+    context_object_name = "companies"
+    template_name = "company/list.html"
+    paginate_by = 10
+
+    def get_object(self):
+        return get_object_or_404(Profile, user__username=self.kwargs['username'])
+
+    def get_queryset(self):
+        return Company.objects.filter(members=self.get_object().user).order_by("name")
+
+    def get_context_data(self, **kwargs):
+        profile = self.get_object()
+        context = super().get_context_data(**kwargs)
+
+        context['profile'] = profile
+        context['title'] = f'{profile}\'s Company Info'
+        context['can_view'] = self.can_view_private_info()
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.can_access():
+            raise Http404(
+                "User %s is hidden." % self.kwargs['username']
+            )
+        return super().dispatch(request, *args, **kwargs)
+
+    def can_access(self):
+        searched_profile = self.get_object()
+        requesting_user = self.request.user
+
+        searched_is_visible = searched_profile.visibility != models.Profile.Visibility.HIDDEN.name
+        requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
+        is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
+        is_self = requesting_user.profile == searched_profile
+        return searched_is_visible or requesting_is_staff or is_connection or is_self
+
+    def can_view_private_info(self):
+        searched_profile = self.get_object()
+        requesting_user = self.request.user
+
+        searched_is_public = searched_profile.visibility == models.Profile.Visibility.PUBLIC.name
+        requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
+        is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
+        is_self = requesting_user.profile == searched_profile
+        return searched_is_public or requesting_is_staff or is_connection or is_self
+
+
+# TODO DELETE USER ACCOUNT VIEW/CONFIG
 @login_required
 def edit_user_profile(request):
     if request.method == 'POST':
@@ -136,6 +187,7 @@ def edit_user_profile(request):
         'password_form': password_form
     })
 
+
 @login_required
 def settings(request):
     if request.method == 'POST':
@@ -143,7 +195,7 @@ def settings(request):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             profile = request.user.profile
             data = {}
-            
+
             # Only update the appearance fields we receive
             for field in ['theme_color', 'accent_color', 'high_contrast', 'font_size', 'spacing']:
                 if field in request.POST:
@@ -154,7 +206,7 @@ def settings(request):
                     data[field] = value
                 else:
                     data[field] = getattr(profile, field)
-            
+
             try:
                 profile.save(update_fields=list(data.keys()))
                 return JsonResponse({
@@ -170,7 +222,7 @@ def settings(request):
                     'status': 'error',
                     'message': 'Failed to save settings: ' + str(e),
                 }, status=400)
-        
+
         # For regular form submission, handle both user and profile forms
         user_form = UpdateUserForm(request.POST, instance=request.user)
         profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
@@ -199,6 +251,7 @@ def settings(request):
         'title': 'Settings'
     })
 
+
 @login_required
 @require_http_methods(['POST'])
 def search(request):
@@ -216,6 +269,7 @@ def search(request):
         'user_search_query': user_search_query, 'users_found': users_found}
     return render(request, 'accounts/_search.html', context)
 
+
 @login_required
 def add_connection(request, username):
     if request.method == 'POST':
@@ -227,6 +281,7 @@ def add_connection(request, username):
             profile.connections.add(request.user.profile)
             messages.success(request, f'{profile} is now a connection.')
     return redirect('accounts:profile_view', username=username)
+
 
 @login_required
 def remove_connection(request, username):

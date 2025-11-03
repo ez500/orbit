@@ -23,9 +23,13 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include("accounts.urls")),
+    path('company/', include("company.urls")),
     path("teams/", include("teams.urls", namespace="teams")),
     path("search/", include("search.urls", namespace="search")),
-    path('', include("home.urls"))
+    path("projects/", include("projects.urls", namespace="projects")),
+    path('', include("home.urls")),
+    path("message/", include("message.urls", namespace="message")),
+    #path('', include("home.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Serve static files during development

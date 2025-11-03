@@ -45,19 +45,19 @@ class Profile(models.Model):
     location = models.CharField(max_length=100, blank=True)
     website = models.URLField(blank=True)
     connections = models.ManyToManyField('self')
-    companies = models.ManyToManyField("home.Company")
+    companies = models.ManyToManyField("company.Company")
     projects = models.ManyToManyField("home.Project")
     tasks = models.ManyToManyField("home.Task")
     theme_color = models.CharField(
-        max_length=20, 
-        choices=THEME_CHOICES, 
+        max_length=20,
+        choices=THEME_CHOICES,
         default='dark',
         blank=True,
         help_text='User interface theme preference'
     )
     accent_color = models.CharField(
-        max_length=7, 
-        choices=ACCENT_CHOICES, 
+        max_length=7,
+        choices=ACCENT_CHOICES,
         default='#1E90FF',
         blank=True,
         help_text='Accent color for UI elements'
@@ -74,8 +74,8 @@ class Profile(models.Model):
         ('large', 'Large'),
     ]
     font_size = models.CharField(
-        max_length=10, 
-        choices=FONT_SIZE_CHOICES, 
+        max_length=10,
+        choices=FONT_SIZE_CHOICES,
         default='medium',
         blank=True,
         help_text='Preferred text size'
@@ -87,8 +87,8 @@ class Profile(models.Model):
         ('relaxed', 'Relaxed'),
     ]
     spacing = models.CharField(
-        max_length=10, 
-        choices=SPACING_CHOICES, 
+        max_length=10,
+        choices=SPACING_CHOICES,
         default='normal',
         blank=True,
         help_text='Text and element spacing preference'

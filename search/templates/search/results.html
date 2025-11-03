@@ -1,81 +1,158 @@
 {% extends "base.html" %}
 {% load static %}
-{% block content %}
-<div class="container py-4">
-  <h1 class="mb-3">Search</h1>
-  <form method="get" class="row g-2 align-items-end mb-4">
-    <div class="col-md-6">{{ form.q.label_tag }}{{ form.q }}</div>
-    <div class="col-md-2">{{ form.team.label_tag }}{{ form.team }}</div>
-    <div class="col-md-2">{{ form.company.label_tag }}{{ form.company }}</div>
-    <div class="col-md-2">{{ form.project.label_tag }}{{ form.project }}</div>
-    <div class="col-12">
-      <button class="btn btn-primary">Search</button>
-      <a class="btn btn-outline-secondary" href="{% url 'search:results' %}">Reset</a>
-    </div>
-  </form>
 
-  {% if q or form.team.value or form.company.value or form.project.value %}
-  <p class="text-muted">Showing results for <strong>{{ q|default:'(no keywords)' }}</strong></p>
+{% block content %}
+<div class="container-fluid mt-4">
+
+  <!-- ======= Header ======= -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-primary">
+      <i class="fas fa-search me-2"></i>
+      {% if query %}Search Results{% else %}All Items{% endif %}
+    </h3>
+    {% if query %}
+      <span class="badge bg-light text-dark px-3 py-2">
+        <i class="fas fa-filter me-1"></i>Query: “{{ query }}”
+      </span>
+    {% endif %}
+  </div>
+
+  <!-- ======= USERS ======= -->
+  {% if users %}
+  <div class="mb-5">
+    <h5 class="fw-semibold text-primary mb-3">
+      <i class="fas fa-user me-2"></i>Users
+    </h5>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      {% for user in users %}
+      <div class="col">
+        <div class="card border-0 shadow-sm h-100 hover-card">
+          <div class="card-body d-flex align-items-center">
+            <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-3"
+                 style="width:45px; height:45px; font-weight:600;">
+              {{ user.username|first|upper }}
+            </div>
+            <div>
+              <h6 class="card-title mb-1 fw-bold">{{ user.user.username }}</h6>
+              <p class="text-muted small mb-0">{{ user.user.email }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
   {% endif %}
 
-  <div class="card mb-3">
-    <div class="card-body">
-      <h5>Users & Profiles</h5>
-      {% if profiles_page.object_list %}
-        <ul>
-          {% for p in profiles_page %}
-          <li><a href="{% url 'accounts:profile_view' username=p.user.username %}">@{{ p.user.username }}</a></li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No users found.</p>
-      {% endif %}
+  <!-- ======= TEAMS ======= -->
+  {% if teams %}
+  <div class="mb-5">
+    <h5 class="fw-semibold text-success mb-3">
+      <i class="fas fa-users me-2"></i>Teams
+    </h5>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      {% for team in teams %}
+      <div class="col">
+        <div class="card border-0 shadow-sm h-100 hover-card">
+          <div class="card-body">
+            <h6 class="fw-bold text-success mb-1">{{ team.name }}</h6>
+            <p class="text-muted small mb-2">{{ team.description|truncatechars:100 }}</p>
+            <a href="{% url 'teams:detail' team.pk %}" class="btn btn-sm btn-outline-success">
+              <i class="fas fa-eye"></i> View Team
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
     </div>
   </div>
+  {% endif %}
 
-  <div class="card mb-3">
-    <div class="card-body">
-      <h5>Teams</h5>
-      {% if teams_page.object_list %}
-        <ul>
-          {% for t in teams_page %}
-          <li><a href="{% url 'teams:detail' t.pk %}">{{ t.name }}</a></li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No teams found.</p>
-      {% endif %}
+  <!-- ======= COMPANIES ======= -->
+  {% if companies %}
+  <div class="mb-5">
+    <h5 class="fw-semibold text-warning mb-3">
+      <i class="fas fa-building me-2"></i>Companies
+    </h5>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      {% for company in companies %}
+      <div class="col">
+        <div class="card border-0 shadow-sm h-100 hover-card">
+          <div class="card-body">
+            <h6 class="fw-bold text-warning mb-1">{{ company.name }}</h6>
+            <p class="text-muted small mb-2">{{ company.description|truncatechars:100 }}</p>
+           
+              <i class="fas fa-eye"></i> View Company
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
     </div>
   </div>
+  {% endif %}
 
-  <div class="card mb-3">
-    <div class="card-body">
-      <h5>Companies</h5>
-      {% if companies_page.object_list %}
-        <ul>
-          {% for c in companies_page %}
-          <li>{{ c.name }}</li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No companies found.</p>
-      {% endif %}
+  <!-- ======= PROJECTS ======= -->
+  {% if projects %}
+  <div class="mb-5">
+    <h5 class="fw-semibold text-primary mb-3">
+      <i class="fas fa-folder-open me-2"></i>Projects
+    </h5>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      {% for project in projects %}
+      <div class="col">
+        <div class="card border-0 shadow-sm h-100 hover-card">
+          <div class="card-body">
+            <h6 class="fw-bold text-primary mb-1">{{ project.name }}</h6>
+            <p class="text-muted small mb-1">
+              <i class="fas fa-user"></i> Lead: {{ project.lead.username }}
+            </p>
+            <p class="text-muted small mb-3">{{ project.description|truncatechars:120 }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-eye"></i> View
+              </a>
+              <a href="{% url 'projects:project_dashboard' project.pk %}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+              </a>
+            </div>
+          </div>
+          <div class="card-footer bg-light border-0 text-end small text-muted">
+            Due: {{ project.due_date|date:"M d, Y"|default:"N/A" }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
     </div>
   </div>
+  {% endif %}
 
-  <div class="card mb-3">
-    <div class="card-body">
-      <h5>Projects</h5>
-      {% if projects_page.object_list %}
-        <ul>
-          {% for p in projects_page %}
-          <li>{{ p.name }}</li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No projects found.</p>
-      {% endif %}
-    </div>
+  <!-- ======= No Results ======= -->
+  {% if not users and not teams and not companies and not projects %}
+  <div class="alert alert-warning text-center shadow-sm">
+    <i class="fas fa-info-circle me-1"></i>
+    No results found for “{{ query|default:"(showing all)" }}”.
   </div>
+  {% endif %}
+
 </div>
+
+<!-- ======= Styles ======= -->
+<style>
+.hover-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+.card {
+  border-radius: 0.75rem;
+}
+h5 i {
+  opacity: 0.8;
+}
+</style>
+
 {% endblock %}
+

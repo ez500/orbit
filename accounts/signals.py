@@ -13,4 +13,3 @@ def save_user_profile(sender, instance, **kwargs):
     # Ensure a Profile exists for the user, but avoid saving the profile on every
     # user post_save (which can cause unexpected UPDATEs and integrity errors).
     Profile.objects.get_or_create(user=instance)
-
