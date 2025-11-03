@@ -12,4 +12,3 @@ def create_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     Profile.objects.get_or_create(user=instance)
     instance.profile.save()
-

@@ -39,6 +39,7 @@ ALLOWED_HOSTS = ['*']  # Allow all hosts in development
 INSTALLED_APPS = [
     "home.apps.HomeConfig",
     "accounts.apps.AccountsConfig",
+    "company.apps.CompanyConfig",
     "teams.apps.TeamsConfig",
 
     "widget_tweaks",

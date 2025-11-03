@@ -2,6 +2,7 @@
 
 {% block content %}
 
+    <!-- TODO VARIOUS VISUAL ENHANCEMENTS -->
     <div class="card" style="display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap;">
         <form class="d-flex" method="POST" action="{% url 'accounts:user_search' %}" style="width: 100%">
             {% csrf_token %}
@@ -43,6 +44,8 @@
                 </p>
             {% endif %}
 
+            <!-- TODO ADD ADD/REMOVE CONNECTION BUTTON HERE -->
+
             {% if user.profile == profile %}
                 <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap;">
                     <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
@@ -82,22 +85,33 @@
             </div>
 
             <!-- Companies -->
+            <!-- TODO PUBLIC/PRIVATE MEMBERSHIPS -->
             <div class="card">
                 <h3 style="margin-top:0;">🏢 Companies{% if companies.exists %} ({{ companies.count }}){% endif %}</h3>
                 {% if companies %}
                     <ul style="list-style:none; padding:0; margin:0;">
                         {% for company in companies %}
-                            <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
-                                {% if company.get_absolute_url %}
-                                    <a href="{{ company.get_absolute_url }}">{{ company }}</a>
-                                {% else %}
-                                    {{ company }}
+                            <li class="d-flex align-items-center">
+                                <p class="me-auto text-start mb-0">{{ company }}</p>
+                                {% if company.website %}
+                                    <a href="{{ company.website }}" class="btn btn-secondary ms-2">Website</a>
                                 {% endif %}
+                                <a href="{% url 'company:company' company %}" class="btn btn-secondary ms-2">View</a>
                             </li>
                         {% endfor %}
                     </ul>
+                    <a href="{% url 'accounts:company_list' username=profile %}" class="btn btn-secondary">
+                        View Companies
+                    </a>
                 {% else %}
-                    <p style="opacity:.8;">No companies yet.</p>
+                    <p style="opacity:.8;">
+                        No companies yet.
+                        {% if user.profile == profile %}
+                            <a href="{% url 'company:register' %}">
+                                Register one here!
+                            </a>
+                        {% endif %}
+                    </p>
                 {% endif %}
             </div>
 
@@ -107,7 +121,7 @@
                 {% if teams %}
                     <ul style="list-style:none; padding:0; margin:0;">
                         {% for team in teams %}
-                            <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
+                            <li style="padding:.5rem 0;">
                                 <a href="{% url 'teams:detail' team.pk %}">{{ team }}</a>
                             </li>
                         {% endfor %}
