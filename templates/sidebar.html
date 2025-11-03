@@ -10,6 +10,20 @@
     </div>
 
     <ul class="nav flex-column">
+	<li class="nav_item">
+         <!--TODO Implement search app-->
+         <form action="{% url 'search:results' %}" method="get" class="nav-link search-wrapper d-flex align-items-center">
+  	 <i class="fas fa-search me-2"></i>
+  	 	<input
+    		type="search"
+    		name="q"
+    		placeholder="Search..."
+    		value="{{ request.GET.q|default_if_none:'' }}"
+    		class="nav-search-input form-control form-control-sm"
+    		autocomplete="off"
+  	 	/>
+	 </form>
+        </li>
         <li class="nav-item">
             <a
                     class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
@@ -28,6 +42,16 @@
                 <span class="hide-on-collapse">Teams</span>
             </a>
         </li>
+	<li class="nav-item">
+  	  <a 
+          	class="nav-link {% if request.resolver_match.app_name == 'projects' %}active{% endif %}"
+     		href="{% url 'projects:project_list' %}"
+          >
+    	        <i class="fas fa-folder-open"></i>
+   	 	<span class="hide-on-collapse">Projects</span>
+ 	    </a>
+	</li>
+
         <li class="nav-item">
             <a
                     class="nav-link {% if request.resolver_match.url_name == 'tasks' %}active{% endif %}"

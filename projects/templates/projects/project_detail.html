@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ project.name }} - Project Details{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary">
+      <i class="fas fa-folder-open me-2"></i>{{ project.name }}
+    </h2>
+    <a href="{% url 'projects:project_list' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left"></i> Back to Projects
+    </a>
+  </div>
+
+  <!-- Project Info -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <h5 class="fw-semibold text-muted mb-2">Description</h5>
+      <p class="mb-3">{{ project.description|default:"No description provided." }}</p>
+
+      <div class="row">
+        <div class="col-md-6">
+          <h6 class="fw-semibold text-muted mb-1">Lead</h6>
+          <p>{{ project.lead.username }}</p>
+        </div>
+        <div class="col-md-6">
+          <h6 class="fw-semibold text-muted mb-1">Created At</h6>
+          <p>{{ project.created_at|date:"M d, Y H:i" }}</p>
+        </div>
+      </div>
+
+      <!-- Companies -->
+      {% if project.companies.exists %}
+      <hr>
+      <h6 class="fw-semibold text-muted mb-1">
+        <i class="fas fa-building me-2 text-warning"></i>Companies
+      </h6>
+      <ul class="list-group list-group-flush mb-3">
+        {% for company in project.companies.all %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ company.name }}</span>
+            <a href="{% url 'company:company' company.name %}" class="btn btn-sm btn-outline-warning">
+              <i class="fas fa-eye"></i> View
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <!-- Collaborators -->
+      {% if project.collaborators.exists %}
+      <h6 class="fw-semibold text-muted mb-1">
+        <i class="fas fa-users me-2 text-success"></i>Collaborators
+      </h6>
+      <ul class="list-group list-group-flush">
+        {% for user in project.collaborators.all %}
+          <li class="list-group-item">
+            <i class="fas fa-user me-2 text-secondary"></i>{{ user.username }}
+          </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted">No collaborators added yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Actions -->
+  {% if project.lead == request.user %}
+  <div class="d-flex gap-2">
+    <a href="{% url 'projects:add_collaborator' project.pk %}" class="btn btn-outline-primary">
+      <i class="fas fa-user-plus"></i> Add Collaborator
+    </a>
+    <a href="{% url 'projects:project_dashboard' project.pk %}" class="btn btn-outline-success">
+      <i class="fas fa-chart-line"></i> View Dashboard
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
