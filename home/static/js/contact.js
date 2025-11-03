@@ -98,7 +98,7 @@ contactForm.addEventListener("submit", async function (event) {
         if (validateForm()) {
             const submit = document.getElementsByClassName("submitting")[0];
 
-            submit.setAttribute("display", "block");
+            submit.setAttribute("style", "display: block");
             submit.innerText = "Submitting...";
 
             const formData = new FormData(contactForm);
