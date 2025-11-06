@@ -266,7 +266,8 @@
         </div>
     </div>
 
-{% endblock %} {% block extra_js %}
+{% endblock %}
+{% block extra_js %}
     {{ tasks|json_script:"tasks-data" }}
     <script src="{% static 'js/calendar.js' %}"></script>
     <script src="{% static 'js/tasks.js' %}"></script>
