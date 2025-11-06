@@ -13,7 +13,7 @@ class Company(models.Model):
     location = models.CharField(max_length=200, blank=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owner_set')
     members = models.ManyToManyField(User, through='CompanyMembership')
-    address = models.CharField(max_length=255, blank=True)
+
     def __str__(self):
         return self.name
 
