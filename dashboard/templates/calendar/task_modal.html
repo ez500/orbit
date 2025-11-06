@@ -1,0 +1,57 @@
+{% load task_extras %}
+
+<div class="modal-header border-0">
+    <h5 class="modal-title">{{ task.title }}</h5>
+    <span class="badge {{ task.status|status_badge }} ms-2">{{ task.get_status_display }}</span>
+    <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+    ></button>
+</div>
+<div class="modal-body">
+    <p>{{ task.content }}</p>
+    <p><strong>Deadline: </strong>{{ task.deadline }}</p>
+    {% if task.team %}
+        <div class="d-flex align-items-center">
+            <p class="me-auto text-start mb-3"><strong>Team: </strong>{{ task.team }}</p>
+            <a href="{% url 'teams:detail' task.team.pk %}" class="btn btn-sm btn-secondary ms-2">
+                View Team
+            </a>
+        </div>
+    {% elif task.project %}
+        <div class="d-flex align-items-center">
+            <p class="me-auto text-start mb-3"><strong>Project: </strong>{{ task.project }}</p>
+            <a href="{% url 'projects:project_detail' task.project.pk %}" class="btn btn-sm btn-secondary ms-2">
+                View Project
+            </a>
+        </div>
+    {% endif %}
+
+    {% if task.users %}
+        <div class="card">
+            <div class="card-body">
+                <h5>Assigned Users</h5>
+                {% for user in task.users.all %}
+                    <div class="d-flex align-items-center">
+                        <p class="me-auto text-start mb-2">{{ user }}</p>
+                        <a href="{% url 'accounts:profile_view' user %}" class="btn btn-sm btn-secondary ms-2">
+                            View Profile
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- TODO IMPLEMENT MODAL TO EDIT -->
+    <div class="d-flex align-items-center">
+        <p class="me-auto text-start mb-0">Created {{ task.pub_date|date:"M. d, Y" }}</p>
+        <button class="btn btn-warning">Edit</button>
+        <form action="{% url 'dashboard:task_delete' task.id %}" method="post"
+              onsubmit="return confirm('Are you sure you want to delete this task?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger ms-2">Delete</button>
+        </form>
+    </div>
+</div>

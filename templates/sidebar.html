@@ -27,7 +27,7 @@
         <li class="nav-item">
             <a
                     class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-                    href="{% url 'home:dashboard' %}"
+                    href="{% url 'dashboard:dashboard' %}"
             >
                 <i class="fas fa-chart-line"></i>
                 <span class="hide-on-collapse">Dashboard</span>
@@ -55,7 +55,7 @@
         <li class="nav-item">
             <a
                     class="nav-link {% if request.resolver_match.url_name == 'tasks' %}active{% endif %}"
-                    href="{% url 'home:tasks' %}"
+                    href="{% url 'dashboard:tasks' %}"
             >
                 <i class="fas fa-tasks"></i>
                 <span class="hide-on-collapse">Tasks</span>

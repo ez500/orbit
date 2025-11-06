@@ -16,9 +16,9 @@ def search_results(request):
     filter_by = request.GET.getlist("filter_by")  # <-- Added filter criteria list from form
 
     # === USERS (Profiles) ===
-    if (not filter_by or 'user' in filter_by):
+    if not filter_by or 'user' in filter_by:
         if not query:
-            users = Profile.objects.all().order_by("id")
+            profiles = Profile.objects.all().order_by("id")
         else:
             # Step 1: Find matching users in the User model
             user_matches = User.objects.filter(
@@ -29,13 +29,13 @@ def search_results(request):
             ).values_list("id", flat=True)
 
             # Step 2: Find matching profiles
-            users = Profile.objects.filter(
+            profiles = Profile.objects.filter(
                 Q(user_id__in=user_matches)
                 | Q(bio__icontains=query)
                 | Q(location__icontains=query)
             ).order_by("id")
     else:
-        users = Profile.objects.none()
+        profiles = Profile.objects.none()
 
     # === TEAMS ===
     if (not filter_by or 'team' in filter_by):
@@ -89,7 +89,7 @@ def search_results(request):
         projects = Project.objects.none()
 
     # === Combine results for pagination ===
-    queryset = list(users) + list(teams) + list(companies) + list(projects)
+    queryset = list(profiles) + list(teams) + list(companies) + list(projects)
     paginator = Paginator(queryset, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -97,7 +97,7 @@ def search_results(request):
     context = {
         "query": query,
         "filter_by": filter_by,
-        "users": users,
+        "profiles": profiles,
         "teams": teams,
         "companies": companies,
         "projects": projects,

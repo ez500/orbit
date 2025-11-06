@@ -6,9 +6,6 @@ from enum import Enum
 # Create your models here.
 
 class Profile(models.Model):
-    class Meta:
-        app_label = 'accounts'
-
     THEME_CHOICES = [
         ('light', 'Light'),
         ('dark', 'Dark'),
@@ -44,10 +41,7 @@ class Profile(models.Model):
     profile_picture = models.ImageField(upload_to='profile_pictures', default='default.jpg')
     location = models.CharField(max_length=100, blank=True)
     website = models.URLField(blank=True)
-    connections = models.ManyToManyField('self')
-    companies = models.ManyToManyField("company.Company")
-    projects = models.ManyToManyField("home.Project")
-    tasks = models.ManyToManyField("home.Task")
+    connections = models.ManyToManyField('self', blank=True)
     theme_color = models.CharField(max_length=20, choices=THEME_CHOICES, default='dark')
     accent_color = models.CharField(max_length=7, choices=ACCENT_CHOICES, default='#1E90FF')
     visibility = models.CharField(max_length=20, choices=[(tag.name, tag.value) for tag in Visibility],
@@ -59,3 +53,6 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    class Meta:
+        app_label = 'accounts'
