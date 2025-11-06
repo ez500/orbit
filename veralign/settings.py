@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "home.apps.HomeConfig",
     "accounts.apps.AccountsConfig",
     "company.apps.CompanyConfig",
+    "dashboard.apps.DashboardConfig",
     "teams.apps.TeamsConfig",
     "search.apps.SearchConfig",
     "projects",
