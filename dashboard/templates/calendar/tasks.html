@@ -130,7 +130,7 @@
                                 </div>
                                 <div class="task-actions">
                                     <button class="btn btn-light btn-sm">
-                                        <i class="fas fa-ellipsis-v"></i>
+                                        <i class="fas fa-ellipsis-v"></i> <!-- TODO IMPLEMENT MODAL TO EDIT/VIEW -->
                                     </button>
                                 </div>
                             </div>
@@ -172,6 +172,7 @@
         </div>
     </div>
 
+    <!-- TODO EDIT TASK -->
     <!-- Add Task Modal -->
     <div class="modal fade" id="addTaskModal" tabindex="-1">
         <div class="modal-dialog">
@@ -211,7 +212,7 @@
                                 <label for="taskStatus" class="form-label">Status</label>
                                 <select class="form-select" id="taskStatus" required>
                                     <option value="todo">To Do</option>
-                                    <option value="in-progress">In Progress</option>
+                                    <option value="in_progress">In Progress</option>
                                     <option value="review">Pending Review</option>
                                     <option value="completed">Completed</option>
                                 </select>

@@ -9,7 +9,7 @@ from django.db import models
 class Task(models.Model):
     STATUS = [
         ('todo', 'To Do'),
-        ('in-progress', 'In Progress'),
+        ('in_progress', 'In Progress'),
         ('review', 'Pending Review'),
         ('completed', 'Completed'),
     ]

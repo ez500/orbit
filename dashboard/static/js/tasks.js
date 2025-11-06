@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
     function addNewTask() {
         // form data
         const title = document.getElementById('taskTitle').value;
@@ -12,8 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const users =
             Array.from(document.getElementById('taskUsers').selectedOptions)
                 .map(option => option.value);
-
-        const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         const data = {
             title: title,
@@ -55,56 +55,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById('taskTeam').addEventListener("change", event => {
         const selectedTeam = event.target.value;
-        if (selectedTeam !== 'No Team') {
-            const projectSelector = document.getElementById('taskProject');
-            projectSelector.disabled = true;
+        const projectSelector = document.getElementById('taskProject');
+        projectSelector.disabled = selectedTeam !== '';
 
-            const userSelector = document.getElementById('taskUsers');
+        const userSelector = document.getElementById('taskUsers');
+        userSelector.options.length = 0;
 
-            fetch('../api/project-team-members/', {
-                team: selectedTeam,
-            }).then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            }).then(data => {
-                data.forEach(member => {
-                    const option = document.createElement('option');
-                    option.value = member.id;
-                    option.textContent = member.username;
-                    userSelector.appendChild(option);
-                })
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('Failed to add task. Please try again.');
-            });
-        }
+        fetch('../api/project-team-members/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify({team: selectedTeam}),
+        }).then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        }).then(data => {
+            Object.values(data).forEach(member => {
+                console.log(member);
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = member.username;
+                userSelector.appendChild(option);
+            })
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Something weird happened.');
+        });
     })
 
     document.getElementById('taskProject').addEventListener("change", event => {
         const selectedProject = event.target.value;
-        if (selectedProject !== 'No Project') {
-            const teamSelector = document.getElementById('taskTeam');
-            teamSelector.disabled = true;
+        const teamSelector = document.getElementById('taskTeam');
+        teamSelector.disabled = selectedProject !== '';
 
-            const userSelector = document.getElementById('taskUsers');
+        const userSelector = document.getElementById('taskUsers');
+        userSelector.options.length = 0;
 
-            fetch('../api/project-team-members/', {
-                project: selectedProject,
-            }).then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            }).then(data => {
-                data.forEach(member => {
-                    const option = document.createElement('option');
-                    option.value = member.id;
-                    option.textContent = member.username;
-                    userSelector.appendChild(option);
-                })
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('Failed to add task. Please try again.');
-            });
-        }
+        fetch('../api/project-team-members/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify({project: selectedProject}),
+        }).then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        }).then(data => {
+            Object.values(data).forEach(member => {
+                console.log(member);
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = member.username;
+                userSelector.appendChild(option);
+            })
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Something weird happened.');
+        });
     })
 
     const deleteButton = document.getElementById('deleteTaskBtn');

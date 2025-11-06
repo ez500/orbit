@@ -1,4 +1,5 @@
 import json
+from urllib.parse import uses_netloc
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -53,20 +54,26 @@ def tasks(request):
 
 @login_required
 def get_project_or_team_members(request):
-    if request.data.get('team'):
-        team = get_object_or_404(Team, id=request.data.get('team'))
+    data = json.loads(request.body or '{}')
+
+    if data.get('team'):
+        team = get_object_or_404(Team, id=data.get('team'))
         serialized_members = json.loads(serialize('json', team.members.all(), use_natural_foreign_keys=True))
-    else:
-        project = get_object_or_404(Project, id=request.data.get('project'))
+    elif data.get('project'):
+        project = get_object_or_404(Project, id=data.get('project'))
         serialized_members = json.loads(serialize('json',
-                                                  project.collaborators.all() | User.objects.filter(user=project.lead),
+                                                  project.collaborators.all() | User.objects.filter(pk=project.lead.pk),
                                                   use_natural_foreign_keys=True))
+    else:
+        serialized_members =(json.loads(serialize('json',
+                                                  User.objects.filter(pk=request.user.pk),
+                                                  use_natural_foreign_keys=True)))
 
     formatted_members = {}
     for member in serialized_members:
         fields = member['fields']
         fields['id'] = member['pk']
-        formatted_members = fields
+        formatted_members[fields['id']] = fields
 
     return JsonResponse(formatted_members)
 

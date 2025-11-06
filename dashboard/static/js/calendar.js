@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     ${dayTasks.map(
                         (task) => {
                             const mode = task.status === "completed" ? "success"
-                                : task.status === "in-progress" ? "warning" 
+                                : task.status === "in_progress" ? "warning" 
                                     : task.status === "review" ? "info" : "danger";
                             
                             return `
