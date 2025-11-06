@@ -1,6 +1,31 @@
 document.addEventListener("DOMContentLoaded", function () {
     const tasks = JSON.parse(document.getElementById("tasks-data").textContent);
 
+    // View toggle functionality
+    const viewToggleButtons = document.querySelectorAll(".view-toggle .btn");
+    const listViews = document.querySelectorAll(".card:not(#calendarView)");
+    const calendarView = document.querySelector("#calendarView");
+
+    viewToggleButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+            viewToggleButtons.forEach((btn) => btn.classList.remove("active"));
+            this.classList.add("active");
+
+            if (this.dataset.view === "calendar") {
+                listViews.forEach((listView) => listView.classList.add("d-none"));
+                calendarView.classList.remove("d-none");
+            } else {
+                listViews.forEach((listView) => listView.classList.remove("d-none"));
+                calendarView.classList.add("d-none");
+            }
+        });
+    });
+
+    const form = document.getElementById("taskFilterForm");
+    form.querySelectorAll("select").forEach(sel => {
+        sel.addEventListener("change", () => form.submit());
+    })
+
     // Calendar initialization
     const months = [
         "January",
@@ -141,44 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initial render
     renderCalendar();
 
-    // View toggle functionality
-    const viewToggleButtons = document.querySelectorAll(".view-toggle .btn");
-    const listView = document.querySelector(".card:not(#calendarView)");
-    const calendarView = document.querySelector("#calendarView");
-
-    viewToggleButtons.forEach((button) => {
-        button.addEventListener("click", function () {
-            viewToggleButtons.forEach((btn) => btn.classList.remove("active"));
-            this.classList.add("active");
-
-            if (this.dataset.view === "calendar") {
-                listView.classList.add("d-none");
-                calendarView.classList.remove("d-none");
-            } else {
-                listView.classList.remove("d-none");
-                calendarView.classList.add("d-none");
-            }
-        });
-    });
-
-    // Search functionality
-    const searchInput = document.querySelector(
-        'input[placeholder="Search Tasks"]'
-    );
-    const taskItems = document.querySelectorAll(".task-item");
-
-    searchInput.addEventListener("input", function () {
-        const searchTerm = this.value.toLowerCase();
-        taskItems.forEach((item) => {
-            const taskTitle = item.querySelector("h6").textContent.toLowerCase();
-            if (taskTitle.includes(searchTerm)) {
-                item.style.display = "";
-            } else {
-                item.style.display = "none";
-            }
-        });
-    });
-
     // View task functionality
     document.addEventListener("click", async(e) => {
         const el = e.target.closest(".calendar-task, .task-item");
@@ -200,6 +187,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // Keyboard accessibility for task viewing
     document.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
             const el = e.target.closest(".calendar-task, .task-item");
