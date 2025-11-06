@@ -134,9 +134,28 @@ body {
 }
 
 .btn-primary {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
-  color: var(--accent-text);
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: var(--accent-text) !important;
+  /* Override Bootstrap's CSS custom properties */
+  --bs-btn-bg: var(--accent-color);
+  --bs-btn-border-color: var(--accent-color);
+  --bs-btn-color: var(--accent-text);
+  --bs-btn-hover-bg: var(--accent-color);
+  --bs-btn-hover-border-color: var(--accent-color);
+  --bs-btn-hover-color: var(--accent-text);
+  --bs-btn-active-bg: var(--accent-color);
+  --bs-btn-active-border-color: var(--accent-color);
+  --bs-btn-active-color: var(--accent-text);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: var(--accent-text) !important;
+  filter: brightness(0.9);
 }
 
 .sidebar {
