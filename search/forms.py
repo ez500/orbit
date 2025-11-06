@@ -1,9 +1,16 @@
-from home.models import Company, Project
+from company.models import Company
+from projects.models import Project
 from teams.models import Team
 from django import forms
 from django.contrib.auth.models import User
 
 
+FILTER_CHOICES = [
+      ('user', 'Users'),
+      ('company', 'Companies'),
+      ('team', 'Teams'),
+      ('project', 'Projects'),
+]
 
 
 class SearchForm(forms.Form):
@@ -16,6 +23,11 @@ class SearchForm(forms.Form):
 	}),
 	)
 
+ 	filter_by = forms.MultipleChoiceField(
+        choices=FILTER_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+   	)
 
 	team = forms.ModelChoiceField(
 	label="Team",
@@ -25,12 +37,12 @@ class SearchForm(forms.Form):
 	)
 
 
-	#company = forms.ModelChoiceField(
-	#label="Company",
-	#required=False,
-	#queryset=Company.objects.order_by("name"),
-	#widget=forms.Select(attrs={"class": "form-select"}),
-	#)
+	company = forms.ModelChoiceField(
+	label="Company",
+	required=False,
+	queryset=Company.objects.order_by("name"),
+	widget=forms.Select(attrs={"class": "form-select"}),
+	)
 
 
 	project = forms.ModelChoiceField(
