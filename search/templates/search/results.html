@@ -17,7 +17,19 @@
             {% endif %}
         </div>
 
-        <!-- ======= USERS ======= -->
+      <form method="get">
+  <input type="text" name="q" placeholder="Search..." value="{{ query }}" class="form-control mb-2">
+
+  <div class="mb-3">
+    <label><strong>Filter by:</strong></label><br>
+    <label><input type="checkbox" name="filter_by" value="user" {% if 'user' in filter_by %}checked{% endif %}> Users</label>
+    <label><input type="checkbox" name="filter_by" value="company" {% if 'company' in filter_by %}checked{% endif %}> Companies</label>
+    <label><input type="checkbox" name="filter_by" value="team" {% if 'team' in filter_by %}checked{% endif %}> Teams</label>
+    <label><input type="checkbox" name="filter_by" value="project" {% if 'project' in filter_by %}checked{% endif %}> Projects</label>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Filter</button>
+</form>  <!-- ======= USERS ======= -->
         {% if profiles %}
             <div class="mb-5">
                 <h5 class="fw-semibold text-primary mb-3">
