@@ -10,7 +10,7 @@
     </div>
 
     <ul class="nav flex-column">
-	<li class="nav_item">
+	<li class="nav_item nav-item-fixed">
          <!--TODO Implement search app-->
          <form action="{% url 'search:results' %}" method="get" class="nav-link search-wrapper d-flex align-items-center">
   	 <i class="fas fa-search me-2"></i>
@@ -24,67 +24,77 @@
   	 	/>
 	 </form>
         </li>
-        <li class="nav-item">
-            <a
-                    class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-                    href="{% url 'home:dashboard' %}"
-            >
-                <i class="fas fa-chart-line"></i>
-                <span class="hide-on-collapse">Dashboard</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a
-                    class="nav-link {% if request.resolver_match.url_name == 'my_teams' %}active{% endif %}"
-                    href="{% url 'teams:my_teams' %}"
-            >
-                <i class="fas fa-users"></i>
-                <span class="hide-on-collapse">Teams</span>
-            </a>
-        </li>
-	<li class="nav-item">
-  	  <a 
-          	class="nav-link {% if request.resolver_match.app_name == 'projects' %}active{% endif %}"
-     		href="{% url 'projects:project_list' %}"
-          >
-    	        <i class="fas fa-folder-open"></i>
-   	 	<span class="hide-on-collapse">Projects</span>
- 	    </a>
-	</li>
 
-        <li class="nav-item">
-            <a
-                    class="nav-link {% if request.resolver_match.url_name == 'tasks' %}active{% endif %}"
-                    href="{% url 'home:tasks' %}"
-            >
-                <i class="fas fa-tasks"></i>
-                <span class="hide-on-collapse">Tasks</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a
-                    class="nav-link {% if request.resolver_match.url_name == 'insights' %}active{% endif %}"
-                    href="#"
-            >
-                <i class="fas fa-lightbulb"></i>
-                <span class="hide-on-collapse">Orbit Insights</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a
-                    class="nav-link {% if request.resolver_match.url_name == 'profile_view' %}active{% endif %}"
-                    href="
-                        {% if user.is_authenticated %}
-                            {% url 'accounts:profile_view' username=user.username %}
-                        {% else %}
-                            {% url 'accounts:login' %}
-                        {% endif %}"
-            >
-                <i class="fas fa-user"></i>
-                <span class="hide-on-collapse">Profile</span>
-            </a>
-        </li>
-        <li class="nav-item mt-auto">
+        <!-- Draggable navigation items -->
+        <div id="draggable-nav-items">
+            <li class="nav-item nav-item-draggable" draggable="true" data-nav-id="dashboard">
+                <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
+                <a
+                        class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                        href="{% url 'home:dashboard' %}"
+                >
+                    <i class="fas fa-chart-line"></i>
+                    <span class="hide-on-collapse">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item nav-item-draggable" draggable="true" data-nav-id="teams">
+                <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
+                <a
+                        class="nav-link {% if request.resolver_match.url_name == 'my_teams' %}active{% endif %}"
+                        href="{% url 'teams:my_teams' %}"
+                >
+                    <i class="fas fa-users"></i>
+                    <span class="hide-on-collapse">Teams</span>
+                </a>
+            </li>
+            <li class="nav-item nav-item-draggable" draggable="true" data-nav-id="projects">
+                <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
+                <a
+                    class="nav-link {% if request.resolver_match.app_name == 'projects' %}active{% endif %}"
+                    href="{% url 'projects:project_list' %}"
+                >
+                    <i class="fas fa-folder-open"></i>
+                    <span class="hide-on-collapse">Projects</span>
+                </a>
+            </li>
+            <li class="nav-item nav-item-draggable" draggable="true" data-nav-id="tasks">
+                <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
+                <a
+                        class="nav-link {% if request.resolver_match.url_name == 'tasks' %}active{% endif %}"
+                        href="{% url 'home:tasks' %}"
+                >
+                    <i class="fas fa-tasks"></i>
+                    <span class="hide-on-collapse">Tasks</span>
+                </a>
+            </li>
+            <li class="nav-item nav-item-draggable" draggable="true" data-nav-id="insights">
+                <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
+                <a
+                        class="nav-link {% if request.resolver_match.url_name == 'insights' %}active{% endif %}"
+                        href="#"
+                >
+                    <i class="fas fa-lightbulb"></i>
+                    <span class="hide-on-collapse">Orbit Insights</span>
+                </a>
+            </li>
+            <li class="nav-item nav-item-draggable" draggable="true" data-nav-id="profile">
+                <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
+                <a
+                        class="nav-link {% if request.resolver_match.url_name == 'profile_view' %}active{% endif %}"
+                        href="
+                            {% if user.is_authenticated %}
+                                {% url 'accounts:profile_view' username=user.username %}
+                            {% else %}
+                                {% url 'accounts:login' %}
+                            {% endif %}"
+                >
+                    <i class="fas fa-user"></i>
+                    <span class="hide-on-collapse">Profile</span>
+                </a>
+            </li>
+        </div>
+
+        <li class="nav-item nav-item-fixed mt-auto">
             {% if request.user.is_authenticated %}
                 <form id="logout-form" method="POST" action="{% url 'accounts:logout' %}">
                     {% csrf_token %}

@@ -100,6 +100,103 @@ body {
   text-align: center;
 }
 
+/* Draggable Navigation Items */
+.nav-item-draggable {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: default;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+/* Only show drag cursor when edit mode is active */
+.sidebar.edit-mode .nav-item-draggable {
+  cursor: move;
+}
+
+.nav-item-draggable.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.nav-item-draggable.drag-over {
+  transform: translateY(2px);
+}
+
+/* Drag handle - hidden by default */
+.drag-handle {
+  position: absolute;
+  left: -8px;
+  padding: 0.8rem 0.5rem;
+  cursor: default;
+  color: rgba(255, 255, 255, 0);
+  transition: all 0.2s ease;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Show drag handle only in edit mode */
+.sidebar.edit-mode .drag-handle {
+  opacity: 1;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: grab;
+  pointer-events: all;
+}
+
+.sidebar.edit-mode .drag-handle:hover {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.sidebar.edit-mode .drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle i {
+  font-size: 0.875rem;
+}
+
+/* Visual indicator banner for edit mode */
+.sidebar.edit-mode::before {
+  content: "Edit Mode: Drag to Reorder";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--accent-color);
+  color: var(--accent-text);
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  z-index: 1001;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Adjust sidebar padding when in edit mode to account for banner */
+.sidebar.edit-mode {
+  padding-top: calc(1.5rem + 2rem);
+}
+
+/* Highlight draggable items in edit mode */
+.sidebar.edit-mode .nav-item-draggable {
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  padding-left: 0.25rem;
+}
+
+.sidebar.edit-mode .nav-item-draggable:hover {
+  border-left-color: var(--accent-color);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Ensure nav-link takes up remaining space */
+.nav-item-draggable .nav-link {
+  flex: 1;
+}
+
 .sidebar .logout {
   background-color: #dc3545;
   color: #ffffff !important;
