@@ -191,50 +191,18 @@ def edit_user_profile(request):
 @login_required
 def settings(request):
     if request.method == 'POST':
-        # For appearance settings, we only need to update profile
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            profile = request.user.profile
-            data = {}
-
-            # Only update the appearance fields we receive
-            for field in ['theme_color', 'accent_color', 'high_contrast', 'font_size', 'spacing']:
-                if field in request.POST:
-                    value = request.POST[field]
-                    if field == 'high_contrast':
-                        value = value.lower() == 'true'
-                    setattr(profile, field, value)
-                    data[field] = value
-                else:
-                    data[field] = getattr(profile, field)
-
-            try:
-                profile.save(update_fields=list(data.keys()))
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Settings saved successfully!',
-                    'profile': data
-                })
-            except Exception as e:
-                import traceback
-                print("Error saving settings:", str(e))
-                print(traceback.format_exc())
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Failed to save settings: ' + str(e),
-                }, status=400)
-
-        # For regular form submission, handle both user and profile forms
+        # Handle both user and profile forms
         user_form = UpdateUserForm(request.POST, instance=request.user)
         profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
 
         if profile_form.is_valid() and user_form.is_valid():
-            profile = profile_form.save(commit=False)
-            profile.user = request.user
-            profile.save()
+            # Save both forms
             user_form.save()
+            profile_form.save()
             messages.success(request, 'Settings saved successfully!')
             return redirect('accounts:settings')
         else:
+            # Show error messages for validation issues
             messages.error(request, 'Please correct the errors below.')
     else:
         user_form = UpdateUserForm(instance=request.user)
