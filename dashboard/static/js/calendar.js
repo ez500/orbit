@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function createDayCell(day, inactive, date) {
         const cell = document.createElement("div");
-        cell.className = `col border calendar-day${inactive ? " inactive" : ""}`;
+        cell.className = `col border calendar-day${inactive ? " inactive" : ""} position-relative`;
         if (!inactive) {
             const dateStr = date.toISOString().split("T")[0];
             const today = new Date();
@@ -102,10 +102,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
             `;
 
-            cell.addEventListener("click", () => {
-                document.getElementById("taskDeadline").value = dateStr;
-                new bootstrap.Modal(document.getElementById("addTaskModal")).show();
+            cell.addEventListener("mouseenter", () => {
+                if (cell.querySelector(".add-task-btn")) return;
+                const addTaskButton = document.createElement("button");
+                addTaskButton.type = "button";
+                addTaskButton.className = "btn btn-sm btn-dark position-absolute top-0 end-0 add-task-btn";
+                addTaskButton.dataset.bsToggle = "modal";
+                addTaskButton.dataset.bsTarget = "#addTaskModal";
+                addTaskButton.innerHTML = `<i class="fas fa-plus"></i>`;
+                cell.appendChild(addTaskButton);
+
+                addTaskButton.addEventListener("click", () => {
+                    document.getElementById("taskDeadline").value = dateStr;
+                })
             });
+
+            cell.addEventListener("mouseleave", () => {
+                const addTaskButton = cell.querySelector(".add-task-btn");
+                if (addTaskButton) {
+                    addTaskButton.remove();
+                }
+            })
         }
         return cell;
     }
@@ -177,8 +194,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!response.ok) throw new Error('Load failed.');
             const html = await response.text();
             document.getElementById("viewTaskModalContent").innerHTML = html;
-            const modal = new bootstrap.Modal(document.getElementById("viewTaskModal"));
-            modal.show();
+            new bootstrap.Modal(document.getElementById("viewTaskModal")).show();
         } catch (error) {
             console.error('Error:', error);
         }
