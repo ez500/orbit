@@ -3,7 +3,7 @@ from django import forms
 from django.db import models  # for Q() queries
 from django.contrib.auth.models import User
 from company.models import Company
-from .models import Project
+from .models import Project, Task, Event
 
 
 class ProjectForm(forms.ModelForm):
@@ -52,3 +52,26 @@ class ProjectForm(forms.ModelForm):
             "multiple": True,
         })
 
+
+class TaskForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ["title", "description", "due_date", "completed"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Task title"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "due_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "completed": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ["title", "description", "start_date", "end_date"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Event name"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "start_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "end_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+        }

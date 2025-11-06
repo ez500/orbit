@@ -9,5 +9,10 @@ urlpatterns = [
     path("create/", views.project_create, name="project_create"),
     path("<int:pk>/add-collaborator/", views.add_collaborator, name="add_collaborator"),
     path("<int:pk>/dashboard/", views.project_dashboard, name="project_dashboard"),
+    path("<int:pk>/events-json/", views.project_events_json, name="project_events_json"),
+    path("<int:pk>/remove-collaborator/<int:user_id>/", views.remove_collaborator, name="remove_collaborator"),
+    path("<int:pk>/remove-task/<int:task_id>/", views.remove_task, name="remove_task"),
+    path("<int:pk>/remove-event/<int:event_id>/", views.remove_event, name="remove_event"),
+
 ]
 
