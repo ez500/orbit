@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.core.serializers import serialize
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
+from django.views.generic import DetailView
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -76,6 +77,11 @@ def get_project_or_team_members(request):
         formatted_members[fields['id']] = fields
 
     return JsonResponse(formatted_members)
+
+
+class TaskDetailModalView(DetailView):
+    model = Task
+    template_name = 'calendar/task_modal.html'
 
 
 class TaskCreateAPIView(APIView):

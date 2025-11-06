@@ -66,7 +66,7 @@
             <div class="card-body p-0">
                 <!-- Task Item -->
                 {% if empty %}
-                    <div class="task-item p-3 border-bottom">
+                    <div class="p-3 border-bottom">
                         <div class="d-flex align-items-center">
                             <div class="ms-3 flex-grow-1">
                                 <h6 class="mb-1">No Tasks Due</h6>
@@ -96,7 +96,8 @@
                     </div>
                 {% else %}
                     {% for task in tasks_qs %}
-                        <div class="task-item p-3 border-bottom">
+                        <div class="task-item p-3 border-bottom" data-task-id="{{ task.id }}"
+                             role="button" aria-label="View Task {{ task.title }}">
                             <div class="d-flex align-items-center">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="task1"/>
@@ -254,6 +255,13 @@
                         Add Task
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="viewTaskModal" tabindex="-1" aria-labelledby="viewTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" id="viewTaskModalContent">
             </div>
         </div>
     </div>

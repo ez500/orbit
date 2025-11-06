@@ -92,7 +92,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                     : task.status === "review" ? "info" : "danger";
                             
                             return `
-                                <div class="calendar-task badge bg-${mode}-subtle text-${mode} w-100 text-start p-2">
+                                <div class="calendar-task badge bg-${mode}-subtle text-${mode} w-100 text-start p-2"
+                                    data-task-id="${task.id}" role="button" aria-label="View Task {{ task.title }}">
                                     ${task.title}
                                 </div>
                             `;
@@ -160,4 +161,36 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
+
+    // View task functionality
+    document.addEventListener("click", async(e) => {
+        const el = e.target.closest(".calendar-task, .task-item");
+        if (!el) return;
+
+        const taskId = el.getAttribute("data-task-id");
+        if (!taskId) return;
+
+        const url = `/dashboard/tasks/${taskId}/view/`;
+
+        try {
+            const response = await fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+            if (!response.ok) throw new Error('Load failed.');
+            const html = await response.text();
+            document.getElementById("viewTaskModalContent").innerHTML = html;
+            const modal = new bootstrap.Modal(document.getElementById("viewTaskModal"));
+            modal.show();
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            const el = e.target.closest(".calendar-task, .task-item");
+            if (el) {
+                e.preventDefault();
+                el.click();
+            }
+        }
+    })
 });
