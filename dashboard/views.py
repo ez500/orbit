@@ -1,11 +1,18 @@
-from django.shortcuts import render
+import json
+
 from django.contrib.auth.decorators import login_required
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.contrib.auth.models import User
+from django.core.serializers import serialize
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from projects.models import Project
+from teams.models import Team
 from .models import Task
 from .serializer import TaskViewSerializer, TaskCreateSerializer
 
@@ -24,12 +31,18 @@ def tasks(request):
     """Tasks view"""
     user = request.user
 
-    tasks_list = Task.objects.filter(users__contains=[user.id]).order_by('-deadline')
+    tasks_list = Task.objects.filter(users=user.id).order_by('-deadline')
+    teams = Team.objects.filter(members=user.id)
+    projects = Project.objects.filter(collaborators=user.id) | Project.objects.filter(lead=user.id)
 
     serializer = TaskViewSerializer(tasks_list, many=True)
 
     context = {
-        'tasks': serializer.data
+        'title': 'Tasks',
+        'tasks_qs': tasks_list,
+        'tasks': serializer.data,
+        'teams': teams,
+        'projects': projects
     }
 
     if not tasks_list:
@@ -38,24 +51,38 @@ def tasks(request):
     return render(request, 'calendar/tasks.html', context)
 
 
+@login_required
+def get_project_or_team_members(request):
+    if request.data.get('team'):
+        team = get_object_or_404(Team, id=request.data.get('team'))
+        serialized_members = json.loads(serialize('json', team.members.all(), use_natural_foreign_keys=True))
+    else:
+        project = get_object_or_404(Project, id=request.data.get('project'))
+        serialized_members = json.loads(serialize('json',
+                                                  project.collaborators.all() | User.objects.filter(user=project.lead),
+                                                  use_natural_foreign_keys=True))
+
+    formatted_members = {}
+    for member in serialized_members:
+        fields = member['fields']
+        fields['id'] = member['pk']
+        formatted_members = fields
+
+    return JsonResponse(formatted_members)
+
+
 class TaskCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = TaskCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            title = serializer.validated_data.get('title')
-            content = serializer.validated_data.get('content')
-            deadline = serializer.validated_data.get('deadline')
-            users = serializer.validated_data.get('users', [])
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as e:
+            print(e)
 
-            task = Task.objects.create(
-                title=title,
-                content=content,
-                deadline=deadline,
-            )
-            task.users = users
-            task.save()
+        if serializer.is_valid():
+            task = serializer.save()
 
             return Response({'message': 'Task created successfully', 'task_id': task.id},
                             status=status.HTTP_201_CREATED)

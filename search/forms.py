@@ -1,4 +1,5 @@
-from home.models import Company, Project
+from company.models import Company
+from projects.models import Project
 from teams.models import Team
 from django import forms
 from django.contrib.auth.models import User

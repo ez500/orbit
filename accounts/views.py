@@ -17,6 +17,7 @@ from accounts import models
 from accounts.forms import RegistrationForm, UpdateUserForm, UpdateProfileForm, ChangePasswordForm
 from accounts.models import Profile
 from company.models import Company
+from projects.models import Project
 from teams.models import Team
 
 
@@ -75,7 +76,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context['connections'] = profile.connections.all()
         context['companies'] = Company.objects.filter(members=profile.user).order_by("name")
         context['teams'] = Team.objects.filter(members=profile.user).order_by("name")
-        context['projects'] = profile.projects.all()
+        context['projects'] = Project.objects.filter(collaborators=profile.user).order_by("name")
         context['can_view'] = self.can_view_private_info()
         return context
 

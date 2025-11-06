@@ -1,247 +1,264 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load task_extras %}
 {% block extra_css %}{#{ block.super }#}{% endblock %}
 {% block content %}
-<meta name="csrf-token" content="{{ csrf_token }}">
-<div class="container-fluid p-0">
-  <!-- Page Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">Tasks</h1>
-    <div class="d-flex gap-2">
-      <div class="btn-group view-toggle" role="group">
-        <button type="button" class="btn btn-light active" data-view="list">
-          <i class="fas fa-list-ul"></i> List
-        </button>
-        <button type="button" class="btn btn-light" data-view="calendar">
-          <i class="fas fa-calendar-alt"></i> Calendar
-        </button>
-      </div>
-      <button
-        class="btn btn-dark"
-        data-bs-toggle="modal"
-        data-bs-target="#addTaskModal"
-      >
-        <i class="fas fa-plus"></i> Add Task
-      </button>
-    </div>
-  </div>
-
-  <!-- Search and Filters -->
-  <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-6 col-lg-8">
-          <div class="input-group">
-            <span class="input-group-text border-0 bg-light">
-              <i class="fas fa-search text-muted"></i>
-            </span>
-            <input
-              type="text"
-              class="form-control border-0 bg-light"
-              placeholder="Search Tasks"
-            />
-          </div>
-        </div>
-        <div class="col-md-3 col-lg-2">
-          <button
-            class="btn btn-light w-100 d-flex align-items-center justify-content-between"
-          >
-            All Tasks <i class="fas fa-chevron-down"></i>
-          </button>
-        </div>
-        <div class="col-md-3 col-lg-2">
-          <button
-            class="btn btn-light w-100 d-flex align-items-center justify-content-between"
-          >
-            Sort by <i class="fas fa-chevron-down"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tasks List -->
-  <div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-      <!-- Task Item -->
-      {% if empty %}
-      <div class="task-item p-3 border-bottom">
-            <div class="d-flex align-items-center">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="task1" />
-              </div>
-              <div class="ms-3 flex-grow-1">
-                <h6 class="mb-1">No Tasks Due</h6>
-                <div class="d-flex align-items-center gap-3">
-                  <span class="badge bg-success-subtle text-success"
-                    >Finished</span
-                  >
-                  <small class="text-muted">N/A</small>
-                  <div class="avatar-group">
-                    <!--
-                    /*<img
-                      src="https://ui-avatars.com/api/?name=John+Doe"
-                      alt="John D."
-                      class="avatar"
-                    />
-                    <img
-                      src="https://ui-avatars.com/api/?name=Jane+Smith"
-                      alt="Jane S."
-                      class="avatar"
-                    />
-                    -->
-                  </div>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <div class="container-fluid p-0">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">Tasks</h1>
+            <div class="d-flex gap-2">
+                <div class="btn-group view-toggle" role="group">
+                    <button type="button" class="btn btn-light active" data-view="list">
+                        <i class="fas fa-list-ul"></i> List
+                    </button>
+                    <button type="button" class="btn btn-light" data-view="calendar">
+                        <i class="fas fa-calendar-alt"></i> Calendar
+                    </button>
                 </div>
-              </div>
-              <div class="task-actions">
-                <button class="btn btn-light btn-sm">
-                  <i class="fas fa-ellipsis-v"></i>
+                <button
+                        class="btn btn-dark"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addTaskModal"
+                >
+                    <i class="fas fa-plus"></i> Add Task
                 </button>
-              </div>
             </div>
-          </div>
-      {% else %}
-        {% for task in tasks %}
-          <div class="task-item p-3 border-bottom">
-            <div class="d-flex align-items-center">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="task1" />
-              </div>
-              <div class="ms-3 flex-grow-1">
-                <h6 class="mb-1">{{ task.title }}</h6>
-                <div class="d-flex align-items-center gap-3">
-                  <span class="badge bg-success-subtle text-success"
-                    >In Progress</span
-                  >
-                  <small class="text-muted">{{ task.deadline }}</small>
-                  <div class="avatar-group">
-                    <!--
-                    <img
-                      src="https://ui-avatars.com/api/?name=John+Doe"
-                      alt="John D."
-                      class="avatar"
-                    />
-                    <img
-                      src="https://ui-avatars.com/api/?name=Jane+Smith"
-                      alt="Jane S."
-                      class="avatar"
-                    />
-                    -->
-                  </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6 col-lg-8">
+                        <div class="input-group">
+                            <span class="input-group-text border-0 bg-light">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input
+                                    type="text"
+                                    class="form-control border-0 bg-light"
+                                    placeholder="Search Tasks"
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-lg-2">
+                        <button
+                                class="btn btn-light w-100 d-flex align-items-center justify-content-between"
+                        >
+                            All Tasks <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-3 col-lg-2">
+                        <button
+                                class="btn btn-light w-100 d-flex align-items-center justify-content-between"
+                        >
+                            Sort by <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
                 </div>
-              </div>
-              <div class="task-actions">
-                <button class="btn btn-light btn-sm">
-                  <i class="fas fa-ellipsis-v"></i>
-                </button>
-              </div>
             </div>
-          </div>
-        {% endfor %}
-      {% endif %}
-      
-    </div>
-  </div>
-</div>
+        </div>
 
-<!-- Calendar View -->
-<div id="calendarView" class="card border-0 shadow-sm d-none">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h5 class="mb-0" id="currentMonth">October 2025</h5>
-      <div class="btn-group">
-        <button class="btn btn-light" id="prevMonth">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="btn btn-light" id="nextMonth">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
+        <!-- Tasks List -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <!-- Task Item -->
+                {% if empty %}
+                    <div class="task-item p-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="ms-3 flex-grow-1">
+                                <h6 class="mb-1">No Tasks Due</h6>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-group">
+                                        <!--
+                                        /*<img
+                                          src="https://ui-avatars.com/api/?name=John+Doe"
+                                          alt="John D."
+                                          class="avatar"
+                                        />
+                                        <img
+                                          src="https://ui-avatars.com/api/?name=Jane+Smith"
+                                          alt="Jane S."
+                                          class="avatar"
+                                        />
+                                        -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="btn btn-light btn-sm">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    {% for task in tasks_qs %}
+                        <div class="task-item p-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="task1"/>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h6 class="mb-1">{{ task.title }}</h6>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span class="badge {{ task.status|status_badge }}">{{ task.get_status_display }}</span>
+                                        <small class="text-muted">
+                                            {% if task.deadline %}
+                                                {{ task.deadline }}
+                                            {% else %}
+                                                No deadline
+                                            {% endif %}
+                                        </small>
+                                        <div class="avatar-group">
+                                            <!--
+                                            <img
+                                              src="https://ui-avatars.com/api/?name=John+Doe"
+                                              alt="John D."
+                                              class="avatar"
+                                            />
+                                            <img
+                                              src="https://ui-avatars.com/api/?name=Jane+Smith"
+                                              alt="Jane S."
+                                              class="avatar"
+                                            />
+                                            -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="btn btn-light btn-sm">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
     </div>
-    <div class="calendar">
-      <div class="row g-0 calendar-header mb-2">
-        <div class="col text-center py-2">Sun</div>
-        <div class="col text-center py-2">Mon</div>
-        <div class="col text-center py-2">Tue</div>
-        <div class="col text-center py-2">Wed</div>
-        <div class="col text-center py-2">Thu</div>
-        <div class="col text-center py-2">Fri</div>
-        <div class="col text-center py-2">Sat</div>
-      </div>
-      <div id="calendarGrid">
-        <!-- Calendar days will be inserted here by JavaScript -->
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Add Task Modal -->
-<div class="modal fade" id="addTaskModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header border-0">
-        <h5 class="modal-title">Add New Task</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <form id="addTaskForm">
-          <div class="mb-3">
-            <label for="taskTitle" class="form-label">Task Title</label>
-            <input type="text" class="form-control" id="taskTitle" required />
-          </div>
-          <div class="mb-3">
-            <label for="taskDescription" class="form-label">Description</label>
-            <textarea
-              class="form-control"
-              id="taskDescription"
-              rows="3"
-            ></textarea>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="taskDueDate" class="form-label">Due Date</label>
-              <input
-                type="date"
-                class="form-control"
-                id="taskDueDate"
-                required
-              />
+    <!-- Calendar View -->
+    <div id="calendarView" class="card border-0 shadow-sm d-none">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0" id="currentMonth">October 2025</h5>
+                <div class="btn-group">
+                    <button class="btn btn-light" id="prevMonth">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-light" id="nextMonth">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
-            <div class="col-md-6">
-              <label for="taskStatus" class="form-label">Status</label>
-              <select class="form-select" id="taskStatus" required>
-                <option value="todo">To Do</option>
-                <option value="in-progress">In Progress</option>
-                <option value="review">Pending Review</option>
-                <option value="completed">Completed</option>
-              </select>
+            <div class="calendar">
+                <div class="row g-0 calendar-header mb-2">
+                    <div class="col text-center py-2">Sun</div>
+                    <div class="col text-center py-2">Mon</div>
+                    <div class="col text-center py-2">Tue</div>
+                    <div class="col text-center py-2">Wed</div>
+                    <div class="col text-center py-2">Thu</div>
+                    <div class="col text-center py-2">Fri</div>
+                    <div class="col text-center py-2">Sat</div>
+                </div>
+                <div id="calendarGrid">
+                    <!-- Calendar days will be inserted here by JavaScript -->
+                </div>
             </div>
-          </div>
-          <div class="mb-3">
-            <label for="taskAssignees" class="form-label">Assignees</label>
-            <select class="form-select" id="taskAssignees" multiple>
-              <option value="{{ user.id }}">{{ user.username }}</option>
-            </select>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer border-0">
-        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-          Cancel
-        </button>
-        <button type="button" class="btn btn-dark" id="addTaskBtn">
-          Add Task
-        </button>
-      </div>
+        </div>
     </div>
-  </div>
-</div>
+
+    <!-- Add Task Modal -->
+    <div class="modal fade" id="addTaskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Add New Task</h5>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTaskForm">
+                        <div class="mb-3">
+                            <label for="taskTitle" class="form-label">Task Title</label>
+                            <input type="text" class="form-control" id="taskTitle" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="taskContent" class="form-label">Description</label>
+                            <textarea
+                                    class="form-control"
+                                    id="taskContent"
+                                    rows="3"
+                            ></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="taskDeadline" class="form-label">Due Date</label>
+                                <input
+                                        type="date"
+                                        class="form-control"
+                                        id="taskDeadline"
+                                />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="taskStatus" class="form-label">Status</label>
+                                <select class="form-select" id="taskStatus" required>
+                                    <option value="todo">To Do</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="review">Pending Review</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="taskTeam" class="form-label">Team</label>
+                                <select class="form-select" id="taskTeam">
+                                    <option value="">No Team</option>
+                                    {% for team in teams %}
+                                        <option value="{{ team.id }}">{{ team.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="taskProject" class="form-label">Project</label>
+                                <select class="form-select" id="taskProject">
+                                    <option value="">No Project</option>
+                                    {% for project in projects %}
+                                        <option value="{{ project.id }}">{{ project.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="taskUsers" class="form-label">Assignees</label>
+                            <select class="form-select" id="taskUsers" multiple>
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-dark" id="addTaskBtn">
+                        Add Task
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %} {% block extra_js %}
-<script src="{% static 'js/calendar.js' %}"></script>
-<script src="{% static 'js/tasks.js' %}"></script>
+    {{ tasks|json_script:"tasks-data" }}
+    <script src="{% static 'js/calendar.js' %}"></script>
+    <script src="{% static 'js/tasks.js' %}"></script>
 {% endblock %}
