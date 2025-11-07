@@ -11,7 +11,6 @@ from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView, DetailView, ListView
 
 from accounts import models
