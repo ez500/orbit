@@ -1274,8 +1274,27 @@ select.form-select {
 
 .theme-option.active {
   border-color: var(--accent-color);
-  background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.1);
+  background-color: var(--accent-color);
   box-shadow: 0 0 0 4px rgba(var(--accent-color-rgb, 30, 144, 255), 0.2);
+}
+
+.theme-option.active label,
+.theme-option.active .theme-option-icon,
+.theme-option.active .theme-option-label {
+  color: var(--accent-text);
+}
+
+.theme-option.selected {
+  border-color: var(--accent-color);
+  background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.05);
+  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb, 30, 144, 255), 0.3);
+}
+
+/* Override text color when selected to use default theme text color */
+.theme-option.selected label,
+.theme-option.selected .theme-option-icon,
+.theme-option.selected .theme-option-label {
+  color: var(--text-color);
 }
 
 .theme-option label {
@@ -1415,6 +1434,12 @@ select.form-select {
 .color-option input[type="radio"]:checked + .color-swatch {
   transform: scale(1.15);
   box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 5px var(--accent-color);
+}
+
+/* Highlighted state before save (overrides checked state with higher specificity) */
+.color-option.selected input[type="radio"]:checked + .color-swatch {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 4px rgba(var(--accent-color-rgb, 30, 144, 255), 0.5);
 }
 
 /* Accessibility Section Improvements */

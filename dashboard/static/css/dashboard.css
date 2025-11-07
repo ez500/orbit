@@ -404,7 +404,7 @@
 /* Stat cards readability */
 .stat-card,
 .metric-card {
-  background-color: var(--card-bg);
+  background-color: var(--hover-bg);
   color: var(--text-color);
   border: 1px solid var(--border-color);
 }
@@ -416,7 +416,9 @@
 }
 
 .stat-card h2,
+.stat-card h3,
 .metric-card h2,
+.metric-card h3,
 .stat-card .display-4,
 .metric-card .display-4 {
   color: var(--text-color);

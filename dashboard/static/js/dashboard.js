@@ -147,9 +147,9 @@ class DashboardManager {
               <div class="team-board">
                 <div class="row g-3">
                   <div class="col-md-3">
-                    <div class="board-column bg-light p-2 rounded">
+                    <div class="board-column p-2 rounded">
                       <h6 class="column-title mb-3">To Do</h6>
-                      <div class="task-card p-2 bg-white rounded mb-2 shadow-sm">
+                      <div class="task-card p-2 rounded mb-2 shadow-sm">
                         <h6 class="mb-1">Update API Documentation</h6>
                         <small class="text-muted d-block mb-2">High Priority</small>
                         <div class="d-flex justify-content-between align-items-center">
@@ -157,7 +157,7 @@ class DashboardManager {
                           <img src="https://ui-avatars.com/api/?name=John+Doe" alt="John D." class="rounded-circle" width="24" height="24">
                         </div>
                       </div>
-                      <div class="task-card p-2 bg-white rounded mb-2 shadow-sm">
+                      <div class="task-card p-2 rounded mb-2 shadow-sm">
                         <h6 class="mb-1">Design System Updates</h6>
                         <small class="text-muted d-block mb-2">Medium Priority</small>
                         <div class="d-flex justify-content-between align-items-center">
@@ -168,9 +168,9 @@ class DashboardManager {
                     </div>
                   </div>
                   <div class="col-md-3">
-                    <div class="board-column bg-light p-2 rounded">
+                    <div class="board-column p-2 rounded">
                       <h6 class="column-title mb-3">In Progress</h6>
-                      <div class="task-card p-2 bg-white rounded mb-2 shadow-sm">
+                      <div class="task-card p-2 rounded mb-2 shadow-sm">
                         <h6 class="mb-1">User Authentication</h6>
                         <small class="text-muted d-block mb-2">High Priority</small>
                         <div class="d-flex justify-content-between align-items-center">
@@ -181,9 +181,9 @@ class DashboardManager {
                     </div>
                   </div>
                   <div class="col-md-3">
-                    <div class="board-column bg-light p-2 rounded">
+                    <div class="board-column p-2 rounded">
                       <h6 class="column-title mb-3">Review</h6>
-                      <div class="task-card p-2 bg-white rounded mb-2 shadow-sm">
+                      <div class="task-card p-2 rounded mb-2 shadow-sm">
                         <h6 class="mb-1">Homepage Redesign</h6>
                         <small class="text-muted d-block mb-2">Medium Priority</small>
                         <div class="d-flex justify-content-between align-items-center">
@@ -194,9 +194,9 @@ class DashboardManager {
                     </div>
                   </div>
                   <div class="col-md-3">
-                    <div class="board-column bg-light p-2 rounded">
+                    <div class="board-column p-2 rounded">
                       <h6 class="column-title mb-3">Done</h6>
-                      <div class="task-card p-2 bg-white rounded mb-2 shadow-sm">
+                      <div class="task-card p-2 rounded mb-2 shadow-sm">
                         <h6 class="mb-1">Initial Setup</h6>
                         <small class="text-muted d-block mb-2">Completed</small>
                         <div class="d-flex justify-content-between align-items-center">
@@ -232,7 +232,7 @@ class DashboardManager {
               <div class="analytics-container">
                 <div class="row g-3">
                   <div class="col-md-8">
-                    <div class="chart-container" style="height: 300px; background: #f8f9fa; border-radius: 8px;">
+                    <div class="chart-container" style="height: 300px; background: var(--hover-bg); border-radius: 8px;">
                       <!-- Placeholder for chart -->
                       <div class="d-flex align-items-center justify-content-center h-100">
                         <p class="text-muted mb-0">Project Progress Chart</p>
@@ -241,15 +241,15 @@ class DashboardManager {
                   </div>
                   <div class="col-md-4">
                     <div class="metrics-grid">
-                      <div class="metric-card p-3 bg-light rounded mb-2">
+                      <div class="metric-card p-3 rounded mb-2">
                         <h3 class="mb-1">85%</h3>
                         <small class="text-muted">Task Completion Rate</small>
                       </div>
-                      <div class="metric-card p-3 bg-light rounded mb-2">
+                      <div class="metric-card p-3 rounded mb-2">
                         <h3 class="mb-1">12</h3>
                         <small class="text-muted">Active Sprints</small>
                       </div>
-                      <div class="metric-card p-3 bg-light rounded">
+                      <div class="metric-card p-3 rounded">
                         <h3 class="mb-1">94%</h3>
                         <small class="text-muted">Team Efficiency</small>
                       </div>
@@ -522,7 +522,7 @@ class DashboardManager {
                   <div class="upcoming-events">
                     <h5 class="mb-3">Upcoming Events</h5>
                     <div class="event-list">
-                      <div class="event-item p-2 bg-light rounded mb-2">
+                      <div class="event-item p-2 rounded mb-2">
                         <div class="d-flex align-items-center">
                           <div class="event-dot bg-primary me-2"></div>
                           <div>
@@ -531,7 +531,7 @@ class DashboardManager {
                           </div>
                         </div>
                       </div>
-                      <div class="event-item p-2 bg-light rounded mb-2">
+                      <div class="event-item p-2 rounded mb-2">
                         <div class="d-flex align-items-center">
                           <div class="event-dot bg-success me-2"></div>
                           <div>
@@ -540,7 +540,7 @@ class DashboardManager {
                           </div>
                         </div>
                       </div>
-                      <div class="event-item p-2 bg-light rounded">
+                      <div class="event-item p-2 rounded">
                         <div class="d-flex align-items-center">
                           <div class="event-dot bg-warning me-2"></div>
                           <div>
@@ -571,13 +571,13 @@ class DashboardManager {
               <div class="card-body">
                 <div class="row g-2">
                   <div class="col-6">
-                    <div class="p-3 bg-light rounded">
+                    <div class="stat-card p-3 rounded">
                       <h3 class="mb-0">12</h3>
                       <small class="text-muted">Tasks Due</small>
                     </div>
                   </div>
                   <div class="col-6">
-                    <div class="p-3 bg-light rounded">
+                    <div class="stat-card p-3 rounded">
                       <h3 class="mb-0">5</h3>
                       <small class="text-muted">Completed</small>
                     </div>

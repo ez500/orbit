@@ -80,6 +80,7 @@
 
     // Update CSS variables for theme colors
     document.documentElement.style.setProperty("--accent-color", accentColor);
+    document.documentElement.style.setProperty("--accent-color-rgb", `${r}, ${g}, ${b}`);
     document.documentElement.style.setProperty("--accent-text", textColor);
     document.documentElement.style.setProperty("--bg-color", isDark ? "#1a1a1a" : "#ffffff");
     document.documentElement.style.setProperty("--text-color", isDark ? "#ffffff" : "#000000");
@@ -161,9 +162,29 @@
   function initializeUI() {
     const values = getCurrentValues();
     applyPreview(values);
-    
+
     // Store initial values for comparison
     initialValues = JSON.parse(JSON.stringify(values));
+
+    // Ensure theme options are correctly set up on page load
+    // Remove any stray 'selected' classes and ensure 'active' is on the saved option
+    document.querySelectorAll('.theme-option').forEach(option => {
+      option.classList.remove('selected');
+      const radio = option.querySelector('input[type="radio"]');
+      if (radio && radio.checked) {
+        // This is the saved theme - ensure it has 'active' class
+        option.classList.add('active');
+      } else {
+        // Remove active from non-saved themes
+        option.classList.remove('active');
+      }
+    });
+
+    // Ensure color options are correctly set up on page load
+    // Remove any stray 'selected' classes from color options
+    document.querySelectorAll('.color-option').forEach(option => {
+      option.classList.remove('selected');
+    });
 
     // Highlight active accent color
     const activeAccent = values.accent_color;
@@ -184,19 +205,26 @@
       option.addEventListener('click', function() {
         // Find the radio button within this option
         const radio = this.querySelector('input[type="radio"]');
-        if (radio && !radio.checked) {
+        if (radio) {
+          const wasChecked = radio.checked;
+
           // Check the radio button
           radio.checked = true;
 
-          // Update active state on all theme options
+          // Update selected state on all theme options (for unsaved selection)
+          // Remove both 'active' and 'selected' from all options
           document.querySelectorAll('.theme-option').forEach(opt => {
-            opt.classList.remove('active');
+            opt.classList.remove('active', 'selected');
           });
-          this.classList.add('active');
+          // Add 'selected' to the clicked option (highlighted state)
+          this.classList.add('selected');
 
-          // Trigger change event to update preview
-          radio.dispatchEvent(new Event('change', { bubbles: true }));
-          
+          // Only trigger change event if it wasn't already checked
+          if (!wasChecked) {
+            // Trigger change event to update preview
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+
           // Show alert if there are unsaved changes
           if (hasUnsavedChanges()) {
             showUnsavedChangesAlert();
@@ -209,10 +237,25 @@
       option.addEventListener('click', function() {
         const radio = this.querySelector('input[type="radio"]');
         if (radio) {
+          const wasChecked = radio.checked;
+
+          // Check the radio button
           radio.checked = true;
-          // Trigger change event
-          radio.dispatchEvent(new Event('change', { bubbles: true }));
-          
+
+          // Update selected state on all color options
+          // Remove 'selected' class from all (color options don't use 'active' class)
+          document.querySelectorAll('.color-option').forEach(opt => {
+            opt.classList.remove('selected');
+          });
+          // Add 'selected' to the clicked option (highlighted state)
+          this.classList.add('selected');
+
+          // Only trigger change event if it wasn't already checked
+          if (!wasChecked) {
+            // Trigger change event
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+
           // Show alert if there are unsaved changes
           if (hasUnsavedChanges()) {
             showUnsavedChangesAlert();
