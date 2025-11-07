@@ -197,4 +197,67 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     })
+
+    // Calendar Import/Export functions and event listeners
+    function createIcsContent(eventData) {
+        // Format dates to format (YYYYMMDDTHHMMSSZ for UTC)
+        const formatIcsDate = (date) => {
+            return date.toISOString().replace(/[-:]|\.\d{3}/g, "");
+        };
+
+        let eventStrings = [];
+        for (let i = 0; i < eventData.length; i++) {
+            const { title, description, start, end, location } = eventData[i];
+
+            eventStrings.push(`BEGIN:VEVENT
+UID:${Date.now()}@veralign.com
+DTSTAMP:${formatIcsDate(new Date())}
+DTSTART:${formatIcsDate(start)}
+DTEND:${formatIcsDate(end)}
+SUMMARY:${title}
+DESCRIPTION:${description}
+LOCATION:${location}
+END:VEVENT`);
+        }
+
+        const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Company//VerAlign//EN
+${eventStrings.join("\n")}
+END:VCALENDAR`;
+
+        return icsContent;
+    }
+
+    function downloadIcsFile(eventData) {
+        const icsContent = createIcsContent(eventData);
+        const filename = "VerAlign Calendar.ics";
+
+        const blob = new Blob([icsContent], { type: "text/calendar; charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
+    }
+
+    document.getElementById("calExport").addEventListener("click", () => {
+        let evenList = [];
+        for (let i = 0; i < tasks.length; i++) {
+            evenList.push({
+                title: tasks[i].title,
+                description: tasks[i].content,
+                start: new Date(tasks[i].deadline + "T14:00:00Z"),
+                end: new Date(tasks[i].deadline + "T15:00:00Z"),
+                location: ""
+            });
+        }
+
+        downloadIcsFile(evenList);
+    })
+
 });
