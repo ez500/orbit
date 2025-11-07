@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load task_extras %}
-{% block extra_css %}{#{ block.super }#}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/listCalendar.css' %}">
+{% endblock %}
+
 {% block content %}
     <meta name="csrf-token" content="{{ csrf_token }}">
     <div class="container-fluid p-0">
