@@ -133,7 +133,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Email configs
 
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # prints emails to the terminal
+
+DEFAULT_FROM_EMAIL = 'no-reply@veralign.local'
+
+CONTACT_RECIPIENTS = ['bfm@bfm.io', 'eric@chen.com']
 
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.sendgrid.net')
 
@@ -146,6 +150,8 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
 EMAIL_CONNECTION_CLASS = config('EMAIL_CONNECTION_CLASS', default='django.core.mail.backends.smtp.EmailBackend')
+
+RECIPIENT_ADDRESS = ""
 
 
 # Login/logout + redirect URLs
