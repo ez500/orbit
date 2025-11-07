@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
+
 
 class Team(models.Model):
     name = models.CharField(max_length=120, unique=True)
@@ -27,3 +29,26 @@ class TeamMembership(models.Model):
 
     def __str__(self):
         return f"{self.user} in {self.team} ({self.role or 'Member'})"
+
+class TeamTask(models.Model):
+    team = models.ForeignKey("Team", on_delete=models.CASCADE, related_name="tasks")
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.title} ({self.team.name})"
+
+
+class TeamEvent(models.Model):
+    team = models.ForeignKey("Team", on_delete=models.CASCADE, related_name="events")
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.title} ({self.team.name})"

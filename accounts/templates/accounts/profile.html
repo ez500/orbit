@@ -147,6 +147,57 @@
                     </div>
                 </div>
             </div>
+<div class="card p-4 mt-3 text-center">
+    <h3 class="mb-3">My Companies</h3>
+
+    {% if companies %}
+        <ul style="list-style:none; padding:0; margin:0;">
+            {% for company in companies %}
+                <li class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="text-start">
+                        <b>{{ company.name }}</b>
+                        {% if company.owner == user %}
+                            <span class="badge bg-primary ms-2">Owner</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <a href="{% url 'company:company' company.name %}" class="btn btn-outline-primary btn-sm">
+                            View
+                        </a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="opacity-75 mb-3">
+            You haven’t joined or created any companies yet.
+            <!-- Join Company Button -->
+            <a href="{% url 'company:join_list' %}" class="btn btn-outline-success btn-lg px-4 py-2">
+                <i class="fas fa-user-plus me-2"></i> Join a Company
+            </a>
+
+            <!-- Create Company Button -->
+            <a href="{% url 'company:register' %}" class="btn btn-success btn-lg px-4 py-2">
+                <i class="fas fa-building me-2"></i> Create a Company
+            </a>
+
+        </p>
+    {% endif %}
+
+    {% if user == profile %}
+        <div class="d-flex justify-content-center flex-wrap gap-3 mt-3">
+            <!-- Join Company Button -->
+            <a href="{% url 'company:join_list' %}" class="btn btn-outline-success btn-lg px-4 py-2">
+                <i class="fas fa-user-plus me-2"></i> Join a Company
+            </a>
+
+            <!-- Create Company Button -->
+            <a href="{% url 'company:register' %}" class="btn btn-success btn-lg px-4 py-2">
+                <i class="fas fa-building me-2"></i> Create a Company
+            </a>
+        </div>
+    {% endif %}
+</div>
 
             <!-- Teams -->
             <div class="col-lg-3">

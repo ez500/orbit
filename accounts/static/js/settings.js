@@ -4,6 +4,53 @@
   const SPACING_MAP = { compact: "1", normal: "1.5", relaxed: "1.8" };
 
   const form = document.getElementById("settings-form");
+  let initialValues = null;
+  let unsavedChangesAlert = null;
+
+  // Function to show unsaved changes alert
+  function showUnsavedChangesAlert() {
+    // Remove existing alert if present
+    if (unsavedChangesAlert) {
+      unsavedChangesAlert.remove();
+    }
+
+    // Get or create messages container
+    let messagesContainer = document.getElementById("messages-container");
+    if (!messagesContainer) {
+      messagesContainer = document.createElement("div");
+      messagesContainer.id = "messages-container";
+      const settingsContainer = document.querySelector(".settings-container");
+      if (settingsContainer) {
+        settingsContainer.insertBefore(messagesContainer, settingsContainer.firstChild);
+      }
+    }
+
+    // Create alert element
+    unsavedChangesAlert = document.createElement("div");
+    unsavedChangesAlert.className = "alert alert-warning alert-dismissible fade show";
+    unsavedChangesAlert.setAttribute("role", "alert");
+    unsavedChangesAlert.innerHTML = `
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      <strong>Unsaved changes:</strong> You have unsaved changes. Don't forget to click "Save Changes" to apply them.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    messagesContainer.appendChild(unsavedChangesAlert);
+  }
+
+  // Function to hide unsaved changes alert
+  function hideUnsavedChangesAlert() {
+    if (unsavedChangesAlert) {
+      unsavedChangesAlert.remove();
+      unsavedChangesAlert = null;
+    }
+  }
+
+  // Function to check if form has unsaved changes
+  function hasUnsavedChanges() {
+    if (!initialValues) return false;
+    const currentValues = getCurrentValues();
+    return JSON.stringify(currentValues) !== JSON.stringify(initialValues);
+  }
 
   function getCurrentValues() {
     return {
@@ -69,6 +116,10 @@
   form.querySelectorAll("input, select").forEach((input) => {
     input.addEventListener("change", () => {
       applyPreview(getCurrentValues());
+      // Show alert if there are unsaved changes
+      if (hasUnsavedChanges()) {
+        showUnsavedChangesAlert();
+      }
     });
   });
 
@@ -98,6 +149,11 @@
 
       // Apply preview
       applyPreview(defaults);
+      
+      // Show alert if there are unsaved changes
+      if (hasUnsavedChanges()) {
+        showUnsavedChangesAlert();
+      }
     });
   }
 
@@ -105,6 +161,9 @@
   function initializeUI() {
     const values = getCurrentValues();
     applyPreview(values);
+    
+    // Store initial values for comparison
+    initialValues = JSON.parse(JSON.stringify(values));
 
     // Highlight active accent color
     const activeAccent = values.accent_color;
@@ -137,6 +196,11 @@
 
           // Trigger change event to update preview
           radio.dispatchEvent(new Event('change', { bubbles: true }));
+          
+          // Show alert if there are unsaved changes
+          if (hasUnsavedChanges()) {
+            showUnsavedChangesAlert();
+          }
         }
       });
     });
@@ -148,6 +212,11 @@
           radio.checked = true;
           // Trigger change event
           radio.dispatchEvent(new Event('change', { bubbles: true }));
+          
+          // Show alert if there are unsaved changes
+          if (hasUnsavedChanges()) {
+            showUnsavedChangesAlert();
+          }
         }
       });
     });
@@ -158,6 +227,12 @@
     // Get current theme values and save to localStorage
     const themeValues = getCurrentValues();
     localStorage.setItem("theme", JSON.stringify(themeValues));
+
+    // Hide unsaved changes alert
+    hideUnsavedChangesAlert();
+    
+    // Update initial values to current values
+    initialValues = JSON.parse(JSON.stringify(themeValues));
 
     // The form will submit normally to the server
     // Django will save to database and reload the page

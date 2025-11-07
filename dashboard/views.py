@@ -24,11 +24,20 @@ from .serializer import TaskViewSerializer, TaskCreateSerializer
 @login_required
 def dashboard(request):
     """Dashboard view"""
+    user = request.user
 
-    context = {'title': 'Dashboard'}
+    personal_tasks = Task.objects.filter(users=user).order_by('-pub_date')[:5]
 
+    project_tasks = Task.objects.filter(
+        project__in=Project.objects.filter(collaborators=user) | Project.objects.filter(lead=user)
+    ).order_by('-pub_date')[:5]
+
+    context = {
+        'title': 'Dashboard',
+        'personal_tasks': personal_tasks,
+        'project_tasks': project_tasks,
+    }
     return render(request, 'dashboard/dashboard.html', context)
-
 
 @login_required
 def tasks(request):

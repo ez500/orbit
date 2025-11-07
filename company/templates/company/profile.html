@@ -1,65 +1,86 @@
-it{% extends 'base.html' %}
-
+{% extends "base.html" %}
+{% load static %}
 {% block content %}
+<div class="container mt-4">
 
-    <!-- Header / About card -->
-    <div class="card">
-        <div class="card-body">
-            <div class="me-auto text-start mb-4">
-                {% if company.profile_picture %}
-                    <img src="{{ company.profile_picture.url }}" alt="{{ company }}'s profile picture"
-                         style="width:120px; height:120px; object-fit:cover; border-radius:12px; border:1px solid #333;"/>
-                {% else %}
-                    <div style="width:120px; height:120px; border-radius:12px; border:1px dashed #555; display:grid; place-items:center; font-size:2rem; opacity:.7;">
-                        {{ company.name|first|upper }}
-                    </div>
-                {% endif %}
-            </div>
-            {% if user == company.owner %}
-                <a href="{% url 'company:edit' company %}" class="btn btn-primary position-absolute top-0 end-0 m-2">
-                    <i class="fas fa-building"></i>
-                    <span>Edit Company</span>
-                </a><!-- TODO DELETE COMPANY PROFILE -->
-            {% endif %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex align-items-center flex-wrap">
+            <img src="{{ company.logo.url }}" alt="{{ company.name }}"
+                 class="rounded-circle me-4"
+                 style="width: 80px; height: 80px; object-fit: cover;">
 
-            <div style="flex:1 1 320px; min-width:280px;">
-                <h1 class="me-auto text-start mb-3">{{ company }}</h1>
-                <p class="mb-2">
-                    <b>Description:</b>
-                    <span>{{ company.description|linebreaksbr|default:"No bio yet." }}</span>
-                </p>
-                <p class="mb-2"><b>Location:</b> {{ company.location|default:"—" }}</p>
-                <p class="mb-2">
-                    <b>Website:</b>
+            <div>
+                <h2 class="mb-1">{{ company.name }}</h2>
+                <p class="mb-1"><b>Email:</b> {{ company.email }}</p>
+                <p class="mb-1"><b>Phone:</b> {{ company.phone|default:"—" }}</p>
+                <p class="mb-1"><b>Location:</b> {{ company.location|default:"—" }}</p>
+                <p class="mb-0"><b>Website:</b>
                     {% if company.website %}
-                        <a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>
-                    {% else %} — {% endif %}
-                </p>
-                <p class="mb-2">
-                    <b>Email:</b>
-                    <span> {{ company.email }}</span>
+                        <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
+                    {% else %}
+                        —
+                    {% endif %}
                 </p>
             </div>
         </div>
     </div>
 
-    <div class="card">
+    <div class="d-flex mb-3">
+        {% if viewer_membership %}
+            {% if viewer_membership.role == "owner" %}
+                <a href="{% url 'company:edit' company.name %}" class="btn btn-primary me-2">
+                    <i class="fas fa-edit"></i> Edit Company
+                </a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'company:join' company.name %}" class="btn btn-success me-2">
+                <i class="fas fa-user-plus"></i> Join Company
+            </a>
+        {% endif %}
+
+        <a href="{% url 'dashboard:dashboard' %}" class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
         <div class="card-body">
-            {% if members %}
-                <h3 class="mb-3">Members</h3>
-                {% for member in members %}
-                    <div class="card mb-2">
-                        <div class="card-body d-flex align-items-center">
-                            <p class="me-auto text-start mb-0">{{ member }}</p>
-                            <a href="{% url 'accounts:profile_view' member %}" class="btn btn-secondary ms-2">
-                                View Profile
-                            </a>
-                        </div>
-                    </div>
-                {% endfor %}
+            <h4 class="mb-3"><i class="fas fa-users"></i> Members</h4>
+
+            {% if memberships %}
+                <ul class="list-group list-group-flush">
+                    {% for membership in memberships %}
+                        <li class="list-group-item d-flex align-items-center justify-content-between flex-wrap">
+                            <div>
+                                <b>{{ membership.user.username }}</b>
+                                <span class="badge bg-secondary ms-2">{{ membership.role|capfirst }}</span>
+                            </div>
+                            <div>
+                                {% if viewer_membership %}
+                                    {% if viewer_membership.role in "admin owner" and membership.role != "owner" %}
+                                        <a href="{% url 'company:promote' company.name membership.user.username %}"
+                                           class="btn btn-sm btn-outline-success ms-1">
+                                            Promote
+                                        </a>
+                                        <a href="{% url 'company:demote' company.name membership.user.username %}"
+                                           class="btn btn-sm btn-outline-warning ms-1">
+                                            Demote
+                                        </a>
+                                        <a href="{% url 'company:kick' company.name membership.user.username %}"
+                                           class="btn btn-sm btn-outline-danger ms-1">
+                                            Kick
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
             {% else %}
-                <p class="card-text">No members found... maybe use an EMF meter? ;)</p>
+                <p class="text-muted mb-0">No members yet.</p>
             {% endif %}
         </div>
     </div>
+
+</div>
 {% endblock %}

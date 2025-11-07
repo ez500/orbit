@@ -7,6 +7,24 @@ document.addEventListener("DOMContentLoaded", function () {
   const spacingSelect = document.getElementById("id_spacing");
   const resetButton = document.getElementById("reset-theme-btn");
 
+  // Auto-dismiss success messages after 5 seconds
+  const messagesContainer = document.getElementById("messages-container");
+  if (messagesContainer) {
+    const alerts = messagesContainer.querySelectorAll(".alert");
+    alerts.forEach((alert) => {
+      // Only auto-dismiss success messages, not errors
+      if (alert.classList.contains("alert-success")) {
+        setTimeout(() => {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }, 5000);
+      }
+    });
+
+    // Smooth scroll to messages
+    messagesContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
   // Function to preview theme changes
   function previewTheme(settings) {
     window.dispatchEvent(
