@@ -1,5 +1,4 @@
 from django import forms
-
 from .models import Company
 from .validators import validate_email
 
@@ -48,7 +47,10 @@ class CompanyEditForm(forms.ModelForm):
 
     class Meta:
         model = Company
-        fields = ['name', 'description', 'profile_picture', 'email', 'website', 'phone', 'location']
+        fields = ["name", "email", "phone", "location", "description", "website", "logo"]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+        }
 
     def clean_email(self):
         email = self.cleaned_data.get('email')

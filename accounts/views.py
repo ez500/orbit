@@ -74,7 +74,11 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
         context['title'] = f'{profile}\'s Profile'
         context['connections'] = profile.connections.all()
-        context['companies'] = Company.objects.filter(members=profile.user).order_by("name")
+
+        # ✅ FIXED: use memberships__user instead of members
+        context['companies'] = Company.objects.filter(memberships__user=profile.user).order_by("name")
+
+        # ⬇ unchanged parts (teams, projects, permissions)
         context['teams'] = Team.objects.filter(members=profile.user).order_by("name")
         context['projects'] = Project.objects.filter(collaborators=profile.user).order_by("name")
         context['can_view'] = self.can_view_private_info()
@@ -86,9 +90,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
     def dispatch(self, request, *args, **kwargs):
         if not self.can_access():
-            raise Http404(
-                "User %s is hidden." % self.kwargs['username']
-            )
+            raise Http404(f"User {self.kwargs['username']} is hidden.")
         return super().dispatch(request, *args, **kwargs)
 
     def can_access(self):

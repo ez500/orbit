@@ -1,18 +1,39 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
+{% load static %}
 {% block content %}
-    <div class="card">
+<div class="container mt-4">
+    <div class="card shadow-sm">
         <div class="card-body">
-            <h2 class="mb-0">Register Company Profile</h2>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <form method="post">
+            <h2 class="mb-4"><i class="fas fa-building"></i> Register a Company</h2>
+
+            <form method="POST" enctype="multipart/form-data" class="needs-validation">
                 {% csrf_token %}
-                {{ form.as_p }} {# primitive paragraph form #}
-                <button class="btn btn-primary" type="submit">Create</button>
+                {{ form.non_field_errors }}
+                <div class="row g-3">
+                    {% for field in form %}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text text-muted">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i> Create Company
+                    </button>
+                    <a href="{% url 'dashboard:dashboard' %}" class="btn btn-secondary ms-2">
+                        Cancel
+                    </a>
+                </div>
             </form>
         </div>
     </div>
+</div>
 {% endblock %}

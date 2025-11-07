@@ -86,34 +86,57 @@
 
             <!-- Companies -->
             <!-- TODO PUBLIC/PRIVATE MEMBERSHIPS -->
-            <div class="card">
-                <h3 style="margin-top:0;">🏢 Companies{% if companies.exists %} ({{ companies.count }}){% endif %}</h3>
-                {% if companies %}
-                    <ul style="list-style:none; padding:0; margin:0;">
-                        {% for company in companies %}
-                            <li class="d-flex align-items-center">
-                                <p class="me-auto text-start mb-0">{{ company }}</p>
-                                {% if company.website %}
-                                    <a href="{{ company.website }}" class="btn btn-secondary ms-2">Website</a>
-                                {% endif %}
-                                <a href="{% url 'company:company' company %}" class="btn btn-secondary ms-2">View</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    <a href="{% url 'accounts:company_list' username=profile %}" class="btn btn-secondary">
-                        View Companies
-                    </a>
-                {% else %}
-                    <p style="opacity:.8;">
-                        No companies yet.
-                        {% if user.profile == profile %}
-                            <a href="{% url 'company:register' %}">
-                                Register one here!
-                            </a>
+<div class="card p-4 mt-3 text-center">
+    <h3 class="mb-3">My Companies</h3>
+
+    {% if companies %}
+        <ul style="list-style:none; padding:0; margin:0;">
+            {% for company in companies %}
+                <li class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="text-start">
+                        <b>{{ company.name }}</b>
+                        {% if company.owner == user %}
+                            <span class="badge bg-primary ms-2">Owner</span>
                         {% endif %}
-                    </p>
-                {% endif %}
-            </div>
+                    </div>
+                    <div>
+                        <a href="{% url 'company:company' company.name %}" class="btn btn-outline-primary btn-sm">
+                            View
+                        </a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="opacity-75 mb-3">
+            You haven’t joined or created any companies yet.
+            <!-- Join Company Button -->
+            <a href="{% url 'company:join_list' %}" class="btn btn-outline-success btn-lg px-4 py-2">
+                <i class="fas fa-user-plus me-2"></i> Join a Company
+            </a>
+
+            <!-- Create Company Button -->
+            <a href="{% url 'company:register' %}" class="btn btn-success btn-lg px-4 py-2">
+                <i class="fas fa-building me-2"></i> Create a Company
+            </a>
+
+        </p>
+    {% endif %}
+
+    {% if user == profile %}
+        <div class="d-flex justify-content-center flex-wrap gap-3 mt-3">
+            <!-- Join Company Button -->
+            <a href="{% url 'company:join_list' %}" class="btn btn-outline-success btn-lg px-4 py-2">
+                <i class="fas fa-user-plus me-2"></i> Join a Company
+            </a>
+
+            <!-- Create Company Button -->
+            <a href="{% url 'company:register' %}" class="btn btn-success btn-lg px-4 py-2">
+                <i class="fas fa-building me-2"></i> Create a Company
+            </a>
+        </div>
+    {% endif %}
+</div>
 
             <!-- Teams -->
             <div class="card">
