@@ -15,12 +15,12 @@
         <div class="mb-5">
             <h3 class="text-white mb-4">Contact Us</h3>
             <p class="text-white">
-                Description
+                We will reach out as soon as we can!
             </p>
         </div>
         <div class="row">
             <div class="col-md-6">
-                <h3 class="text-white h5 mb-3">Person 1</h3>
+                <h3 class="text-white h5 mb-3">Eugene Zhang</h3>
                 <ul class="list-unstyled mb-5">
 {#                  <li class="d-flex text-white mb-2">#}
 {#                      <span class="me-3">#}
@@ -30,18 +30,18 @@
                         <span class="me-3">
                             <i class="fa fa-phone" aria-hidden="true"></i>
                         </span>
-                        +1 (222) 345-6789
+                        +1 (765) 543-0760
                     </li>
                     <li class="d-flex text-white mb-2">
                         <span class="me-3">
                             <i class="fa fa-envelope" aria-hidden="true"></i>
                         </span>
-                        info@mywebsite.com
+                        bfm@bfm.io
                     </li>
                 </ul>
             </div>
             <div class="col-md-6">
-                <h3 class="text-white h5 mb-3">Person 2</h3>
+                <h3 class="text-white h5 mb-3">Eric Chen</h3>
                 <ul class="list-unstyled mb-5">
 {#                  <li class="d-flex text-white mb-2">#}
 {#                      <span class="me-3">#}
@@ -57,7 +57,7 @@
                         <span class="me-3">
                             <i class="fa fa-envelope" aria-hidden="true"></i>
                         </span>
-                        info@mywebsite.com
+                        eric@chen.com
                     </li>
                 </ul>
             </div>
@@ -66,11 +66,13 @@
 
     <div class="col-lg-6">
         <div class="box">
+            Send us a message <!-- Temporary changes -->
             <h3 class="heading">Send us a message</h3>
             <form id="contactForm" class="mb-5" method="post" name="contactForm" novalidate="novalidate">
                 {% csrf_token %}
                 {% for field in form %}
                 <div class="row{% if forloop.last %} mb-3{% endif %}">
+                    {{ field.label }} <!-- Temporary changes -->
                     <div class="col-md-12 form-group">
                         <label class="col-form-label" for="{{ field.name }}">{{ field.label }}</label>
                         {% render_field field id=field.name class="form-control" name=field.name %}

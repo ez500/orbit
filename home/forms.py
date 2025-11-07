@@ -1,6 +1,6 @@
 from django import forms
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 
 
 class ContactForm(forms.Form):
@@ -9,28 +9,30 @@ class ContactForm(forms.Form):
     subject = forms.CharField(label="Subject", max_length=70)
     message = forms.CharField(label="Message", widget=forms.Textarea)
 
-    def get_info(self) -> tuple[str, str]:
+    def get_info(self):
         """Formats form information to use in an email.
 
         Returns:
-            (str, str): Strings for the subject and message of an eamil.
+            (str, str, str, str): Strings for the subject and message of an eamil.
         """
-        clean_data = super().clean()
+        clean_data = self.cleaned_data
 
-        name = clean_data.get("name").strip()
-        sender_email = clean_data.get("email")
-        subject = clean_data.get("subject")
+        name = clean_data.get("name", "")
+        sender_email = clean_data["email"]
+        subject = clean_data["subject"]
+        msg = clean_data["message"]
 
-        msg = f'{name} with email {sender_email} said:\n"{subject}"\n\n{clean_data.get("message")}'
-
-        return subject, msg
+        return subject, msg, sender_email, name
 
     def send(self):
-        subject, msg = self.get_info()
+        subject, msg, sender_email, sender_name = self.get_info()
+        subject = f"[Contact] {subject}"
+        body = f"From: {sender_name} <{sender_email}>\n\n{msg}"
 
-        send_mail(
+        EmailMessage(
             subject=subject,
-            message=msg,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[settings.RECIPIENT_ADDRESS],
-        )
+            body=body,
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", sender_email),
+            to=getattr(settings, "CONTACT_RECIPIENTS", [getattr(settings, "DEFAULT_FROM_EMAIL", sender_email)]),
+            reply_to=[sender_email]
+        ).send(fail_silently=False)

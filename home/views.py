@@ -17,6 +17,13 @@ class ContactView(FormView):
     template_name = "home/contact.html"
     form_class = ContactForm
 
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Contact Us'
+        return context
+
+
     def form_valid(self, form):
         # Calling custom send method
         form.send()
