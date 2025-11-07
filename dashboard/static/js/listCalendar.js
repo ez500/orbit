@@ -245,9 +245,52 @@ END:VCALENDAR`;
         URL.revokeObjectURL(url);
     }
 
+    function parseIcsContent(icsContent) {
+        const lines = icsContent.split(/\r\n|\n|\r/);
+        const events = [];
+        let currentEvent = null;
+
+        for (const line of lines) {
+            if (line.startsWith("BEGIN:VEVENT")) {
+                currentEvent = {};
+            }
+            else if (line.startsWith("END:VEVENT")) {
+                if (currentEvent) {
+                    events.push(currentEvent);
+                    currentEvent = null;
+                }
+            }
+            else if (currentEvent) {
+                const parts = line.split(":");
+                if (parts.length >= 2) {
+                    const key = parts[0].trim();
+                    const value = parts.slice(1).join(":").trim();
+
+                    if (key === "SUMMARY") {
+                        currentEvent.summary = value;
+                    }
+                    else if (key === "DTSTART") {
+                        currentEvent.dtstart = `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
+                    }
+                    else if (key === "DTEND") {
+                        currentEvent.dtend = `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
+                    }
+                    else if (key === "LOCATION") {
+                        currentEvent.location = value;
+                    }
+                    else if (key === "DESCRIPTION") {
+                        currentEvent.description = value;
+                    }
+                }
+            }
+        }
+        return events;
+    }
+
     document.getElementById("calExport").addEventListener("click", () => {
         let evenList = [];
         for (let i = 0; i < tasks.length; i++) {
+            console.log(tasks[i].deadline);
             evenList.push({
                 title: tasks[i].title,
                 description: tasks[i].content,
@@ -258,6 +301,57 @@ END:VCALENDAR`;
         }
 
         downloadIcsFile(evenList);
-    })
+    });
+
+    document.getElementById("calImport").addEventListener("click", () => {
+        document.getElementById("fileInput").click();
+    });
+
+    document.getElementById("fileInput").addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const fileContents = e.target.result;
+                //console.log("File content:", fileContents);
+
+                const calendarEvents = parseIcsContent(fileContents);
+                console.log("Parsed Calendar Events:", calendarEvents);
+
+                const users = Array.from(document.getElementById('taskUsers').options).map(option => option.value);
+                const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                for (let i = 0; i < calendarEvents.length; i++) {
+                    const data = {
+                        title: calendarEvents[i].summary,
+                        content: calendarEvents[i].description,
+                        status: "todo",
+                        deadline: calendarEvents[i].dtend,
+                        team: null,
+                        project: null,
+                        users: users,
+                    };
+
+                    // Send POST request to your backend API
+                    fetch('../api/tasks/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken,
+                        },
+                        body: JSON.stringify(data),
+                    }).then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    }).then(() => {
+                        window.location.reload();
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        //alert('Failed to add task. Please try again.');
+                    });
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
 
 });

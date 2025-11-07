@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.serializers import serialize
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
@@ -25,8 +26,14 @@ from .serializer import TaskViewSerializer, TaskCreateSerializer
 def dashboard(request):
     """Dashboard view"""
     user = request.user
+    qs = Team.objects.filter(members=user)
+    projects = Project.objects.filter(Q(lead=request.user) | Q(collaborators=request.user))
 
-    personal_tasks = Task.objects.filter(users=user).order_by('-pub_date')[:5]
+    q1 = Q(users=user.id)
+    q2 = Q(team__in=qs)
+    q3 = Q(project__in=projects)
+
+    personal_tasks = Task.objects.filter(q1 | q2 | q3).order_by('-pub_date')[:5]
 
     project_tasks = Task.objects.filter(
         project__in=Project.objects.filter(collaborators=user) | Project.objects.filter(lead=user)
@@ -43,8 +50,14 @@ def dashboard(request):
 def tasks(request):
     """Tasks view"""
     user = request.user
+    qs = Team.objects.filter(members=user)
+    projects = Project.objects.filter(Q(lead=request.user) | Q(collaborators=request.user))
 
-    tasks_list = Task.objects.filter(users=user.id).order_by('-deadline')
+    q1 = Q(users=user.id)
+    q2 = Q(team__in=qs)
+    q3 = Q(project__in=projects)
+
+    tasks_list = Task.objects.filter(q1 | q2 | q3).order_by('-deadline')
 
     search = request.GET.get('search', '').strip()
     status_filter = request.GET.get('status', '')
