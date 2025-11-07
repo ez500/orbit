@@ -320,4 +320,5 @@ def remove_connection(request, username):
             messages.success(request, f"{profile} is no longer a connection.")
         else:
             messages.error(request, f"{profile} is not a connection.")
+    # TODO FIX 404 WHEN HIDDEN USER IS REMOVED FROM CONNECTIONS
     return _safe_redirect_back(request, fallback_url=reverse('accounts:profile_view', args=[request.user.profile]))

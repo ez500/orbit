@@ -103,8 +103,6 @@
 <!-- Main Content -->
 <main class="main-content app flex-row align-items-center">
     <div class="container">
-        {% comment %}
-        Temporarily suppressed - will be re-enabled when specific error messages are implemented
         {% if messages %}
             {% for message in messages %}
                 <div class="card {% if message.tags %}{{ message.tags }}{% endif %}">
@@ -114,7 +112,6 @@
                 </div>
             {% endfor %}
         {% endif %}
-        {% endcomment %}
         {% block content %}{% endblock %}
     </div>
 </main>

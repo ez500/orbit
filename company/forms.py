@@ -11,7 +11,7 @@ class CompanyRegistrationForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'autofocus': 'autofocus'})
     )
     description = forms.CharField(label='Description', max_length=200, required=False)
-    logo = forms.ImageField(label='logo', required=False)
+    logo = forms.ImageField(label='Logo', required=False)
     email = forms.EmailField(
         label='E-mail',
         max_length=254,

@@ -46,7 +46,7 @@ class ProjectForm(forms.ModelForm):
         # Only show companies that this user owns or belongs to
         if user:
             self.fields["companies"].queryset = Company.objects.filter(
-                models.Q(owner=user) | models.Q(members=user)
+                models.Q(owner=user) | models.Q(memberships__user=user)
             ).distinct()
         else:
             self.fields["companies"].queryset = Company.objects.none()
@@ -55,7 +55,7 @@ class ProjectForm(forms.ModelForm):
         # Only show teams that the user belongs to or owns
         if user:
             self.fields["team"].queryset = Team.objects.filter(
-            members=user
+            memberships__user=user
             ).distinct()
         else:
             self.fields["team"].queryset = Team.objects.none()
