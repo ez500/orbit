@@ -37,16 +37,23 @@ class UpdateUserForm(forms.ModelForm):
     )
     last_name = forms.CharField(label='Last Name', max_length=30, required=False)
     username = forms.CharField(label='Username', max_length=150)
-    email = forms.CharField(
+    email = forms.EmailField(
         label='E-mail',
         max_length=254,
-        help_text='Must be a valid E-mail address.',
-        validators=[validate_email]
+        help_text='Must be a valid E-mail address.'
     )
 
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not email:
+            return email
+        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError(f'{email} is already taken.')
+        return email
 
 
 class UpdateProfileForm(forms.ModelForm):

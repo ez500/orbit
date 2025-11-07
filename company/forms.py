@@ -40,8 +40,7 @@ class CompanyEditForm(forms.ModelForm):
     email = forms.EmailField(
         label='E-mail',
         max_length=254,
-        help_text='Must be a valid E-mail address.',
-        validators=[validate_email]
+        help_text='Must be a valid E-mail address.'
     )
     website = forms.URLField(label='Website', required=False)
     phone = forms.CharField(label='Phone #', required=False)
@@ -50,3 +49,11 @@ class CompanyEditForm(forms.ModelForm):
     class Meta:
         model = Company
         fields = ['name', 'description', 'profile_picture', 'email', 'website', 'phone', 'location']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not email:
+            return email
+        if Company.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError(f'{email} is already taken.')
+        return email

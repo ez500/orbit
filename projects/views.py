@@ -13,7 +13,7 @@ def project_list(request):
     projects = Project.objects.filter(
         models.Q(lead=request.user) | models.Q(collaborators=request.user)
     ).distinct()
-    return render(request, "projects/project_list.html", {"projects": projects})
+    return render(request, "projects/project_list.html", {"projects": projects, "title": "My Projects"})
 
 
 @login_required
