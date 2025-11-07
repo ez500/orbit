@@ -8,15 +8,32 @@ from .forms import ProjectForm, TaskForm, EventForm, ProjectDocumentForm
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.http import HttpResponseForbidden
+from company.models import CompanyMembership
+from teams.models import Team
 
 @login_required
 def project_list(request):
-    """Show all projects where the user is a lead or collaborator."""
-    projects = Project.objects.filter(
-        models.Q(lead=request.user) | models.Q(collaborators=request.user)
-    ).distinct()
-    return render(request, "projects/project_list.html", {"projects": projects})
+    """
+    Show all projects accessible to the user:
+    - Lead or collaborator
+    - Belongs to teams they're in
+    - Belongs to companies they belong to
+    """
+    # Get teams the user is in
+    user_teams = Team.objects.filter(members=request.user)
 
+    # Get companies the user belongs to
+    user_companies = CompanyMembership.objects.filter(user=request.user).values_list("company", flat=True)
+
+    # Fetch all matching projects
+    projects = Project.objects.filter(
+        models.Q(lead=request.user)
+        | models.Q(collaborators=request.user)
+        | models.Q(team__in=user_teams)
+        | models.Q(companies__in=user_companies)
+    ).distinct()
+
+    return render(request, "projects/project_list.html", {"projects": projects})
 
 @login_required
 def project_detail(request, pk):
