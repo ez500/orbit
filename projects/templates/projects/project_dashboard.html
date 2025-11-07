@@ -95,6 +95,44 @@
         {% endif %}
       </div>
     </div>
+
+    <!-- ===== DOCUMENTS SECTION (NEW) ===== -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-semibold text-primary mb-0">
+            <i class="fas fa-file-alt me-2"></i>Project Documents
+          </h5>
+          <a href="{% url 'projects:add_document' project.pk %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-upload me-1"></i> Upload
+          </a>
+        </div>
+
+        {% if project.documents.all %}
+          <ul class="list-group">
+            {% for doc in project.documents.all %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{% url 'projects:view_document' project.pk doc.pk %}" class="text-decoration-none">
+                  <i class="fas fa-file me-2 text-secondary"></i>{{ doc.name }}
+                </a>
+                <div class="d-flex align-items-center">
+                  <small class="text-muted me-3">Uploaded by {{ doc.uploaded_by.username }}</small>
+                  {% if request.user == project.lead or request.user == doc.uploaded_by %}
+                    <a href="{% url 'projects:delete_document' project.pk doc.pk %}"
+                       class="btn btn-outline-danger btn-sm"
+                       onclick="return confirm('Delete document {{ doc.name }}?');">
+                       <i class="fas fa-trash"></i>
+                    </a>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted text-center mt-3">No documents uploaded yet.</p>
+        {% endif %}
+      </div>
+    </div>
   </div>
 
   <!-- ===== CALENDAR VIEW ===== -->
@@ -194,7 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
     listBtn.classList.remove('active');
   });
 
-  // FullCalendar setup
   const calendarEl = document.getElementById('calendar');
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
@@ -224,4 +261,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 {% endblock %}
-

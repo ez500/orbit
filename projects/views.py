@@ -3,8 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Project, Task, Event
-from .forms import ProjectForm, TaskForm, EventForm
+from .models import Project, Task, Event, ProjectDocument
+from .forms import ProjectForm, TaskForm, EventForm, ProjectDocumentForm
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.http import HttpResponseForbidden
@@ -34,13 +34,12 @@ def project_create(request):
             project = form.save(commit=False)
             project.lead = request.user
             project.save()
-            form.save_m2m()
-            messages.success(request, "Project created successfully.")
-            return redirect("projects:project_detail", pk=project.pk)
+            form.save_m2m()  # ✅ Save M2M fields (collaborators, companies)
+            messages.success(request, f"Project '{project.name}' created successfully.")
+            return redirect("projects:project_list")
     else:
         form = ProjectForm(user=request.user)
-    return render(request, "projects/project_form.html", {"form": form})
-
+    return render(request, "projects/project_create.html", {"form": form})
 
 @login_required
 def add_collaborator(request, pk):
@@ -205,3 +204,40 @@ def delete_project(request, pk):
 
     # Optional: render confirmation page if you want one
     return redirect("projects:project_detail", pk=pk)
+
+@login_required
+def add_document(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    if request.method == "POST":
+        form = ProjectDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.project = project
+            document.uploaded_by = request.user
+            document.save()
+            messages.success(request, "Document uploaded successfully.")
+            return redirect("projects:project_dashboard", pk=project.pk)
+    else:
+        form = ProjectDocumentForm()
+    return render(request, "projects/add_document.html", {"form": form, "project": project})
+
+
+@login_required
+def delete_document(request, pk, doc_id):
+    project = get_object_or_404(Project, pk=pk)
+    document = get_object_or_404(ProjectDocument, pk=doc_id, project=project)
+
+    if request.user == project.lead or request.user == document.uploaded_by:
+        document.delete()
+        messages.success(request, "Document deleted successfully.")
+    else:
+        messages.error(request, "You don't have permission to delete this document.")
+
+    return redirect("projects:project_dashboard", pk=project.pk)
+
+
+@login_required
+def view_document(request, pk, doc_id):
+    project = get_object_or_404(Project, pk=pk)
+    document = get_object_or_404(ProjectDocument, pk=doc_id, project=project)
+    return render(request, "projects/view_document.html", {"project": project, "document": document})
