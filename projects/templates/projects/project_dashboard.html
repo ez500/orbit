@@ -1,177 +1,208 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="fw-bold text-primary">
-      <i class="fas fa-tachometer-alt me-2"></i>{{ project.name }} Dashboard
+
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-primary mb-0">
+      <i class="fas fa-clipboard-list me-2"></i>{{ project.name }} Dashboard
     </h3>
-    <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-outline-secondary btn-sm">
-      <i class="fas fa-arrow-left"></i> Back
-    </a>
-  </div>
-
-  <!-- Row for Tasks and Events side by side -->
-  <div class="row g-3 mb-4">
-    <!-- Tasks -->
-    <div class="col-md-6">
-      <div class="card shadow-sm border-0 h-100">
-        <div class="card-body">
-          <h5 class="card-title text-primary fw-semibold mb-3">
-            <i class="fas fa-tasks me-2"></i>Project Tasks
-          </h5>
-
-          <form method="post" class="mb-3">
-            {% csrf_token %}
-            {{ task_form.as_p }}
-            <button type="submit" name="add_task" class="btn btn-primary btn-sm">Add Task</button>
-          </form>
-
-          <ul class="list-group">
-            {% for task in tasks %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <strong>{{ task.title }}</strong><br>
-                  <small class="text-muted">
-                    {{ task.due_date|default:"No due date" }}
-                  </small>
-                </div>
-                <span class="badge {% if task.completed %}bg-success{% else %}bg-warning text-dark{% endif %}">
-                  {% if task.completed %}Done{% else %}Pending{% endif %}
-                </span>
-              </li>
-            {% empty %}
-              <p class="text-muted">No tasks yet.</p>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <ul class="list-group">
-      {% for task in tasks %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <strong>{{ task.title }}</strong><br>
-            <small class="text-muted">{{ task.due_date|default:"No due date" }}</small>
-          </div>
-          <div>
-            <span class="badge {% if task.completed %}bg-success{% else %}bg-warning text-dark{% endif %}">
-              {% if task.completed %}Done{% else %}Pending{% endif %}
-            </span>
-            {% if request.user == project.lead %}
-              <a href="{% url 'projects:remove_task' project.pk task.pk %}"
-                 class="btn btn-outline-danger btn-sm ms-2"
-                 onclick="return confirm('Delete task {{ task.title }}?');">
-                <i class="fas fa-trash"></i>
-              </a>
-            {% endif %}
-          </div>
-        </li>
-      {% empty %}
-        <p class="text-muted">No tasks yet.</p>
-      {% endfor %}
-    </ul>
-
-    <!-- Events -->
-    <div class="col-md-6">
-      <div class="card shadow-sm border-0 h-100">
-        <div class="card-body">
-          <h5 class="card-title text-primary fw-semibold mb-3">
-            <i class="fas fa-bullhorn me-2"></i>Project Events
-          </h5>
-
-          <form method="post" class="mb-3">
-            {% csrf_token %}
-            {{ event_form.as_p }}
-            <button type="submit" name="add_event" class="btn btn-primary btn-sm">Add Event</button>
-          </form>
-
-          <ul class="list-group">
-            {% for event in events %}
-              <li class="list-group-item">
-                <strong>{{ event.title }}</strong><br>
-                <small class="text-muted">
-                  {{ event.start_date }}{% if event.end_date %} → {{ event.end_date }}{% endif %}
-                </small>
-              </li>
-            {% empty %}
-              <p class="text-muted">No events yet.</p>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
+    <div>
+      <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Back
+      </a>
     </div>
   </div>
 
-  <ul class="list-group">
-    {% for event in events %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <strong>{{ event.title }}</strong><br>
-          <small class="text-muted">
-            {{ event.start_date }}{% if event.end_date %} → {{ event.end_date }}{% endif %}
-          </small>
+  <!-- View Toggle -->
+  <div class="d-flex justify-content-end mb-3">
+    <div class="btn-group" role="group">
+      <button class="btn btn-outline-primary active" id="listViewBtn"><i class="fas fa-list-ul"></i> List</button>
+      <button class="btn btn-outline-primary" id="calendarViewBtn"><i class="fas fa-calendar-alt"></i> Calendar</button>
+    </div>
+  </div>
+
+  <!-- ===== LIST VIEW ===== -->
+  <div id="listView">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-semibold text-primary mb-0">
+            <i class="fas fa-tasks me-2"></i>Tasks & Events
+          </h5>
+          <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaskEventModal">
+            <i class="fas fa-plus"></i> Add
+          </button>
         </div>
-        {% if request.user == project.lead %}
-          <a href="{% url 'projects:remove_event' project.pk event.pk %}"
-             class="btn btn-outline-danger btn-sm"
-             onclick="return confirm('Delete event {{ event.title }}?');">
-            <i class="fas fa-trash"></i>
-          </a>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Type</th>
+                <th scope="col">Date</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in tasks %}
+                <tr>
+                  <td><strong>{{ task.title }}</strong></td>
+                  <td><span class="badge bg-info">Task</span></td>
+                  <td>{{ task.due_date|default:"—" }}</td>
+                  <td>
+                    <span class="badge {% if task.completed %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                      {% if task.completed %}Done{% else %}Pending{% endif %}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    {% if request.user == project.lead %}
+                      <a href="{% url 'projects:remove_task' project.pk task.pk %}"
+                         class="btn btn-outline-danger btn-sm"
+                         onclick="return confirm('Delete task {{ task.title }}?');">
+                         <i class="fas fa-trash"></i>
+                      </a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+
+              {% for event in events %}
+                <tr>
+                  <td><strong>{{ event.title }}</strong></td>
+                  <td><span class="badge bg-primary">Event</span></td>
+                  <td>{{ event.start_date }}{% if event.end_date %} → {{ event.end_date }}{% endif %}</td>
+                  <td><span class="badge bg-light text-dark">Scheduled</span></td>
+                  <td class="text-end">
+                    {% if request.user == project.lead %}
+                      <a href="{% url 'projects:remove_event' project.pk event.pk %}"
+                         class="btn btn-outline-danger btn-sm"
+                         onclick="return confirm('Delete event {{ event.title }}?');">
+                         <i class="fas fa-trash"></i>
+                      </a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if tasks|length == 0 and events|length == 0 %}
+          <p class="text-muted text-center mt-3">No tasks or events yet.</p>
         {% endif %}
-      </li>
-    {% empty %}
-      <p class="text-muted">No events yet.</p>
-    {% endfor %}
-  </ul>
+      </div>
+    </div>
+  </div>
 
-  <!-- Large Calendar Section -->
-  <div class="card shadow-sm border-0 mb-4">
-    <div class="card-body">
-      <h5 class="card-title text-primary fw-semibold mb-3">
-        <i class="fas fa-calendar-alt me-2"></i>Project Calendar
-      </h5>
-      <div id="calendar"></div>
+  <!-- ===== CALENDAR VIEW ===== -->
+  <div id="calendarView" style="display:none;">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h5 class="fw-semibold text-primary mb-3">
+          <i class="fas fa-calendar-alt me-2"></i>Project Calendar
+        </h5>
+        <div id="calendar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ADD MODAL ===== -->
+  <div class="modal fade" id="addTaskEventModal" tabindex="-1" aria-labelledby="addTaskEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="addTaskEventModalLabel">
+            <i class="fas fa-plus-circle me-2"></i>Add Task or Event
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="nav nav-tabs mb-3" id="addTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="task-tab" data-bs-toggle="tab" data-bs-target="#taskFormTab" type="button" role="tab">Task</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="event-tab" data-bs-toggle="tab" data-bs-target="#eventFormTab" type="button" role="tab">Event</button>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="taskFormTab" role="tabpanel">
+              <form method="post">
+                {% csrf_token %}
+                {{ task_form.as_p }}
+                <button type="submit" name="add_task" class="btn btn-primary mt-2">Save Task</button>
+              </form>
+            </div>
+            <div class="tab-pane fade" id="eventFormTab" role="tabpanel">
+              <form method="post">
+                {% csrf_token %}
+                {{ event_form.as_p }}
+                <button type="submit" name="add_event" class="btn btn-primary mt-2">Save Event</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- FullCalendar Resources -->
+<!-- ===== FULLCALENDAR JS + CSS ===== -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <style>
 #calendar {
-  width: 100%;
-  min-height: 750px;
-  margin-top: 10px;
-  border-radius: 6px;
-  background-color: #fff;
+  min-height: 700px;
+  background: #fff;
+  border-radius: 8px;
   padding: 10px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.1);
 }
-.fc-toolbar-title {
-  font-size: 1.5rem;
+.fc .fc-toolbar-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #0d6efd;
 }
-.fc-daygrid-event {
-  font-size: 0.85rem;
+.fc-event {
+  font-size: 0.9rem;
+  border-radius: 4px;
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  const listBtn = document.getElementById('listViewBtn');
+  const calBtn = document.getElementById('calendarViewBtn');
+  const listView = document.getElementById('listView');
+  const calView = document.getElementById('calendarView');
+
+  listBtn.addEventListener('click', () => {
+    listView.style.display = 'block';
+    calView.style.display = 'none';
+    listBtn.classList.add('active');
+    calBtn.classList.remove('active');
+  });
+
+  calBtn.addEventListener('click', () => {
+    listView.style.display = 'none';
+    calView.style.display = 'block';
+    calBtn.classList.add('active');
+    listBtn.classList.remove('active');
+  });
+
+  // FullCalendar setup
   const calendarEl = document.getElementById('calendar');
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
-    height: 'auto',
+    height: 700,
     themeSystem: 'bootstrap5',
     events: '{% url "projects:project_events_json" project.pk %}',
     eventDisplay: 'block',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,listWeek'
-    },
+    eventTextColor: '#fff',
     eventDidMount: function(info) {
       if (info.event.extendedProps.description) {
         new bootstrap.Tooltip(info.el, {
@@ -181,9 +212,16 @@ document.addEventListener('DOMContentLoaded', function() {
           container: 'body'
         });
       }
+    },
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,listWeek'
     }
   });
   calendar.render();
 });
 </script>
+
 {% endblock %}
+

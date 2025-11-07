@@ -1,12 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView
-from .models import Team, TeamMembership
+from .models import Team, TeamMembership, TeamTask, TeamEvent
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
-from .forms import JoinTeamForm
-
+from .forms import JoinTeamForm, TeamTaskForm, TeamEventForm
+from django.shortcuts import get_object_or_404, redirect
 
 class MyTeamsView(LoginRequiredMixin, ListView):
     model = Team
@@ -66,3 +66,84 @@ def join_team(request):
         form = JoinTeamForm()
 
     return render(request, "teams/join_team.html", {"form": form})
+
+@login_required
+def team_dashboard(request, pk):
+    team = get_object_or_404(Team, pk=pk)
+
+    if request.user not in team.members.all():
+        messages.error(request, "You are not a member of this team.")
+        return redirect("teams:my_teams")
+
+    task_form = TeamTaskForm()
+    event_form = TeamEventForm()
+
+    # Handle adding tasks
+    if request.method == "POST":
+        if "add_task" in request.POST:
+            task_form = TeamTaskForm(request.POST)
+            if task_form.is_valid():
+                task = task_form.save(commit=False)
+                task.team = team
+                task.save()
+                messages.success(request, f"Task '{task.title}' added.")
+                return redirect("teams:team_dashboard", pk=pk)
+
+        elif "add_event" in request.POST:
+            event_form = TeamEventForm(request.POST)
+            if event_form.is_valid():
+                event = event_form.save(commit=False)
+                event.team = team
+                event.save()
+                messages.success(request, f"Event '{event.title}' created.")
+                return redirect("teams:team_dashboard", pk=pk)
+
+    tasks = team.tasks.all().order_by("-created_at")
+    events = team.events.all().order_by("-start_date")
+
+    context = {
+        "team": team,
+        "team_tasks": tasks,
+        "team_events": events,
+        "task_form": task_form,
+        "event_form": event_form,
+    }
+    return render(request, "teams/team_dashboard.html", context)
+
+
+@login_required
+def delete_team_task(request, team_pk, task_pk):
+    task = get_object_or_404(TeamTask, pk=task_pk, team_id=team_pk)
+    team = task.team
+
+    if request.user not in team.members.all():
+        messages.error(request, "You are not allowed to delete this task.")
+        return redirect("teams:team_dashboard", pk=team_pk)
+
+    task.delete()
+    messages.success(request, f"Task '{task.title}' deleted.")
+    return redirect("teams:team_dashboard", pk=team_pk)
+
+
+@login_required
+def delete_team_event(request, team_pk, event_pk):
+    event = get_object_or_404(TeamEvent, pk=event_pk, team_id=team_pk)
+    team = event.team
+
+    if request.user not in team.members.all():
+        messages.error(request, "You are not allowed to delete this event.")
+        return redirect("teams:team_dashboard", pk=team_pk)
+
+    event.delete()
+    messages.success(request, f"Event '{event.title}' deleted.")
+    return redirect("teams:team_dashboard", pk=team_pk)
+
+@login_required
+def leave_team(request, pk):
+    team = get_object_or_404(Team, pk=pk)
+    if request.user in team.members.all():
+        team.members.remove(request.user)
+        messages.success(request, f"You have left the team '{team.name}'.")
+    else:
+        messages.warning(request, "You are not a member of this team.")
+    return redirect("teams:my_teams")
