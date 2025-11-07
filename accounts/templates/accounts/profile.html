@@ -51,6 +51,19 @@
             {% elif user.profile not in connections %}
                 {% if already_requested %}
                     <button class="btn btn-primary mt-2 mb-2" disabled>Request Sent</button>
+                {% elif is_requesting %}
+                    <div class="d-flex">
+                        <form action="{% url 'accounts:accept_connection_request' profile %}" method="post" class="me-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="btn btn-outline-primary">Accept</button>
+                        </form>
+                        <form action="{% url 'accounts:ignore_connection_request' profile %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="btn btn-outline-secondary">Ignore</button>
+                        </form>
+                    </div>
                 {% else %}
                     <form action="{% url 'accounts:send_connection_request' profile %}" method="post">
                         {% csrf_token %}
@@ -93,6 +106,9 @@
                                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                             <button type="submit" class="btn btn-outline-secondary btn-readable">Ignore</button>
                                         </form>
+                                        <a href="{% url 'accounts:profile_view' req.from_profile %}" class="btn btn-sm btn-outline-secondary ms-2 btn-readable">
+                                            Profile
+                                        </a>
                                     </li>
                                 {% endfor %}
                             </ul>

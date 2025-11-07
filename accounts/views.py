@@ -75,6 +75,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context['title'] = f'{profile}\'s Profile'
         context['connections'] = profile.connections.all()
         context['already_requested'] = ConnectionRequest.objects.filter(from_profile=self.request.user.profile, to_profile=profile).exists()
+        context['is_requesting'] = ConnectionRequest.objects.filter(from_profile=profile, to_profile=self.request.user.profile).exists()
         context['requests'] = ConnectionRequest.objects.filter(to_profile=profile)
 
         # ✅ FIXED: use memberships__user instead of members
