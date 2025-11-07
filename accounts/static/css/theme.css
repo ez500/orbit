@@ -1,0 +1,98 @@
+:root {
+  --accent-color: #1e90ff;
+  --accent-text: #ffffff;
+  --user-font-size: 16px;
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --border-color: #dee2e6;
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #ffffff;
+  --border-color: #404040;
+  --card-bg: #2d2d2d;
+  --input-bg: #333333;
+}
+
+/* System theme */
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --bg-color: #1a1a1a;
+    --text-color: #ffffff;
+    --border-color: #404040;
+    --card-bg: #2d2d2d;
+    --input-bg: #333333;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --border-color: #dee2e6;
+    --card-bg: #ffffff;
+    --input-bg: #ffffff;
+  }
+}
+
+/* High contrast modifications */
+.high-contrast {
+  --border-color: #ffffff;
+}
+
+/* Base styles */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-size: var(--user-font-size);
+}
+
+.card {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.form-control,
+.form-select {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.btn-primary {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: var(--accent-text) !important;
+  /* Override Bootstrap's CSS custom properties */
+  --bs-btn-bg: var(--accent-color);
+  --bs-btn-border-color: var(--accent-color);
+  --bs-btn-color: var(--accent-text);
+  --bs-btn-hover-bg: var(--accent-color);
+  --bs-btn-hover-border-color: var(--accent-color);
+  --bs-btn-hover-color: var(--accent-text);
+  --bs-btn-active-bg: var(--accent-color);
+  --bs-btn-active-border-color: var(--accent-color);
+  --bs-btn-active-color: var(--accent-text);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: var(--accent-text) !important;
+  filter: brightness(0.9);
+}
+
+.nav-pills .nav-link.active {
+  background-color: var(--accent-color);
+  color: var(--accent-text);
+}

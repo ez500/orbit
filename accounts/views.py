@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, 
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
@@ -189,61 +189,34 @@ def edit_user_profile(request):
     })
 
 
-# TODO MANAGE SETTINGS ALLOCATION
 @login_required
 def settings(request):
-    from django.http import JsonResponse
-
     if request.method == 'POST':
+        # Handle both user and profile forms
         user_form = UpdateUserForm(request.POST, instance=request.user)
         profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
 
-        # Debug logging
-        print("Request POST data:", request.POST)
-        print("Files:", request.FILES)
-        print("Theme color:", request.POST.get('theme_color'))
-        print("Accent color:", request.POST.get('accent_color'))
-
-        if user_form.is_valid() and profile_form.is_valid():
-            user = user_form.save()
-            profile = profile_form.save(commit=False)
-            profile.user = user
-            profile.save()
-
-            # Debug logging
-            print("Saved profile theme:", profile.theme_color)
-            print("Saved profile accent:", profile.accent_color)
-
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': True,
-                    'theme': profile.theme_color,
-                    'accent': profile.accent_color,
-                    'message': 'Settings saved successfully!'
-                })
-            messages.success(request, 'Your settings have been updated successfully!')
+        if profile_form.is_valid() and user_form.is_valid():
+            # Save both forms
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Settings saved successfully!')
             return redirect('accounts:settings')
         else:
-            print("Form validation errors:")
-            print("User form errors:", user_form.errors)
-            print("Profile form errors:", profile_form.errors)
-
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': False,
-                    'errors': {
-                        'user_form': dict(user_form.errors),
-                        'profile_form': dict(profile_form.errors)
-                    },
-                    'message': 'Please correct the errors below.'
-                })
+            # Show error messages for validation issues
+            messages.error(request, 'Please correct the errors below.')
     else:
         user_form = UpdateUserForm(instance=request.user)
         profile_form = UpdateProfileForm(instance=request.user.profile)
 
+    accent_choices = Profile.ACCENT_CHOICES
+    theme_choices = Profile.THEME_CHOICES
+
     return render(request, 'accounts/settings.html', {
         'user_form': user_form,
         'profile_form': profile_form,
+        'accent_choices': accent_choices,
+        'theme_choices': theme_choices,
         'title': 'Settings'
     })
 
