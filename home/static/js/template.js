@@ -8,15 +8,122 @@ function logout() {
     HTMLFormElement.prototype.submit.call(logoutForm);
 }
 
-// Sidebar Navigation Reordering
+// Sidebar Navigation Reordering and Customization
 (function initSidebarReordering() {
     const STORAGE_KEY = 'sidebar_nav_order';
+    const VISIBILITY_KEY = 'sidebar_nav_visibility';
     const EDIT_MODE_KEY = 'sidebar_edit_mode';
     let draggedElement = null;
 
     // Check if edit mode is enabled
     function isEditModeEnabled() {
         return sessionStorage.getItem(EDIT_MODE_KEY) === 'true';
+    }
+
+    // Load saved visibility state
+    function loadVisibilityState() {
+        try {
+            const savedVisibility = localStorage.getItem(VISIBILITY_KEY);
+            if (!savedVisibility) return;
+
+            const visibility = JSON.parse(savedVisibility);
+            const container = document.getElementById('draggable-nav-items');
+            if (!container) return;
+
+            Object.keys(visibility).forEach(id => {
+                const item = container.querySelector(`[data-nav-id="${id}"]`);
+                if (item) {
+                    if (visibility[id] === false) {
+                        item.classList.add('nav-item-hidden');
+                    } else {
+                        item.classList.remove('nav-item-hidden');
+                    }
+                }
+            });
+
+            console.log('[Sidebar] Loaded visibility state:', visibility);
+        } catch (error) {
+            console.error('[Sidebar] Error loading visibility state:', error);
+        }
+    }
+
+    // Save visibility state
+    function saveVisibilityState() {
+        try {
+            const container = document.getElementById('draggable-nav-items');
+            if (!container) return;
+
+            const items = container.querySelectorAll('.nav-item-draggable');
+            const visibility = {};
+
+            items.forEach(item => {
+                const id = item.getAttribute('data-nav-id');
+                if (id) {
+                    visibility[id] = !item.classList.contains('nav-item-hidden');
+                }
+            });
+
+            localStorage.setItem(VISIBILITY_KEY, JSON.stringify(visibility));
+            console.log('[Sidebar] Saved visibility state:', visibility);
+        } catch (error) {
+            console.error('[Sidebar] Error saving visibility state:', error);
+        }
+    }
+
+    // Toggle item visibility
+    function toggleItemVisibility(navId) {
+        const container = document.getElementById('draggable-nav-items');
+        if (!container) return;
+
+        const item = container.querySelector(`[data-nav-id="${navId}"]`);
+        if (!item) return;
+
+        item.classList.toggle('nav-item-hidden');
+        saveVisibilityState();
+
+        console.log('[Sidebar] Toggled visibility for:', navId);
+    }
+
+    // Get all navigation items with their state
+    function getNavigationItems() {
+        const container = document.getElementById('draggable-nav-items');
+        if (!container) return [];
+
+        const items = container.querySelectorAll('.nav-item-draggable');
+        return Array.from(items).map(item => {
+            const id = item.getAttribute('data-nav-id');
+            const link = item.querySelector('.nav-link');
+            const icon = link ? link.querySelector('i') : null;
+            const text = link ? link.querySelector('span') : null;
+
+            return {
+                id: id,
+                text: text ? text.textContent.trim() : '',
+                icon: icon ? icon.className : '',
+                visible: !item.classList.contains('nav-item-hidden'),
+                element: item
+            };
+        });
+    }
+
+    // Reset to default order and visibility
+    function resetToDefaults() {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(VISIBILITY_KEY);
+
+        const container = document.getElementById('draggable-nav-items');
+        if (!container) return;
+
+        // Remove all hidden classes
+        const items = container.querySelectorAll('.nav-item-draggable');
+        items.forEach(item => {
+            item.classList.remove('nav-item-hidden');
+        });
+
+        console.log('[Sidebar] Reset to defaults');
+
+        // Reload the page to restore default order
+        window.location.reload();
     }
 
     // Load saved order on page load
@@ -95,7 +202,12 @@ function logout() {
         draggableItems.forEach(item => {
             // Drag start - only allow if edit mode is enabled
             item.addEventListener('dragstart', (e) => {
-                if (!isEditModeEnabled()) {
+                const editModeEnabled = isEditModeEnabled();
+                console.log('[Sidebar] Dragstart event - Edit mode enabled:', editModeEnabled);
+                console.log('[Sidebar] SessionStorage value:', sessionStorage.getItem(EDIT_MODE_KEY));
+
+                if (!editModeEnabled) {
+                    console.log('[Sidebar] Drag prevented - edit mode not enabled');
                     e.preventDefault();
                     return;
                 }
@@ -104,10 +216,12 @@ function logout() {
                 item.classList.add('dragging');
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/html', item.innerHTML);
+                console.log('[Sidebar] Drag started for:', item.getAttribute('data-nav-id'));
             });
 
             // Drag end
             item.addEventListener('dragend', () => {
+                console.log('[Sidebar] Drag ended for:', item.getAttribute('data-nav-id'));
                 item.classList.remove('dragging');
 
                 // Remove all drag-over classes
@@ -121,7 +235,10 @@ function logout() {
 
             // Drag over
             item.addEventListener('dragover', (e) => {
-                if (!isEditModeEnabled()) return;
+                if (!isEditModeEnabled()) {
+                    console.log('[Sidebar] Dragover blocked - edit mode not enabled');
+                    return;
+                }
 
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
@@ -138,9 +255,14 @@ function logout() {
                     const rect = item.getBoundingClientRect();
                     const midpoint = rect.top + rect.height / 2;
 
+                    const draggedId = draggedElement.getAttribute('data-nav-id');
+                    const targetId = item.getAttribute('data-nav-id');
+
                     if (e.clientY < midpoint) {
+                        console.log('[Sidebar] Moving', draggedId, 'before', targetId);
                         container.insertBefore(draggedElement, item);
                     } else {
+                        console.log('[Sidebar] Moving', draggedId, 'after', targetId);
                         container.insertBefore(draggedElement, item.nextSibling);
                     }
                 }
@@ -216,17 +338,22 @@ function logout() {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             loadSavedOrder();
+            loadVisibilityState();
             initDragAndDrop();
             applyEditModeState();
             initToggleButton();
         });
     } else {
         loadSavedOrder();
+        loadVisibilityState();
         initDragAndDrop();
         applyEditModeState();
         initToggleButton();
     }
 
-    // Expose setEditMode globally for debugging
+    // Expose functions globally
     window.setSidebarEditMode = setEditMode;
+    window.toggleSidebarItemVisibility = toggleItemVisibility;
+    window.getSidebarNavigationItems = getNavigationItems;
+    window.resetSidebarToDefaults = resetToDefaults;
 })();
