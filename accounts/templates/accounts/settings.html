@@ -1,5 +1,4 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Settings{% endblock
-%} {% block extra_css %}
+{% extends 'base.html' %} {% load static %} {% block title %}Settings{% endblock %} {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/settings.css' %}" />
 {% endblock %} {% block content %}
 <div class="settings-container">
@@ -8,18 +7,28 @@
     <p class="text-muted">Manage your account settings and preferences</p>
   </div>
 
-  <!-- Success/Error Messages
+  <!-- Success/Error Messages -->
   {% if messages %}
-    <div id="messages-container">
-      {% for message in messages %}
-        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-          <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
+  <div id="messages-container">
+    {% for message in messages %}
+    <div
+      class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+      role="alert"
+    >
+      <i
+        class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"
+      ></i>
+      {{ message }}
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+        aria-label="Close"
+      ></button>
     </div>
-  {% endif %} -->
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <form
     id="settings-form"
@@ -27,8 +36,9 @@
     enctype="multipart/form-data"
     class="settings-content"
   >
-    {% csrf_token %} {{
-    profile_form.instance.get_profile_data|json_script:"profile-data" }}
+    {% csrf_token %}
+    <!-- prettier-ignore -->
+    {{ profile_form.instance.get_profile_data|json_script:"profile-data" }}
 
     <div class="row">
       <div class="col-lg-3 settings-nav">
@@ -165,15 +175,13 @@
                     viewing comfort
                   </p>
                   <div class="theme-grid">
-                    {% for value, label in theme_choices %} {% with
-                    theme_str=profile_form.instance.theme_color|stringformat:'s'
-                    %}
+                    {% for value, label in theme_choices %}
+                    {% with theme_str=profile_form.instance.theme_color|stringformat:'s' %}
                     <div
                       class="theme-option{% if theme_str == value %} active{% endif %}"
                     >
-                      <input type="radio" name="theme_color" id="theme_{{ value
-                      }}" value="{{ value }}" {% if theme_str == value
-                      %}checked{% endif %} >
+                      <!-- prettier-ignore -->
+                      <input type="radio" name="theme_color" id="theme_{{ value }}" value="{{ value }}" {% if theme_str == value %}checked{% endif %}>
                       <label for="theme_{{ value }}">
                         <i
                           class="theme-option-icon fas {% if value == 'dark' %}fa-moon{% elif value == 'light' %}fa-sun{% else %}fa-laptop{% endif %}"
@@ -184,7 +192,8 @@
                         {% endif %}
                       </label>
                     </div>
-                    {% endwith %} {% endfor %}
+                    {% endwith %}
+                    {% endfor %}
                   </div>
                 </div>
 
@@ -197,13 +206,11 @@
                     links, and highlights
                   </p>
                   <div class="color-schemes">
-                    {% for value, label in accent_choices %} {% with
-                    selected=profile_form.instance.accent_color|stringformat:'s'
-                    %}
+                    {% for value, label in accent_choices %}
+                    {% with selected=profile_form.instance.accent_color|stringformat:'s' %}
                     <div class="color-option">
-                      <input type="radio" name="accent_color" id="accent_{{
-                      forloop.counter }}" value="{{ value }}" {% if selected ==
-                      value %}checked{% endif %} />
+                      <!-- prettier-ignore -->
+                      <input type="radio" name="accent_color" id="accent_{{ forloop.counter }}" value="{{ value }}" {% if selected == value %}checked{% endif %} />
                       <label
                         for="accent_{{ forloop.counter }}"
                         class="color-swatch"
@@ -223,7 +230,8 @@
                       </label>
                       <span class="color-name">{{ label }}</span>
                     </div>
-                    {% endwith %} {% endfor %}
+                    {% endwith %}
+                    {% endfor %}
                   </div>
                 </div>
 
