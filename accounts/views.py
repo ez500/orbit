@@ -7,15 +7,15 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, 
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import Http404, JsonResponse, HttpResponseBadRequest
+from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse_lazy
-from django.views.decorators.http import require_http_methods
+from django.urls import reverse_lazy, reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import CreateView, DetailView, ListView
 
 from accounts import models
 from accounts.forms import RegistrationForm, UpdateUserForm, UpdateProfileForm, ChangePasswordForm
-from accounts.models import Profile
+from accounts.models import Profile, ConnectionRequest
 from company.models import Company
 from projects.models import Project
 from teams.models import Team
@@ -74,6 +74,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
         context['title'] = f'{profile}\'s Profile'
         context['connections'] = profile.connections.all()
+        context['already_requested'] = ConnectionRequest.objects.filter(from_profile=self.request.user.profile, to_profile=profile).exists()
+        context['requests'] = ConnectionRequest.objects.filter(to_profile=profile)
 
         # ✅ FIXED: use memberships__user instead of members
         context['companies'] = Company.objects.filter(memberships__user=profile.user).order_by("name")
@@ -123,7 +125,7 @@ class CompanyListView(LoginRequiredMixin, ListView):
         return get_object_or_404(Profile, user__username=self.kwargs['username'])
 
     def get_queryset(self):
-        return Company.objects.filter(members=self.get_object().user).order_by("name")
+        return Company.objects.filter(memberships__user=self.get_object().user).order_by("name")
 
     def get_context_data(self, **kwargs):
         profile = self.get_object()
@@ -224,9 +226,8 @@ def settings(request):
 
 
 @login_required
-@require_http_methods(['POST'])
 def search(request):
-    user_search_query = request.POST.get('user_search_query', '')
+    user_search_query = request.GET.get('user_search_query', '')
     if request.user.is_staff or request.user.is_superuser:
         users_found = User.objects.filter(username__icontains=user_search_query)
     else:
@@ -235,23 +236,77 @@ def search(request):
             Q(profile__connections=request.user.profile) |
             Q(profile=request.user.profile)
         )
+
+    requested_users = ConnectionRequest.objects.filter(
+        from_profile__user=request.user).values_list('to_profile__user__username', flat=True)
+
     context = {
         'title': "Search Users", 'requesting_user': request.user,
-        'user_search_query': user_search_query, 'users_found': users_found}
+        'user_search_query': user_search_query, 'users_found': users_found, 'requested_users': requested_users}
     return render(request, 'accounts/_search.html', context)
 
 
+def _safe_redirect_back(request, fallback_url):
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER')
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        return redirect(next_url)
+    return redirect(fallback_url)
+
+
 @login_required
-def add_connection(request, username):
+def send_connection_request(request, username):
     if request.method == 'POST':
         profile = get_object_or_404(Profile, user__username=username)
 
         if profile.connections.filter(pk=request.user.profile.pk).exists():
             messages.info(request, f"{profile} is already a connection.")
         else:
-            profile.connections.add(request.user.profile)
-            messages.success(request, f'{profile} is now a connection.')
-    return redirect('accounts:profile_view', username=username)
+            ConnectionRequest.objects.create(
+                from_profile=request.user.profile,
+                to_profile=profile
+            )
+            messages.success(request, f'Connection request sent to {profile}.')
+    return _safe_redirect_back(request, fallback_url=reverse('accounts:profile_view', args=[request.user.profile]))
+
+
+@login_required
+def accept_connection_request(request, username):
+    if request.method == 'POST':
+        profile = get_object_or_404(Profile, user__username=username)
+
+        try:
+            connection_request = ConnectionRequest.objects.get(from_profile=profile, to_profile=request.user.profile)
+            connection_request.delete()
+
+            if profile.connections.filter(pk=request.user.profile.pk).exists():
+                messages.info(request, f"{profile} is already a connection.")
+            else:
+                profile.connections.add(request.user.profile)
+                messages.success(request, f'{profile} is now a connection.')
+        except ConnectionRequest.DoesNotExist:
+            messages.error(request, f'No connection request from {profile} found.')
+    return _safe_redirect_back(request, fallback_url=reverse('accounts:profile_view', args=[username]))
+
+
+@login_required
+def ignore_connection_request(request, username):
+    if request.method == 'POST':
+        profile = get_object_or_404(Profile, user__username=username)
+
+        try:
+            connection_request = ConnectionRequest.objects.get(from_profile=profile, to_profile=request.user.profile)
+            connection_request.delete()
+
+            if profile.connections.filter(pk=request.user.profile.pk).exists():
+                messages.info(request, f"{profile} is already a connection.")
+            else:
+                messages.success(request, f'Connection request from {profile} ignored.')
+
+        except ConnectionRequest.DoesNotExist:
+            messages.error(request, f'No connection request from {profile} found.')
+    return _safe_redirect_back(request, fallback_url=reverse('accounts:profile_view', args=[request.user.profile]))
 
 
 @login_required
@@ -259,9 +314,9 @@ def remove_connection(request, username):
     if request.method == 'POST':
         profile = get_object_or_404(Profile, user__username=username)
 
-        if profile.connections.filter(pk=request.user.profile.pk).exists():
+        if profile.connections.filter(user=request.user).exists():
             profile.connections.remove(request.user.profile)
             messages.success(request, f"{profile} is no longer a connection.")
         else:
             messages.error(request, f"{profile} is not a connection.")
-    return redirect('accounts:profile_view', username=request.user.username)
+    return _safe_redirect_back(request, fallback_url=reverse('accounts:profile_view', args=[request.user.profile]))

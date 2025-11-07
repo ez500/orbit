@@ -10,24 +10,32 @@
     {% if companies %}
         <ul class="list-group">
             {% for company in companies %}
-                <li class="list-group-item d-flex align-items-center justify-content-between flex-wrap">
-                    <div>
+                <li class="list-group-item d-flex align-items-center">
+                    <div class="me-auto text-start mb-0">
                         <h5 class="mb-1">{{ company.name }}</h5>
                         <p class="mb-0 text-muted">
                             {{ company.description|default:"No description." }}
                         </p>
                     </div>
-                    <div class="mt-2 mt-md-0">
+                    <div class="d-flex align-items-center">
                         {% if company.id in joined_company_ids %}
-                            <button class="btn btn-outline-secondary" disabled>
+                            <button class="btn btn-success" disabled>
                                 <i class="fas fa-check"></i> Joined
                             </button>
                         {% else %}
-                            <a href="{% url 'company:join' company.name %}" class="btn btn-success">
-                                <i class="fas fa-user-plus"></i> Join
-                            </a>
+                            {% if company.name in requested_companies %}
+                                <button class="btn btn-secondary me-1" disabled>
+                                    <i class="fas fa-clock"></i> Request Pending
+                                </button>
+                            {% else %}
+                                <form action="{% url 'company:send_join_request' company.name %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="btn btn-success me-1">Request to Join</button>
+                                </form>
+                            {% endif %}
                         {% endif %}
-                        <a href="{% url 'company:company' company.name %}" class="btn btn-outline-primary ms-2">
+                        <a href="{% url 'company:company' company.name %}" class="btn btn-outline-primary">
                             View
                         </a>
                     </div>

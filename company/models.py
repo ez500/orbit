@@ -27,9 +27,21 @@ class CompanyMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="company_memberships")
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="memberships")
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="employee")
+    joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("user", "company")
 
     def __str__(self):
         return f"{self.user.username} - {self.company.name} ({self.role})"
+
+class CompanyMembershipRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "company")
+
+    def __str__(self):
+        return f"Request by {self.user} to join {self.company}"

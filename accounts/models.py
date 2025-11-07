@@ -109,3 +109,10 @@ class Profile(models.Model):
             'accent_color': self.accent_color
         }
 
+class ConnectionRequest(models.Model):
+    from_profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='sent_requests')
+    to_profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='received_requests')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Connection Request from {self.from_profile} to {self.to_profile}'

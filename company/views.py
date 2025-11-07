@@ -1,9 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import DetailView, CreateView, UpdateView, ListView
-from .models import Company, CompanyMembership
+from .models import Company, CompanyMembership, CompanyMembershipRequest
 from .forms import CompanyRegistrationForm
 
 
@@ -62,6 +65,10 @@ class CompanyView(LoginRequiredMixin, DetailView):
 
         context["memberships"] = memberships
         context["viewer_membership"] = viewer_membership
+        context["can_manage_requests"] = viewer_membership and viewer_membership.role in ["admin", "owner"]
+        context["already_requested"] = CompanyMembershipRequest.objects.filter(company=company, user=user).exists()
+        context["requests"] = CompanyMembershipRequest.objects.filter(company=company)
+        context["title"] = company.name + " - Company Profile"
         return context
 
 
@@ -74,6 +81,11 @@ class EditCompany(LoginRequiredMixin, UpdateView):
     template_name = "company/edit.html"
     slug_field = "name"
     slug_url_kwarg = "name"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = f"Edit {self.object.name} - Company Profile"
+        return context
 
     def form_valid(self, form):
         company = self.get_object()
@@ -88,27 +100,99 @@ class EditCompany(LoginRequiredMixin, UpdateView):
         return f"/company/{self.object.name}/"
 
 
+def _safe_redirect_back(request, fallback_url):
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER')
+    if next_url and url_has_allowed_host_and_scheme(
+            next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        return redirect(next_url)
+    return redirect(fallback_url)
+
+
 # -------------------------------------------------------
 # Join a Company
 # -------------------------------------------------------
 @login_required
-def join_company(request, name):
-    company = get_object_or_404(Company, name=name)
-    existing = CompanyMembership.objects.filter(company=company, user=request.user).first()
+def send_join_request(request, name):
+    if request.method == 'POST':
+        company = get_object_or_404(Company, name=name)
 
-    if existing:
-        messages.warning(request, "You are already a member of this company.")
-        return redirect("company:company", name=company.name)
+        if company.memberships.filter(user=request.user).exists():
+            messages.info(request, "You are already a member of this company.")
+        else:
+            CompanyMembershipRequest.objects.create(
+                user=request.user,
+                company=company
+            )
+            messages.success(request, f'Join request sent to {company.name}.')
+    return _safe_redirect_back(request, fallback_url=reverse('company:company', args=[name]))
 
-    CompanyMembership.objects.create(company=company, user=request.user, role="employee")
-    messages.success(request, f"You joined {company.name} as an employee.")
-    return redirect("company:company", name=company.name)
+
+@login_required
+def accept_join_request(request, name, username):
+    if request.method == 'POST':
+        company = get_object_or_404(Company, name=name)
+
+        try:
+            join_request = CompanyMembershipRequest.objects.get(company=company, user__username=username)
+            join_request.delete()
+
+            if company.memberships.filter(user__username=username).exists():
+                messages.info(request, f"{username} is already a member of this company.")
+            else:
+                CompanyMembership.objects.create(company=company, user=join_request.user, role="employee")
+                messages.success(request, f"{username} has been added to {company.name} as an employee.")
+        except CompanyMembershipRequest.DoesNotExist:
+            messages.error(request, f"No join request from {username} found.")
+    return _safe_redirect_back(request, fallback_url=reverse('company:company', args=[name]))
+
+
+@login_required
+def decline_join_request(request, name, username):
+    if request.method == 'POST':
+        company = get_object_or_404(Company, name=name)
+
+        try:
+            join_request = CompanyMembershipRequest.objects.get(company=company, user__username=username)
+            join_request.delete()
+
+            if company.memberships.filter(user__username=username).exists():
+                messages.info(request, f"{username} is already a member of this company.")
+            else:
+                messages.success(request, f"Join request from {username} has been declined.")
+        except CompanyMembershipRequest.DoesNotExist:
+            messages.error(request, f"No join request from {username} found.")
+    return _safe_redirect_back(request, fallback_url=reverse('company:company', args=[name]))
+
+
+@login_required
+def leave_company(request, name):
+    if request.method == 'POST':
+        company = get_object_or_404(Company, name=name)
+        membership = get_object_or_404(CompanyMembership, company=company, user=request.user)
+
+        if membership.role == "owner":
+            messages.error(request, "The owner cannot quit the company. Please transfer ownership first.")
+        else:
+            membership.delete()
+            messages.success(request, f"You have left the company {company.name}.")
+    return _safe_redirect_back(request, fallback_url=reverse('company:company', args=[name]))
 
 class JoinCompanyListView(LoginRequiredMixin, ListView):
     """Show all companies that the user is not a member of."""
     model = Company
     template_name = "company/join_list.html"
     context_object_name = "companies"
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context["requested_companies"] = CompanyMembershipRequest.objects.filter(user=self.request.user).values_list('company__name', flat=True)
+        context["title"] = "Join Company Profiles"
+
+        return context
+
 
     def get_queryset(self):
         # Show companies where the user is NOT already a member

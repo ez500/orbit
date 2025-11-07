@@ -1,96 +1,89 @@
 <!DOCTYPE html>
 {% load static %}
 <html
-  lang="en"
-  data-theme="{{ user.profile.theme_color|default:'dark' }}"
-  {%
-  if
-  user.profile.high_contrast
-  %}
-  class="high-contrast"
-  {%
-  endif
-  %}
+        lang="en"
+        data-theme="{{ user.profile.theme_color|default:'dark' }}"
+        {% if user.profile.high_contrast %}class="high-contrast"{% endif %}
 >
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
     <title>{% block title %}{{ title }} - VerAlign CRM{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-      crossorigin="anonymous"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+            crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="{% static 'css/variables.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/variables.css' %}"/>
 
     <!-- Font Awesome for icons -->
     <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-      rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+            rel="stylesheet"
     />
 
     <!-- Inter font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
     />
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/template.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/template.css' %}"/>
     {% block extra_css %}{% endblock %}
 
     <style>
-      header {
-        background-color: var(--accent-color);
-        color: var(--accent-text);
-        padding: 1rem 0;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
+        header {
+            background-color: var(--accent-color);
+            color: var(--accent-text);
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
 
-      nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-      .logo {
-        font-size: 1.5rem;
-        font-weight: bold;
-      }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
 
-      .nav-links {
-        list-style: none;
-        display: flex;
-        gap: 2rem;
-      }
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
 
-      .nav-links a {
-        color: var(--accent-text);
-        text-decoration: none;
-        transition: color 0.3s;
-      }
+        .nav-links a {
+            color: var(--accent-text);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
 
-      .nav-links a:hover {
-        color: var(--hover-bg);
-      }
+        .nav-links a:hover {
+            color: var(--hover-bg);
+        }
 
-      footer {
-        background-color: var(--accent-color);
-        color: var(--accent-text);
-        text-align: center;
-        padding: 0.1rem 0;
-        margin-top: auto;
-      }
+        footer {
+            background-color: var(--accent-color);
+            color: var(--accent-text);
+            text-align: center;
+            padding: 0.1rem 0;
+            margin-top: auto;
+        }
     </style>
-  </head>
-  <body>
-    <!-- {# TODO CONSIDER NAVBAR WHEN NOT LOGGED IN #} {# -->
-    <!-- <header>
+</head>
+<body>
+<!-- {# TODO CONSIDER NAVBAR WHEN NOT LOGGED IN #} {# -->
+<!-- <header>
       x#}  X{#x
       <div class="container">
         #} {#
@@ -105,56 +98,67 @@
       </div>
       #} {#
     </header> -->
-    #} {% include "sidebar.html" %}
+#} {% include "sidebar.html" %}
 
-    <!-- Main Content -->
-    <main class="main-content app flex-row align-items-center">
-      <div class="container">{% block content %}{% endblock %}</div>
-    </main>
+<!-- Main Content -->
+<main class="main-content app flex-row align-items-center">
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="card {% if message.tags %}{{ message.tags }}{% endif %}">
+                    <div class="card-body">
+                        {{ message }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</main>
 
-    <footer>
-      <div class="container">
+<footer>
+    <div class="container">
         <p>
-          &copy; 2025 VerAlign. AI-based Customer Relationship Management. All
-          Rights Reserved. <a href="/admin/">Admin</a>
+            &copy; 2025 VerAlign. AI-based Customer Relationship Management. All
+            Rights Reserved. <a href="/admin/">Admin</a>
         </p>
-      </div>
-    </footer>
+    </div>
+</footer>
 
-    <!-- Bootstrap JS and dependencies -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-      crossorigin="anonymous"
-    ></script>
-    <script src="{% static 'js/theme-init.js' %}"></script>
-    <script src="{% static 'js/theme.js' %}"></script>
-    <script src="{% static 'js/template.js' %}"></script>
-    <script src="{% static 'js/base.js' %}"></script>
-    {% block extra_js %}{% endblock %} {% if user.is_authenticated %}
+<!-- Bootstrap JS and dependencies -->
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"
+></script>
+<script src="{% static 'js/theme-init.js' %}"></script>
+<script src="{% static 'js/theme.js' %}"></script>
+<script src="{% static 'js/template.js' %}"></script>
+<script src="{% static 'js/base.js' %}"></script>
+{% block extra_js %}{% endblock %} {% if user.is_authenticated %}
     <script>
-      // Initialize theme data from Django template context
-      const serverThemeData = {
-        theme_color: "{{ user.profile.theme_color|default:'dark' }}",
-        accent_color: "{{ user.profile.accent_color|default:'#1E90FF' }}",
-        high_contrast: {% if user.profile.high_contrast %}true{% else %}false{% endif %},
-        font_size: "{{ user.profile.font_size|default:'medium' }}",
-        spacing: "{{ user.profile.spacing|default:'normal' }}"
-      };
+        // Initialize theme data from Django template context
+        const serverThemeData = {
+            theme_color: "{{ user.profile.theme_color|default:'dark' }}",
+            accent_color: "{{ user.profile.accent_color|default:'#1E90FF' }}",
+            high_contrast: {% if user.profile.high_contrast %}true{% else %}false{% endif %},
+            font_size: "{{ user.profile.font_size|default:'medium' }}",
+            spacing: "{{ user.profile.spacing|default:'normal' }}"
+        };
 
-      // Store theme data globally
-      window.THEME_DATA = serverThemeData;
+        // Store theme data globally
+        window.THEME_DATA = serverThemeData;
 
-      // Only apply server theme if localStorage doesn't have a theme
-      // This prevents overwriting user's unsaved changes
-      const savedTheme = localStorage.getItem('theme');
-      if (!savedTheme) {
-        console.log("[base.html] No localStorage theme, using server data:", serverThemeData);
-        localStorage.setItem('theme', JSON.stringify(serverThemeData));
-      } else {
-        console.log("[base.html] localStorage theme exists, skipping server data dispatch");
-      }
+        // Only apply server theme if localStorage doesn't have a theme
+        // This prevents overwriting user's unsaved changes
+        const savedTheme = localStorage.getItem('theme');
+        if (!savedTheme) {
+            console.log("[base.html] No localStorage theme, using server data:", serverThemeData);
+            localStorage.setItem('theme', JSON.stringify(serverThemeData));
+        } else {
+            console.log("[base.html] localStorage theme exists, skipping server data dispatch");
+        }
     </script>
-    {% endif %}
-  </body>
+{% endif %}
+</body>
 </html>
