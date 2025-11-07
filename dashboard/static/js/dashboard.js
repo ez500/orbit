@@ -318,8 +318,8 @@ class DashboardManager {
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h5 class="mb-0">October 2025</h5>
                   <div>
-                    <button class="btn btn-sm btn-light"><i class="fas fa-chevron-left"></i></button>
-                    <button class="btn btn-sm btn-light"><i class="fas fa-chevron-right"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-left"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-right"></i></button>
                   </div>
                 </div>
                 <div class="calendar-grid">

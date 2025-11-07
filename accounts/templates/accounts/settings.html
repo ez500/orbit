@@ -8,6 +8,8 @@
   </div>
 
   <!-- Success/Error Messages -->
+  {% comment %}
+  Temporarily suppressed - will be re-enabled when specific error messages are implemented
   {% if messages %}
   <div id="messages-container">
     {% for message in messages %}
@@ -29,6 +31,7 @@
     {% endfor %}
   </div>
   {% endif %}
+  {% endcomment %}
 
   <form
     id="settings-form"

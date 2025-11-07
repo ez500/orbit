@@ -14,7 +14,7 @@
     <div class="d-flex gap-2">
       <div class="dropdown">
         <button
-          class="btn btn-light dropdown-toggle"
+          class="btn btn-outline-secondary dropdown-toggle"
           type="button"
           id="addWidgetDropdown"
           data-bs-toggle="dropdown"
@@ -73,7 +73,7 @@
           </li>
         </ul>
       </div>
-      <button class="btn btn-dark" onclick="dashboard.saveLayout()">
+      <button class="btn btn-primary" onclick="window.dashboard && window.dashboard.saveLayout()">
         <i class="fas fa-save"></i> Save Layout
       </button>
     </div>
@@ -92,9 +92,8 @@
     <h4>Your Dashboard is Empty</h4>
     <p class="text-muted">Add widgets to customize your dashboard</p>
     <button
-      class="btn btn-dark"
-      data-bs-toggle="dropdown"
-      data-bs-target="#addWidgetDropdown"
+      class="btn btn-primary"
+      onclick="document.getElementById('addWidgetDropdown').click()"
     >
       <i class="fas fa-plus"></i> Add Your First Widget
     </button>
@@ -167,15 +166,24 @@
   updateEmptyState();
 
   // === Project Tasks/Events Widget Integration ===
-  function addWidget(type) {
-    if (type === "projectTasks") {
-      document.getElementById("widget-project-tasks").style.display = "block";
-      renderProjectCalendar();
-    }
-  }
-
-  // Toggle between list and calendar view
+  // Wait for dashboard.js to initialize before wrapping addWidget
   document.addEventListener("DOMContentLoaded", function () {
+    // Hook into the global addWidget function from dashboard.js
+    const originalAddWidget = window.addWidget;
+    window.addWidget = function(type) {
+      if (type === "projectTasks") {
+        document.getElementById("widget-project-tasks").style.display = "block";
+        renderProjectCalendar();
+        updateEmptyState();
+      } else {
+        // Call the original addWidget function from dashboard.js
+        if (originalAddWidget) {
+          originalAddWidget(type);
+        }
+      }
+    };
+
+    // Toggle between list and calendar view
     const listBtn = document.getElementById("toggleProjList");
     const calBtn = document.getElementById("toggleProjCalendar");
     const listView = document.getElementById("projectListView");
