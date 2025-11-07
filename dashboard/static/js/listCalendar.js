@@ -57,9 +57,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const startingDay = firstDay.getDay();
         const totalDays = lastDay.getDate();
 
-        document.getElementById("currentMonth").textContent = `${
-            months[currentDate.getMonth()]
-        } ${currentDate.getFullYear()}`;
+        document.getElementById("currentMonth").textContent = `${months[currentDate.getMonth()]
+            } ${currentDate.getFullYear()}`;
 
         const calendarGrid = document.getElementById("calendarGrid");
         calendarGrid.innerHTML = "";
@@ -105,25 +104,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const dayTasks = tasks.filter((task) => task.deadline === dateStr);
 
-            dayTasks.forEach((task) => {console.log(task)})
+            dayTasks.forEach((task) => { console.log(task) })
 
             cell.innerHTML = `
                 <div class="p-2">
                     <div class="calendar-date${isToday ? " today" : ""}">${day}</div>
                     ${dayTasks.map(
-                        (task) => {
-                            const mode = task.status === "completed" ? "success"
-                                : task.status === "in_progress" ? "warning" 
-                                    : task.status === "review" ? "info" : "danger";
-                            
-                            return `
+                (task) => {
+                    const mode = task.status === "completed" ? "success"
+                        : task.status === "in_progress" ? "warning"
+                            : task.status === "review" ? "info" : "danger";
+
+                    return `
                                 <div class="calendar-task badge bg-${mode}-subtle text-${mode} w-100 text-start p-2"
                                     data-task-id="${task.id}" role="button" aria-label="View Task {{ task.title }}">
                                     ${task.title}
                                 </div>
                             `;
-                        }
-                    ).join("")}
+                }
+            ).join("")}
                 </div>
             `;
 
@@ -167,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
     renderCalendar();
 
     // View task functionality
-    document.addEventListener("click", async(e) => {
+    document.addEventListener("click", async (e) => {
         const el = e.target.closest(".calendar-task, .task-item");
         if (!el) return;
 
@@ -177,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const url = `/dashboard/tasks/${taskId}/view/`;
 
         try {
-            const response = await fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+            const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             if (!response.ok) throw new Error('Load failed.');
             const html = await response.text();
             document.getElementById("viewTaskModalContent").innerHTML = html;
@@ -287,6 +286,21 @@ END:VCALENDAR`;
         return events;
     }
 
+    async function fetchAndParseIcs(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const icsText = await response.text();
+            console.log(response);
+            return icsText;
+        }
+        catch (error) {
+            console.error("Error fetching or parsing ICS:", error);
+        }
+    }
+
     document.getElementById("calExport").addEventListener("click", () => {
         let evenList = [];
         for (let i = 0; i < tasks.length; i++) {
@@ -316,7 +330,7 @@ END:VCALENDAR`;
                 //console.log("File content:", fileContents);
 
                 const calendarEvents = parseIcsContent(fileContents);
-                console.log("Parsed Calendar Events:", calendarEvents);
+                //console.log("Parsed Calendar Events:", calendarEvents);
 
                 const users = Array.from(document.getElementById('taskUsers').options).map(option => option.value);
                 const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -351,6 +365,58 @@ END:VCALENDAR`;
                 }
             };
             reader.readAsText(file);
+        }
+    });
+
+    document.getElementById("urlImport").addEventListener("click", async () => {
+        const icsUrl = document.getElementById("calUrl").value;
+        const test = document.getElementById("calUrl").name;
+        if (!icsUrl) {
+            return;
+        }
+
+        let fileContents = null;
+        if (icsUrl === "https://calendar.google.com/calendar/ical/en.usa%23holiday%40group.v.calendar.google.com/public/basic.ics") {
+            fileContents = await fetchAndParseIcs(test);
+        }
+        else {
+            fileContents = await fetchAndParseIcs(icsUrl);
+        }
+        //console.log(fileContents);
+
+        const calendarEvents = parseIcsContent(fileContents);
+        //console.log("Parsed Calendar Events:", calendarEvents);
+
+        const users = Array.from(document.getElementById('taskUsers').options).map(option => option.value);
+        const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        for (let i = 0; i < calendarEvents.length; i++) {
+            const data = {
+                title: calendarEvents[i].summary,
+                content: calendarEvents[i].description,
+                status: "todo",
+                deadline: calendarEvents[i].dtend,
+                team: null,
+                project: null,
+                users: users,
+            };
+
+            // Send POST request to your backend API
+            fetch('../api/tasks/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify(data),
+            }).then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            }).then(() => {
+                window.location.reload();
+            }).catch(error => {
+                console.error('Error:', error);
+                //alert('Failed to add task. Please try again.');
+            });
         }
     });
 
