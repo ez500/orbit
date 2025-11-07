@@ -188,3 +188,20 @@ def remove_event(request, pk, event_id):
     event.delete()
     messages.success(request, f"Event '{event.title}' was deleted successfully.")
     return redirect("projects:project_dashboard", pk=pk)
+
+@login_required
+def delete_project(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+
+    # Only the lead can delete the project
+    if project.lead != request.user:
+        messages.error(request, "You do not have permission to delete this project.")
+        return redirect("projects:project_detail", pk=pk)
+
+    if request.method == "POST":
+        project.delete()
+        messages.success(request, f"Project '{project.name}' has been deleted successfully.")
+        return redirect("projects:project_list")
+
+    # Optional: render confirmation page if you want one
+    return redirect("projects:project_detail", pk=pk)
