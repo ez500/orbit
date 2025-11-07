@@ -125,7 +125,7 @@ class CompanyListView(LoginRequiredMixin, ListView):
         return get_object_or_404(Profile, user__username=self.kwargs['username'])
 
     def get_queryset(self):
-        return Company.objects.filter(members=self.get_object().user).order_by("name")
+        return Company.objects.filter(memberships__user=self.get_object().user).order_by("name")
 
     def get_context_data(self, **kwargs):
         profile = self.get_object()

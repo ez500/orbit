@@ -139,6 +139,11 @@
                                     </li>
                                 {% endfor %}
                             </ul>
+                            <div class="d-grid">
+                                <a href="{% url 'accounts:company_list' username=profile %}" class="btn btn-outline-secondary mb-2">
+                                    View Companies
+                                </a>
+                            </div>
                         {% else %}
                             <p class="mb-3">
                                 No companies yet.

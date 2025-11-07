@@ -33,9 +33,17 @@
                 </a>
             {% endif %}
         {% else %}
-            <a href="{% url 'company:join' company.name %}" class="btn btn-success me-2">
-                <i class="fas fa-user-plus"></i> Join Company
-            </a>
+            {% if already_requested %}
+                <button class="btn btn-secondary me-2" disabled>
+                    <i class="fas fa-clock"></i> Request Pending
+                </button>
+            {% else %}
+                <form action="{% url 'company:send_join_request' company.name %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn-success">Request to Join</button>
+                </form>
+            {% endif %}
         {% endif %}
 
         <a href="{% url 'dashboard:dashboard' %}" class="btn btn-secondary">
@@ -47,13 +55,47 @@
         <div class="card-body">
             <h4 class="mb-3"><i class="fas fa-users"></i> Members</h4>
 
+            {% if requests %}
+                <ul class="list-group list-group-flush">
+                    {% for req in requests %}
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <b class="me-auto text-start">
+                                    {{ req.user.username }}
+                                    <span class="badge bg-secondary ms-2">Request</span>
+                                </b>
+                                {% if can_manage_requests %}
+                                    <form action="{% url 'company:accept_join_request' company.name req.user.username %}" method="post" class="me-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="btn btn-outline-primary">Accept</button>
+                                    </form>
+                                    <form action="{% url 'company:decline_join_request' company.name req.user.username %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="btn btn-outline-secondary">Ignore</button>
+                                    </form>
+                                {% endif %}
+                                <a href="{% url 'accounts:profile_view' req.user.username %}" class="btn btn-sm btn-outline-secondary ms-2">
+                                    View Profile
+                                </a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
             {% if memberships %}
                 <ul class="list-group list-group-flush">
                     {% for membership in memberships %}
-                        <li class="list-group-item d-flex align-items-center justify-content-between flex-wrap">
-                            <div>
-                                <b>{{ membership.user.username }}</b>
-                                <span class="badge bg-secondary ms-2">{{ membership.role|capfirst }}</span>
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <b class="me-auto text-start">
+                                    {{ membership.user.username }}
+                                    <span class="badge bg-primary ms-2">{{ membership.role|capfirst }}</span>
+                                </b>
+                                <a href="{% url 'accounts:profile_view' membership.user.username %}" class="btn btn-sm btn-outline-secondary ms-2">
+                                    View Profile
+                                </a>
                             </div>
                             <div>
                                 {% if viewer_membership %}
