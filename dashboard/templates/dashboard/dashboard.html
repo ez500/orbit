@@ -1,6 +1,9 @@
-{% extends 'base.html' %} {% load static %} {% block extra_css %}
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
-{% endblock %} {% block content %}
+{% endblock %}
+{% block content %}
 <div class="container-fluid p-4">
   <!-- Dashboard Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -60,6 +63,14 @@
               <i class="fas fa-chart-line me-2"></i> Analytics
             </a>
           </li>
+
+          <!-- NEW: Project Tasks & Events -->
+          <li><hr class="dropdown-divider" /></li>
+          <li>
+            <a class="dropdown-item" href="#" onclick="addWidget('projectTasks')">
+              <i class="fas fa-folder-open me-2"></i> Project Tasks & Events
+            </a>
+          </li>
         </ul>
       </div>
       <button class="btn btn-dark" onclick="dashboard.saveLayout()">
@@ -88,26 +99,136 @@
       <i class="fas fa-plus"></i> Add Your First Widget
     </button>
   </div>
+
+  <!-- ========================= -->
+  <!-- NEW PROJECT TASKS WIDGET -->
+  <!-- ========================= -->
+  <div class="card dashboard-widget mt-4" id="widget-project-tasks" style="display:none;">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+      <h6 class="mb-0"><i class="fas fa-folder-open me-2"></i>Project Tasks & Events</h6>
+      <div class="btn-group">
+        <button class="btn btn-light btn-sm" id="toggleProjList"><i class="fas fa-list"></i></button>
+        <button class="btn btn-light btn-sm" id="toggleProjCalendar"><i class="fas fa-calendar"></i></button>
+      </div>
+    </div>
+    <div class="card-body p-3">
+      <!-- List View -->
+      <div id="projectListView">
+        {% if project_tasks or project_events %}
+          <ul class="list-group list-group-flush">
+            {% for task in project_tasks %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ task.title }}</strong><br>
+                  <small class="text-muted">Project: {{ task.project.name }}</small><br>
+                  <small class="text-muted">{{ task.due_date|default:"No deadline" }}</small>
+                </div>
+                <span class="badge bg-primary">Project Task</span>
+              </li>
+            {% endfor %}
+            {% for event in project_events %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ event.title }}</strong><br>
+                  <small class="text-muted">Project: {{ event.project.name }}</small><br>
+                  <small class="text-muted">{{ event.start_date }}{% if event.end_date %} → {{ event.end_date }}{% endif %}</small>
+                </div>
+                <span class="badge bg-warning text-dark">Project Event</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mb-0">No project tasks or events yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Calendar View -->
+      <div id="projectCalendarView" style="display:none;">
+        <div id="projectCalendar"></div>
+      </div>
+    </div>
+  </div>
 </div>
-{% endblock %} {% block extra_js %}
+{% endblock %}
+
+{% block extra_js %}
 <script src="{% static 'js/dashboard.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
   // Show empty state if no widgets are present
   function updateEmptyState() {
-    const hasWidgets =
-      document.querySelectorAll(".dashboard-widget").length > 0;
-    document
-      .getElementById("empty-dashboard")
-      .classList.toggle("d-none", hasWidgets);
+    const hasWidgets = document.querySelectorAll(".dashboard-widget").length > 0;
+    document.getElementById("empty-dashboard").classList.toggle("d-none", hasWidgets);
   }
 
-  // Watch for changes in the dashboard
   const observer = new MutationObserver(updateEmptyState);
-  observer.observe(document.getElementById("dashboard-widgets"), {
-    childList: true,
+  observer.observe(document.getElementById("dashboard-widgets"), { childList: true });
+  updateEmptyState();
+
+  // === Project Tasks/Events Widget Integration ===
+  function addWidget(type) {
+    if (type === "projectTasks") {
+      document.getElementById("widget-project-tasks").style.display = "block";
+      renderProjectCalendar();
+    }
+  }
+
+  // Toggle between list and calendar view
+  document.addEventListener("DOMContentLoaded", function () {
+    const listBtn = document.getElementById("toggleProjList");
+    const calBtn = document.getElementById("toggleProjCalendar");
+    const listView = document.getElementById("projectListView");
+    const calView = document.getElementById("projectCalendarView");
+
+    if (listBtn && calBtn) {
+      listBtn.addEventListener("click", function () {
+        listView.style.display = "block";
+        calView.style.display = "none";
+      });
+      calBtn.addEventListener("click", function () {
+        listView.style.display = "none";
+        calView.style.display = "block";
+        renderProjectCalendar();
+      });
+    }
   });
 
-  // Initial check
-  updateEmptyState();
+  // Render FullCalendar with project tasks & events
+  function renderProjectCalendar() {
+    const calendarEl = document.getElementById("projectCalendar");
+    if (!calendarEl) return;
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: "dayGridMonth",
+      height: 650,
+      themeSystem: "bootstrap5",
+      headerToolbar: {
+        left: "prev,next today",
+        center: "title",
+        right: "dayGridMonth,listWeek"
+      },
+      events: [
+        {% for task in project_tasks %}
+          {
+            title: "{{ task.title|escapejs }} — {{ task.project.name|escapejs }} (Task)",
+            start: "{{ task.due_date|date:'Y-m-d' }}",
+            className: "bg-primary text-white"
+          },
+        {% endfor %}
+        {% for event in project_events %}
+          {
+            title: "{{ event.title|escapejs }} — {{ event.project.name|escapejs }} (Event)",
+            start: "{{ event.start_date|date:'Y-m-d' }}",
+            {% if event.end_date %}
+            end: "{{ event.end_date|date:'Y-m-d' }}",
+            {% endif %}
+            className: "bg-warning text-dark"
+          },
+        {% endfor %}
+      ]
+    });
+    calendar.render();
+  }
 </script>
 {% endblock %}
+
