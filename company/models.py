@@ -21,7 +21,7 @@ class Company(models.Model):
 class CompanyMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    role = models.CharField(max_length=50, blank=True)  # "Owner", "Admin", "Member", etc.
+    role = models.CharField(max_length=50, blank=True)  # "Owner", "Admin", "Member", etc. // TODO PERMISSIONS
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -30,3 +30,14 @@ class CompanyMembership(models.Model):
     def __str__(self):
         return f"{self.user} in {self.company} ({self.role or 'Member'})"
 
+
+class CompanyMembershipRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "company")
+
+    def __str__(self):
+        return f"Request by {self.user} to join {self.company}"

@@ -1,154 +1,195 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
 
 {% block content %}
 
     <!-- TODO VARIOUS VISUAL ENHANCEMENTS -->
-    <div class="card" style="display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap;">
-        <form class="d-flex" method="POST" action="{% url 'accounts:user_search' %}" style="width: 100%">
-            {% csrf_token %}
+    <div class="card">
+        <form class="d-flex" method="GET" action="{% url 'accounts:user_search' %}" style="width: 100%">
             <input class="form-control" type="text"
                    placeholder="Search Users..." aria-label="Search" name="user_search_query">
         </form>
     </div>
 
     <!-- Header / About card -->
-    <div class="card" style="display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap;">
-        <div>
-            {% if profile.profile_picture %}
-                <img src="{{ profile.profile_picture.url }}" alt="{{ profile }}'s profile picture"
-                     style="width:120px; height:120px; object-fit:cover; border-radius:12px; border:1px solid #333;"/>
-            {% else %}
-                <div style="width:120px; height:120px; border-radius:12px; border:1px dashed #555; display:grid; place-items:center; font-size:2rem; opacity:.7;">
-                    {{ profile.user.username|first|upper }}
-                </div>
-            {% endif %}
-        </div>
+    <div class="card">
+        <div class="card-body">
+            <img src="{{ profile.profile_picture.url }}" alt="{{ profile }}'s profile picture" class="mb-2"
+                 style="width:120px; height:120px; object-fit:cover; border-radius:12px; border:1px solid #333;"/>
 
-        <div style="flex:1 1 320px; min-width:280px;">
-            <h1 style="margin:0 0 .25rem 0;">{{ profile }}</h1>
+            <h1 class="mb-2">{{ profile }}</h1>
+
             {% if can_view %}
-                <p style="margin:.25rem 0;">
+                <p class="mb-2">
                     <b>Bio:</b>
                     <span>{{ profile.bio|linebreaksbr|default:"No bio yet." }}</span>
                 </p>
-                <p style="margin:.25rem 0;"><b>Location:</b> {{ profile.location|default:"—" }}</p>
-                <p style="margin:.25rem 0;">
+                <p class="mb-2"><b>Location:</b> {{ profile.location|default:"—" }}</p>
+                <p class="mb-2">
                     <b>Website:</b>
                     {% if profile.website %}
                         <a href="{{ profile.website }}" target="_blank" rel="noopener">{{ profile.website }}</a>
                     {% else %} — {% endif %}
                 </p>
             {% else %}
-                <p>
-                    <b>This profile is private.</b>
-                </p>
+                <p class="mb-2"><b>This profile is private.</b></p>
             {% endif %}
 
-            <!-- TODO ADD ADD/REMOVE CONNECTION BUTTON HERE -->
-
             {% if user.profile == profile %}
-                <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap;">
-                    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
-                        <i class="fas fa-user"></i>
-                        <span>Edit Profile</span>
-                    </a>
-                    <a href="{% url 'accounts:user_settings' %}" class="btn btn-secondary">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </a>
-                </div>
+                <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary mt-2 mb-2">
+                    <i class="fas fa-user"></i>
+                    <span>Edit Profile</span>
+                </a>
+                <a href="{% url 'accounts:user_settings' %}" class="btn btn-secondary mt-2 mb-2">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            {% elif user.profile not in connections %}
+                {% if already_requested %}
+                    <button class="btn btn-primary mt-2 mb-2" disabled>Request Sent</button>
+                {% else %}
+                    <form action="{% url 'accounts:send_connection_request' profile %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="submit" class="btn btn-primary mt-2 mb-2">Request Connection</button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <form action="{% url 'accounts:remove_connection' profile %}" method="post"
+                      onsubmit="return confirm('Are you sure you want to remove this connection?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn-danger">Remove Connection</button>
+                </form>
             {% endif %}
         </div>
     </div>
 
     {% if can_view %}
         <!-- Grid of related lists -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:2rem; margin-top:2rem;">
-
+        <div class="row">
             <!-- Connections -->
-            <div class="card">
-                <h3 style="margin-top:0;">👥 Connections{% if connections.exists %} ({{ connections.count }}){% endif %}</h3>
-                {% if connections %}
-                    <ul style="list-style:none; padding:0; margin:0;">
-                        {% for connection in connections %}
-                            <li class="d-flex align-items-center">
-                                <p class="me-auto text-start mb-0">{{ connection }}</p>
-                                <a href="{% url 'accounts:profile_view' connection %}" class="btn btn-secondary ms-2">
-                                    View Profile
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p style="opacity:.8;">No connections yet.</p>
-                {% endif %}
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>👥 Connections{% if connections.exists %} ({{ connections.count }}){% endif %}</h3>
+                        {% if user.profile == profile and requests %}
+                            <p><b>You have {{ requests.count }} connection request{% if requests.count > 1 %}s{% endif %}!</b></p>
+                            <ul class="requests-list">
+                                {% for req in requests %}
+                                    <li class="d-flex align-items-center mb-2">
+                                        <p class="me-auto text-start mb-0">{{ req.from_profile }}</p>
+                                        <form action="{% url 'accounts:accept_connection_request' req.from_profile %}" method="post" class="me-2">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="btn btn-outline-primary btn-readable">Accept</button>
+                                        </form>
+                                        <form action="{% url 'accounts:ignore_connection_request' req.from_profile %}" method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="btn btn-outline-secondary btn-readable">Ignore</button>
+                                        </form>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        {% if connections %}
+                            <ul style="list-style:none; padding:0; margin:0;">
+                                {% for connection in connections %}
+                                    <li class="d-flex align-items-center">
+                                        <p class="me-auto text-start mb-0">{{ connection }}</p>
+                                        <a href="{% url 'accounts:profile_view' connection %}" class="btn btn-sm btn-outline-secondary ms-2">
+                                            View Profile
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="mb-2">No connections yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
             <!-- Companies -->
             <!-- TODO PUBLIC/PRIVATE MEMBERSHIPS -->
-            <div class="card">
-                <h3 style="margin-top:0;">🏢 Companies{% if companies.exists %} ({{ companies.count }}){% endif %}</h3>
-                {% if companies %}
-                    <ul style="list-style:none; padding:0; margin:0;">
-                        {% for company in companies %}
-                            <li class="d-flex align-items-center">
-                                <p class="me-auto text-start mb-0">{{ company }}</p>
-                                {% if company.website %}
-                                    <a href="{{ company.website }}" class="btn btn-secondary ms-2">Website</a>
-                                {% endif %}
-                                <a href="{% url 'company:company' company %}" class="btn btn-secondary ms-2">View</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    <a href="{% url 'accounts:company_list' username=profile %}" class="btn btn-secondary">
-                        View Companies
-                    </a>
-                {% else %}
-                    <p style="opacity:.8;">
-                        No companies yet.
-                        {% if user.profile == profile %}
-                            <a href="{% url 'company:register' %}">
-                                Register one here!
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 style="margin-top:0;">🏢 Companies{% if companies.exists %} ({{ companies.count }}){% endif %}</h3>
+                        {% if companies %}
+                            <ul style="list-style:none; padding:0; margin:0;">
+                                {% for company in companies %}
+                                    <li class="d-flex align-items-center">
+                                        <p class="me-auto text-start mb-0">{{ company }}</p>
+                                        {% if company.website %}
+                                            <a href="{{ company.website }}" class="btn btn-secondary ms-2">Website</a>
+                                        {% endif %}
+                                        <a href="{% url 'company:company' company %}" class="btn btn-secondary ms-2">View</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <a href="{% url 'accounts:company_list' username=profile %}" class="btn btn-secondary">
+                                View Companies
                             </a>
+                        {% else %}
+                            <p class="mb-2">No companies yet.</p>
+                            {% if user.profile == profile %}
+                                <a href="{% url 'company:register' %}">
+                                    Register one here!
+                                </a>
+                            {% endif %}
                         {% endif %}
-                    </p>
-                {% endif %}
+                    </div>
+                </div>
             </div>
 
             <!-- Teams -->
-            <div class="card">
-                <h3 style="margin-top:0;">🛡️ Teams{% if teams.exists %} ({{ teams.count }}){% endif %}</h3>
-                {% if teams %}
-                    <ul style="list-style:none; padding:0; margin:0;">
-                        {% for team in teams %}
-                            <li style="padding:.5rem 0;">
-                                <a href="{% url 'teams:detail' team.pk %}">{{ team }}</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p style="opacity:.8;">No teams yet.</p>
-                {% endif %}
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 style="margin-top:0;">🛡️ Teams{% if teams.exists %} ({{ teams.count }}){% endif %}</h3>
+                        {% if teams %}
+                            <ul style="list-style:none; padding:0; margin:0;">
+                                {% for team in teams %}
+                                    <li style="padding:.5rem 0;">
+                                        <a href="{% url 'teams:detail' team.pk %}">{{ team }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="mb-2">No teams yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
             <!-- Projects -->
-            <div class="card">
-                <h3 style="margin-top:0;">📂 Projects{% if projects.exists %} ({{ projects.count }}){% endif %}</h3>
-                {% if projects %}
-                    <ul style="list-style:none; padding:0; margin:0;">
-                        {% for project in projects %}
-                            <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
-                                {% if project.get_absolute_url %}
-                                    <a href="{{ project.get_absolute_url }}">{{ project }}</a>
-                                {% else %}
-                                    {{ project }}
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p style="opacity:.8;">No projects yet.</p>
-                {% endif %}
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 style="margin-top:0;">📂 Projects{% if projects.exists %} ({{ projects.count }}){% endif %}</h3>
+                        {% if projects %}
+                            <ul style="list-style:none; padding:0; margin:0;">
+                                {% for project in projects %}
+                                    <li style="padding:.5rem 0; border-bottom:1px solid #2b2b2b;">
+                                        {% if project.get_absolute_url %}
+                                            <a href="{{ project.get_absolute_url }}">{{ project }}</a>
+                                        {% else %}
+                                            {{ project }}
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="mb-2">No projects yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
         </div>
