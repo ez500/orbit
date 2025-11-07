@@ -157,7 +157,8 @@
 <script>
   // Show empty state if no widgets are present
   function updateEmptyState() {
-    const hasWidgets = document.querySelectorAll(".dashboard-widget").length > 0;
+    const grid = document.getElementById("dashboard-widgets")
+    const hasWidgets = grid.querySelectorAll(".dashboard-widget").length > 0;
     document.getElementById("empty-dashboard").classList.toggle("d-none", hasWidgets);
   }
 
