@@ -3,10 +3,9 @@
 {% block content %}
 
     <div class="card" style="display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap;">
-        <form class="d-flex" method="POST" action="{% url 'accounts:user_search' %}" style="width: 100%">
-            {% csrf_token %}
+        <form class="d-flex" method="GET" action="{% url 'accounts:user_search' %}" style="width: 100%">
             <input class="form-control" type="text"
-                   placeholder="Search Users..." aria-label="Search" name="user_search_query">
+                   placeholder="Search Users..." aria-label="Search" name="user_search_query" value="{{ user_search_query }}">
         </form>
     </div>
 
@@ -19,16 +18,25 @@
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             <p class="me-auto text-start mb-0">{{ user.username }}</p>
-                            {% if requesting_user.profile not in user.profile.connections.all %}
-                                <form action="{% url 'accounts:add_connection' user.username %}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-primary">Add Connection</button>
-                                </form>
-                            {% else %}
-                                <form action="{% url 'accounts:remove_connection' user.username %}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger">Remove Connection</button>
-                                </form>
+                            {% if requesting_user.profile != user.profile %}
+                                {% if requesting_user.profile not in user.profile.connections.all %}
+                                    {% if user.username in requested_users %}
+                                        <button class="btn btn-primary" disabled>Request Sent</button>
+                                    {% else %}
+                                        <form action="{% url 'accounts:send_connection_request' user.username %}" method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button type="submit" class="btn btn-primary">Request Connection</button>
+                                        </form>
+                                    {% endif %}
+                                {% else %}
+                                    <form action="{% url 'accounts:remove_connection' user.username %}" method="post"
+                                          onsubmit="return confirm('Are you sure you want to remove this connection?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="btn btn-danger">Remove Connection</button>
+                                    </form>
+                                {% endif %}
                             {% endif %}
                             <a href="{% url 'accounts:profile_view' user.username %}" class="btn btn-secondary ms-2">
                                 View Profile

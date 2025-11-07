@@ -1,56 +1,80 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
 
-    <div class="card">
-        <h1>My Teams</h1>
-        <p>View and manage all the teams you're part of.</p>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-primary mb-0">
+      <i class="fas fa-users me-2"></i>My Teams
+    </h3>
+    <div class="d-flex gap-2">
+      <a href="{% url 'teams:create_team' %}" class="btn btn-primary btn-sm">
+        <i class="fas fa-plus"></i> Create Team
+      </a>
+      <a href="{% url 'teams:join_team' %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-sign-in-alt"></i> Join Team
+      </a>
     </div>
+  </div>
 
-    <div style="margin-bottom: 1.5rem;">
-        <a href="{% url 'teams:create_team' %}" class="btn" style="margin-right: 0.5rem;">➕ Create New Team</a>
-        <a href="{% url 'teams:join_team' %}" class="btn">🤝 Join Team</a>
-    </div>
-
-    <form method="get" style="margin-bottom: 2rem;">
-        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="🔍 Search teams..."
-               style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ccc; width: 250px;">
-        <button type="submit" class="btn">Search</button>
-    </form>
-
-    {% if teams %}
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-            {% for team in teams %}
-                <div class="card" style="text-align: left;">
-                    <h3 style="margin-bottom: 0.5rem;">
-                        <a href="{% url 'teams:detail' team.pk %}" style="text-decoration: none; color: #3498db;">
-                            {{ team.name }}
-                        </a>
-                    </h3>
-                    <p style="color: #ccc; margin-bottom: 0.5rem;">{{ team.description|default:"No description" }}</p>
-                    <p><strong>👥 Members:</strong> {{ team.members.count }}</p>
-                    <a href="{% url 'teams:detail' team.pk %}" class="btn" style="margin-top: 1rem;">View Team</a>
+  {% if teams %}
+    <div class="row g-4">
+      {% for team in teams %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex align-items-center mb-3">
+                <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center" style="width:45px;height:45px;">
+                  <i class="fas fa-users"></i>
                 </div>
-            {% endfor %}
-        </div>
+                <div class="ms-3">
+                  <h5 class="card-title mb-0">{{ team.name }}</h5>
+                  <small class="text-muted">Created by {{ team.owner.user.username }}</small>
+                </div>
+              </div>
+              
+              {% if team.description %}
+                <p class="card-text text-muted mb-3">{{ team.description|truncatechars:100 }}</p>
+              {% else %}
+                <p class="text-muted mb-3"><em>No description provided.</em></p>
+              {% endif %}
 
-        {% if is_paginated %}
-            <nav style="text-align: center; margin-top: 2rem;">
-                {% if page_obj.has_previous %}
-                    <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.previous_page_number }}"
-                       class="btn">⬅ Prev</a>
-                {% endif %}
-                <span style="margin: 0 1rem;">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
-                {% if page_obj.has_next %}
-                    <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.next_page_number }}"
-                       class="btn">Next ➡</a>
-                {% endif %}
-            </nav>
-        {% endif %}
-    {% else %}
-        <div class="card">
-            <p>You're not in any teams yet. Create or join one to get started!</p>
+              <div class="mt-auto">
+                <p class="mb-2 text-secondary">
+                  <i class="fas fa-user-friends me-1"></i>
+                  Members: {{ team.members.count }}
+                </p>
+
+                <div class="d-flex justify-content-between">
+                  <a href="{% url 'teams:detail' team.pk %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-eye"></i> View
+                  </a>
+                  <a href="{% url 'teams:team_dashboard' team.pk %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-calendar-alt"></i> Dashboard
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-    {% endif %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <i class="fas fa-users fa-3x text-muted mb-3"></i>
+      <h5 class="fw-semibold">You're not part of any teams yet</h5>
+      <p class="text-muted mb-4">Create or join a team to collaborate with others.</p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="{% url 'teams:create_team' %}" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Create a Team
+        </a>
+        <a href="{% url 'teams:join_team' %}" class="btn btn-outline-primary">
+          <i class="fas fa-sign-in-alt"></i> Join a Team
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>
 
 {% endblock %}
 

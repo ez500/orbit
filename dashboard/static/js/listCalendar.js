@@ -109,7 +109,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             cell.innerHTML = `
                 <div class="p-2">
-                    <div class="calendar-date${isToday ? " today" : ""}">${day}</div>
+                    <div class="appendButtonHere d-flex align-items-center">
+                        <div class="me-auto text-start calendar-date${isToday ? " today" : ""}">${day}</div>    
+                    </div>
                     ${dayTasks.map(
                         (task) => {
                             const mode = task.status === "completed" ? "success"
@@ -129,13 +131,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
             cell.addEventListener("mouseenter", () => {
                 if (cell.querySelector(".add-task-btn")) return;
+                const elementToAddButton = cell.querySelector(".appendButtonHere");
+
                 const addTaskButton = document.createElement("button");
                 addTaskButton.type = "button";
-                addTaskButton.className = "btn btn-sm btn-dark position-absolute top-0 end-0 add-task-btn";
+                addTaskButton.className = "btn btn-sm btn-outline-primary add-task-btn";
+                addTaskButton.setAttribute("aria-label", "Add task");
                 addTaskButton.dataset.bsToggle = "modal";
                 addTaskButton.dataset.bsTarget = "#addTaskModal";
-                addTaskButton.innerHTML = `<i class="fas fa-plus"></i>`;
-                cell.appendChild(addTaskButton);
+                addTaskButton.innerHTML = `<i class="fas fa-plus fa-sm"></i>`;
+                elementToAddButton.appendChild(addTaskButton);
 
                 addTaskButton.addEventListener("click", () => {
                     document.getElementById("taskDeadline").value = dateStr;
