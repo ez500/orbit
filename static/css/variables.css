@@ -1,0 +1,200 @@
+:root {
+  --accent-color: #1e90ff;
+  --accent-text: #ffffff;
+  --user-font-size: 16px;
+  --bg-color: #ffffff;
+  --bg-main: #ffffff;
+  --text-color: #000000;
+  --text-main: #000000;
+  --border-color: #dee2e6;
+  --card-bg: #ffffff;
+  --bg-card: #ffffff;
+  --input-bg: #ffffff;
+  --bg-input: #ffffff;
+  --sidebar-bg: #f8f9fa;
+  --sidebar-text: #212529;
+  --hover-bg: #e9ecef;
+  --sidebar-hover: #e9ecef;
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg-color: #ffffff;
+  --bg-main: #ffffff;
+  --text-color: #000000;
+  --text-main: #000000;
+  --border-color: #dee2e6;
+  --card-bg: #ffffff;
+  --bg-card: #ffffff;
+  --input-bg: #ffffff;
+  --bg-input: #ffffff;
+  --sidebar-bg: #f8f9fa;
+  --sidebar-text: #212529;
+  --hover-bg: #e9ecef;
+  --sidebar-hover: #e9ecef;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --bg-main: #1a1a1a;
+  --text-color: #ffffff;
+  --text-main: #ffffff;
+  --border-color: #404040;
+  --card-bg: #2d2d2d;
+  --bg-card: #2d2d2d;
+  --input-bg: #333333;
+  --bg-input: #333333;
+  --sidebar-bg: #2d2d2d;
+  --sidebar-text: #ffffff;
+  --hover-bg: #404040;
+  --sidebar-hover: #404040;
+}
+
+/* System theme */
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --bg-color: #1a1a1a;
+    --bg-main: #1a1a1a;
+    --text-color: #ffffff;
+    --text-main: #ffffff;
+    --border-color: #404040;
+    --card-bg: #2d2d2d;
+    --bg-card: #2d2d2d;
+    --input-bg: #333333;
+    --bg-input: #333333;
+    --sidebar-bg: #2d2d2d;
+    --sidebar-text: #ffffff;
+    --hover-bg: #404040;
+    --sidebar-hover: #404040;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --bg-color: #ffffff;
+    --bg-main: #ffffff;
+    --text-color: #000000;
+    --text-main: #000000;
+    --border-color: #dee2e6;
+    --card-bg: #ffffff;
+    --bg-card: #ffffff;
+    --input-bg: #ffffff;
+    --bg-input: #ffffff;
+    --sidebar-bg: #f8f9fa;
+    --sidebar-text: #212529;
+    --hover-bg: #e9ecef;
+    --sidebar-hover: #e9ecef;
+  }
+}
+
+/* High contrast modifications */
+.high-contrast {
+  --bg-color: #000000;
+  --bg-main: #000000;
+  --text-color: #ffffff;
+  --text-main: #ffffff;
+  --border-color: #ffffff;
+  --card-bg: #1a1a1a;
+  --bg-card: #1a1a1a;
+  --input-bg: #000000;
+  --bg-input: #000000;
+  --sidebar-bg: #000000;
+  --sidebar-text: #ffffff;
+  --hover-bg: #333333;
+  --sidebar-hover: #333333;
+}
+
+/* Apply variables */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.card {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.form-control,
+.form-select {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border-color: var(--accent-color);
+}
+
+.btn-primary {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: var(--accent-text) !important;
+  /* Override Bootstrap's CSS custom properties */
+  --bs-btn-bg: var(--accent-color);
+  --bs-btn-border-color: var(--accent-color);
+  --bs-btn-color: var(--accent-text);
+  --bs-btn-hover-bg: var(--accent-color);
+  --bs-btn-hover-border-color: var(--accent-color);
+  --bs-btn-hover-color: var(--accent-text);
+  --bs-btn-active-bg: var(--accent-color);
+  --bs-btn-active-border-color: var(--accent-color);
+  --bs-btn-active-color: var(--accent-text);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: var(--accent-text) !important;
+  filter: brightness(0.9);
+}
+
+.sidebar {
+  background-color: var(--sidebar-bg);
+  color: var(--text-color);
+}
+
+.sidebar .nav-link {
+  color: var(--text-color);
+}
+
+.sidebar .nav-link:hover {
+  background-color: var(--hover-bg);
+}
+
+.table {
+  color: var(--text-color);
+}
+
+.modal-content {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+/* Ensure text remains readable */
+.text-dark {
+  color: var(--text-color) !important;
+}
+.text-body {
+  color: var(--text-color) !important;
+}
+a {
+  color: var(--accent-color);
+}
+a:hover {
+  color: var(--accent-color);
+  filter: brightness(120%);
+}
+
+/* High contrast focus states */
+.high-contrast .form-control:focus,
+.high-contrast .form-select:focus {
+  box-shadow: 0 0 0 3px #ffffff;
+}

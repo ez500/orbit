@@ -33,7 +33,7 @@ def project_list(request):
         | models.Q(companies__in=user_companies)
     ).distinct()
 
-    return render(request, "projects/project_list.html", {"projects": projects})
+    return render(request, "projects/project_list.html", {"projects": projects, "title": "My Projects"})
 
 @login_required
 def project_detail(request, pk):

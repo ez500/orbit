@@ -42,8 +42,51 @@ class Profile(models.Model):
     location = models.CharField(max_length=100, blank=True)
     website = models.URLField(blank=True)
     connections = models.ManyToManyField('self', blank=True)
-    theme_color = models.CharField(max_length=20, choices=THEME_CHOICES, default='dark')
-    accent_color = models.CharField(max_length=7, choices=ACCENT_CHOICES, default='#1E90FF')
+    theme_color = models.CharField(
+        max_length=20,
+        choices=THEME_CHOICES,
+        default='dark',
+        blank=True,
+        help_text='User interface theme preference'
+    )
+    accent_color = models.CharField(
+        max_length=7,
+        choices=ACCENT_CHOICES,
+        default='#1E90FF',
+        blank=True,
+        help_text='Accent color for UI elements'
+    )
+    # Accessibility / text preference fields
+    high_contrast = models.BooleanField(
+        default=False,
+        help_text='Enable high contrast mode for better visibility'
+    )
+
+    FONT_SIZE_CHOICES = [
+        ('small', 'Small'),
+        ('medium', 'Medium'),
+        ('large', 'Large'),
+    ]
+    font_size = models.CharField(
+        max_length=10,
+        choices=FONT_SIZE_CHOICES,
+        default='medium',
+        blank=True,
+        help_text='Preferred text size'
+    )
+
+    SPACING_CHOICES = [
+        ('compact', 'Compact'),
+        ('normal', 'Normal'),
+        ('relaxed', 'Relaxed'),
+    ]
+    spacing = models.CharField(
+        max_length=10,
+        choices=SPACING_CHOICES,
+        default='normal',
+        blank=True,
+        help_text='Text and element spacing preference'
+    )
     visibility = models.CharField(max_length=20, choices=[(tag.name, tag.value) for tag in Visibility],
                                   default=Visibility.PUBLIC.name)
     updated_at = models.DateTimeField(auto_now=True)
@@ -56,3 +99,13 @@ class Profile(models.Model):
 
     class Meta:
         app_label = 'accounts'
+
+    def get_profile_data(self):
+        return {
+            'high_contrast': self.high_contrast,
+            'font_size': self.font_size,
+            'spacing': self.spacing,
+            'theme_color': self.theme_color,
+            'accent_color': self.accent_color
+        }
+
