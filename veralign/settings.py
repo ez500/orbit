@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "message",
     "rest_framework",
+    "document_storing",
 ]
 
 MIDDLEWARE = [
