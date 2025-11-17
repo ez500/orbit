@@ -1,5 +1,5 @@
 from django import forms
-from .models import Company
+from .models import Company, Announcement
 from .validators import validate_email
 
 
@@ -59,3 +59,21 @@ class CompanyEditForm(forms.ModelForm):
         if Company.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError(f'{email} is already taken.')
         return email
+
+
+class CompanyAnnouncementCreationForm(forms.Form):
+    title = forms.CharField(label='Title', max_length=200, required=True)
+    content = forms.CharField(label='Content', required=True)
+    tasks = forms.ModelMultipleChoiceField(
+        label='Related Tasks',
+        queryset=None,
+        required=False,
+        widget=forms.CheckboxSelectMultiple
+    )
+
+    class Meta:
+        model = Announcement
+        fields = ['title', 'content', 'tasks']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 4}),
+        }
