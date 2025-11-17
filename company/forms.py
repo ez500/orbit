@@ -77,3 +77,21 @@ class CompanyAnnouncementCreationForm(forms.Form):
         widgets = {
             'content': forms.Textarea(attrs={'rows': 4}),
         }
+
+
+class CompanyAnnouncementEditForm(forms.ModelForm):
+    title = forms.CharField(label='Title', max_length=200, required=True)
+    content = forms.CharField(label='Content', required=True)
+    tasks = forms.ModelMultipleChoiceField(
+        label='Related Tasks',
+        queryset=None,
+        required=False,
+        widget=forms.CheckboxSelectMultiple
+    )
+
+    class Meta:
+        model = Announcement
+        fields = ['title', 'content', 'tasks']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 4}),
+        }

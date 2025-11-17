@@ -6,8 +6,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import DetailView, CreateView, UpdateView, ListView
-from .models import Company, CompanyMembership, CompanyMembershipRequest
-from .forms import CompanyRegistrationForm
+from .models import Company, CompanyMembership, CompanyMembershipRequest, Announcement
+from .forms import CompanyRegistrationForm, CompanyAnnouncementEditForm, CompanyAnnouncementCreationForm
 
 
 def ensure_membership_roles():
@@ -72,16 +72,15 @@ class CompanyView(LoginRequiredMixin, DetailView):
         return context
 
 
+# TODO CHECK CREATE AND EDIT ANNOUNCEMENTS
 class CreateAnnouncementView(LoginRequiredMixin, CreateView):
-    model = Company
-    form_class = CompanyRegistrationForm
+    model = Announcement
+    form_class = CompanyAnnouncementCreationForm
     template_name = "company/create_announcement.html"
-    slug_field = "name"
-    slug_url_kwarg = "name"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title"] = f"Create Announcement - {self.object.name}"
+        context["title"] = f"Create Announcement"
         return context
 
     def form_valid(self, form):
@@ -91,6 +90,29 @@ class CreateAnnouncementView(LoginRequiredMixin, CreateView):
             return redirect("company:company", name=company.name)
 
         messages.success(self.request, f"Announcement created successfully for {company.name}.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return f"/company/{self.object.name}/"
+
+
+class EditAnnouncementView(LoginRequiredMixin, UpdateView):
+    model = Announcement
+    form_class = CompanyAnnouncementEditForm
+    template_name = "company/edit_announcement.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = f"Edit Announcement - {self.object.name}"
+        return context
+
+    def form_valid(self, form):
+        company = self.get_object()
+        if self.request.user != company.owner:
+            messages.error(self.request, "Only the owner can edit announcements.")
+            return redirect("company:company", name=company.name)
+
+        messages.success(self.request, f"Announcement updated successfully for {company.name}.")
         return super().form_valid(form)
 
     def get_success_url(self):
