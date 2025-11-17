@@ -67,6 +67,16 @@
                     <span class="hide-on-collapse">Tasks</span>
                 </a>
             </li>
+            <li class="nav-item nav-item-draggable" draggable="true" data-nav-id="messages">
+                <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
+                <a
+                        class="nav-link {% if request.resolver_match.app_name == 'message' %}active{% endif %}"
+                        href="{% if user.is_authenticated %}{% url 'message:messages' username=user.username %}{% else %}{% url 'accounts:login' %}{% endif %}"
+                >
+                    <i class="fas fa-comment-dots"></i>
+                    <span class="hide-on-collapse">Messages</span>
+                </a>
+            </li>
             <li class="nav-item nav-item-draggable" draggable="true" data-nav-id="insights">
                 <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
                 <a
