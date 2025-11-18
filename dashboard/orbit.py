@@ -10,4 +10,11 @@ response = client.chat.completions.create(
     ]
 )
 
+response2 = client.images.generate(
+    model="gpt-image-1",
+    messages=[
+        {"role": "user", "content": "Create an image of a futuristic cityscape at sunset."}
+    ]
+)
+
 print(response.choices[0].message["content"])
