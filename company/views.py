@@ -68,6 +68,8 @@ class CompanyView(LoginRequiredMixin, DetailView):
         context["can_manage_requests"] = viewer_membership and viewer_membership.role in ["admin", "owner"]
         context["already_requested"] = CompanyMembershipRequest.objects.filter(company=company, user=user).exists()
         context["requests"] = CompanyMembershipRequest.objects.filter(company=company)
+        context["announcements"] = company.announcements.all().order_by("-created_at")
+        context["is_admin"] = viewer_membership and viewer_membership.role in ["admin", "owner"]
         context["title"] = company.name + " - Company Profile"
         return context
 
@@ -108,8 +110,8 @@ class EditAnnouncementView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         company = self.get_object()
-        if self.request.user != company.owner:
-            messages.error(self.request, "Only the owner can edit announcements.")
+        if not company.memberships.filter(user=self.request.user, role="admin").exists():
+            messages.error(self.request, "Only an admin can edit announcements.")
             return redirect("company:company", name=company.name)
 
         messages.success(self.request, f"Announcement updated successfully for {company.name}.")

@@ -53,6 +53,36 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
+            <h4 class="mb-3 d-flex"><i class="fas fa-bullhorn">
+                </i> Announcements
+                {% if is_admin %}
+                    <a href="{% url 'company:create_announcement' company.name %}" class="btn btn-primary mb-3">
+                        <i class="fas fa-plus"></i> Create Announcement
+                    </a>
+                {% endif %}
+            </h4>
+            {% if announcements %}
+                <ul class="list-group list-group-flush">
+                    {% for announcement in announcements %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">{{ announcement.title }}</h5>
+                                    <small class="text-muted">Posted on {{ announcement.created_at|date:"F j, Y, g:i a" }}</small>
+                                    <p>{{ announcement.content }}</p>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">There aren't any announcements yet!</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
             <h4 class="mb-3"><i class="fas fa-users"></i> Members</h4>
 
             {% if requests %}
