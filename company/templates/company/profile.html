@@ -53,14 +53,14 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <h4 class="mb-3 d-flex"><i class="fas fa-bullhorn">
-                </i> Announcements
+            <div class="d-flex align-items-center">
+                <h4 class="mb-3 me-auto text-start"><i class="fas fa-bullhorn"></i>Announcements</h4>
                 {% if is_admin %}
                     <a href="{% url 'company:create_announcement' company.name %}" class="btn btn-primary mb-3">
                         <i class="fas fa-plus"></i> Create Announcement
                     </a>
                 {% endif %}
-            </h4>
+            </div>
             {% if announcements %}
                 <ul class="list-group list-group-flush">
                     {% for announcement in announcements %}

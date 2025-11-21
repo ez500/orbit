@@ -17,6 +17,7 @@ def ensure_membership_roles():
     if bad_rows.exists():
         bad_rows.update(role="employee")
 
+
 # -------------------------------------------------------
 # Register a Company
 # -------------------------------------------------------
@@ -24,6 +25,11 @@ class RegisterCompany(LoginRequiredMixin, CreateView):
     model = Company
     form_class = CompanyRegistrationForm
     template_name = "company/register.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Register a New Company"
+        return context
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -80,22 +86,34 @@ class CreateAnnouncementView(LoginRequiredMixin, CreateView):
     form_class = CompanyAnnouncementCreationForm
     template_name = "company/create_announcement.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        self.company = get_object_or_404(Company, name=kwargs['name'])
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["company"] = self.company
         context["title"] = f"Create Announcement"
         return context
 
-    def form_valid(self, form):
-        company = self.get_object()
-        if self.request.user != company.owner:
-            messages.error(self.request, "Only the owner can create announcements.")
-            return redirect("company:company", name=company.name)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['company'] = self.company
+        return kwargs
 
-        messages.success(self.request, f"Announcement created successfully for {company.name}.")
+    def form_valid(self, form):
+        membership = CompanyMembership.objects.filter(
+            company=self.company, user=self.request.user
+        ).first()
+        if not (membership and membership.role in ["admin", "owner"]):
+            messages.error(self.request, "Only an admin can create announcements.")
+            return redirect("company:company", name=self.company.name)
+        form.instance.company = self.company
+        messages.success(self.request, f"Announcement created successfully for {self.company.name}.")
         return super().form_valid(form)
 
     def get_success_url(self):
-        return f"/company/{self.object.name}/"
+        return reverse("company:company", args=[self.company.name])
 
 
 class EditAnnouncementView(LoginRequiredMixin, UpdateView):
@@ -227,25 +245,26 @@ def leave_company(request, name):
             messages.success(request, f"You have left the company {company.name}.")
     return _safe_redirect_back(request, fallback_url=reverse('company:company', args=[name]))
 
+
 class JoinCompanyListView(LoginRequiredMixin, ListView):
     """Show all companies that the user is not a member of."""
     model = Company
     template_name = "company/join_list.html"
     context_object_name = "companies"
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["requested_companies"] = CompanyMembershipRequest.objects.filter(user=self.request.user).values_list('company__name', flat=True)
+        context["requested_companies"] = CompanyMembershipRequest.objects.filter(user=self.request.user).values_list(
+            'company__name', flat=True)
         context["title"] = "Join Company Profiles"
 
         return context
 
-
     def get_queryset(self):
         # Show companies where the user is NOT already a member
         return Company.objects.exclude(memberships__user=self.request.user)
+
 
 # -------------------------------------------------------
 # Promote / Demote / Kick

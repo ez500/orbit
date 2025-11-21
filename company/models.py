@@ -52,7 +52,7 @@ class Announcement(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="announcements")
     title = models.CharField(max_length=200)
     content = models.TextField()
-    tasks = models.ManyToManyField('dashboard.Task', blank=True, related_name='tasks')
+    tasks = models.ManyToManyField('dashboard.Task', blank=True, related_name='announcements')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

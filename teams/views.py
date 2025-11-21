@@ -1,12 +1,16 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView
-from .models import Team, TeamMembership, TeamTask, TeamEvent
+
+from dashboard.models import Task, Event
+from dashboard.forms import TaskForm, EventForm
+from .models import Team, TeamMembership
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .forms import JoinTeamForm, TeamTaskForm, TeamEventForm
+from .forms import JoinTeamForm
 from django.shortcuts import get_object_or_404, redirect
+
 
 class MyTeamsView(LoginRequiredMixin, ListView):
     model = Team
@@ -34,7 +38,7 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
 class TeamCreateView(LoginRequiredMixin, CreateView):
     model = Team
     template_name = "teams/create_team.html"
-    fields = ["name", "description"]
+    fields = ["name", "description", "company"]
     success_url = reverse_lazy("teams:my_teams")
     extra_context = {'title': 'Create Team'}
 
@@ -67,6 +71,7 @@ def join_team(request):
 
     return render(request, "teams/join_team.html", {"form": form})
 
+
 @login_required
 def team_dashboard(request, pk):
     team = get_object_or_404(Team, pk=pk)
@@ -75,13 +80,13 @@ def team_dashboard(request, pk):
         messages.error(request, "You are not a member of this team.")
         return redirect("teams:my_teams")
 
-    task_form = TeamTaskForm()
-    event_form = TeamEventForm()
+    task_form = TaskForm(team=team)
+    event_form = EventForm(team=team)
 
     # Handle adding tasks
     if request.method == "POST":
         if "add_task" in request.POST:
-            task_form = TeamTaskForm(request.POST)
+            task_form = TaskForm(request.POST, team=team)
             if task_form.is_valid():
                 task = task_form.save(commit=False)
                 task.team = team
@@ -90,7 +95,7 @@ def team_dashboard(request, pk):
                 return redirect("teams:team_dashboard", pk=pk)
 
         elif "add_event" in request.POST:
-            event_form = TeamEventForm(request.POST)
+            event_form = EventForm(request.POST, team=team)
             if event_form.is_valid():
                 event = event_form.save(commit=False)
                 event.team = team
@@ -98,8 +103,8 @@ def team_dashboard(request, pk):
                 messages.success(request, f"Event '{event.title}' created.")
                 return redirect("teams:team_dashboard", pk=pk)
 
-    tasks = team.tasks.all().order_by("-created_at")
-    events = team.events.all().order_by("-start_date")
+    tasks = team.tasks.all().order_by("-pub_date")
+    events = team.events.all().order_by("-start_datetime")
 
     context = {
         "team": team,
@@ -107,13 +112,14 @@ def team_dashboard(request, pk):
         "team_events": events,
         "task_form": task_form,
         "event_form": event_form,
+        "title": f"{team.name} Dashboard",
     }
     return render(request, "teams/team_dashboard.html", context)
 
 
 @login_required
 def delete_team_task(request, team_pk, task_pk):
-    task = get_object_or_404(TeamTask, pk=task_pk, team_id=team_pk)
+    task = get_object_or_404(Task, pk=task_pk, team_id=team_pk)
     team = task.team
 
     if request.user not in team.members.all():
@@ -127,7 +133,7 @@ def delete_team_task(request, team_pk, task_pk):
 
 @login_required
 def delete_team_event(request, team_pk, event_pk):
-    event = get_object_or_404(TeamEvent, pk=event_pk, team_id=team_pk)
+    event = get_object_or_404(Event, pk=event_pk, team_id=team_pk)
     team = event.team
 
     if request.user not in team.members.all():
@@ -137,6 +143,7 @@ def delete_team_event(request, team_pk, event_pk):
     event.delete()
     messages.success(request, f"Event '{event.title}' deleted.")
     return redirect("teams:team_dashboard", pk=team_pk)
+
 
 @login_required
 def leave_team(request, pk):

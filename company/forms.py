@@ -1,4 +1,8 @@
 from django import forms
+from django.db.models import Q
+
+from dashboard.models import Task
+from teams.models import Team
 from .models import Company, Announcement
 from .validators import validate_email
 
@@ -54,29 +58,34 @@ class CompanyEditForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if not email:
+        if email:
             return email
         if Company.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError(f'{email} is already taken.')
         return email
 
 
-class CompanyAnnouncementCreationForm(forms.Form):
+class CompanyAnnouncementCreationForm(forms.ModelForm):
     title = forms.CharField(label='Title', max_length=200, required=True)
-    content = forms.CharField(label='Content', required=True)
+    content = forms.CharField(label="Content", required=True, widget=forms.Textarea(attrs={"rows": 4}))
     tasks = forms.ModelMultipleChoiceField(
         label='Related Tasks',
-        queryset=None,
-        required=False,
-        widget=forms.CheckboxSelectMultiple
+        queryset=Task.objects.none(),
+        required=True,
+        widget=forms.SelectMultiple(attrs={"class": "form-select"}),
     )
 
     class Meta:
         model = Announcement
         fields = ['title', 'content', 'tasks']
-        widgets = {
-            'content': forms.Textarea(attrs={'rows': 4}),
-        }
+
+    def __init__(self, *args, **kwargs):
+        company = kwargs.pop("company", None)
+        super().__init__(*args, **kwargs)
+        if company:
+            self.fields["tasks"].queryset = Task.objects.filter(
+                Q(team__company=company) | Q(project__companies=company)
+            ).distinct().order_by("title")
 
 
 class CompanyAnnouncementEditForm(forms.ModelForm):
@@ -84,7 +93,7 @@ class CompanyAnnouncementEditForm(forms.ModelForm):
     content = forms.CharField(label='Content', required=True)
     tasks = forms.ModelMultipleChoiceField(
         label='Related Tasks',
-        queryset=None,
+        queryset=Task.objects.none(),
         required=False,
         widget=forms.CheckboxSelectMultiple
     )
@@ -92,6 +101,11 @@ class CompanyAnnouncementEditForm(forms.ModelForm):
     class Meta:
         model = Announcement
         fields = ['title', 'content', 'tasks']
-        widgets = {
-            'content': forms.Textarea(attrs={'rows': 4}),
-        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.company_id:
+            company = self.instance.company
+            self.fields["tasks"].queryset = Task.objects.filter(
+                Q(team__company=company) | Q(project__companies=company)
+            ).distinct().order_by("title")
