@@ -6,8 +6,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import DetailView, CreateView, UpdateView, ListView
-from .models import Company, CompanyMembership, CompanyMembershipRequest
-from .forms import CompanyRegistrationForm
+from .models import Company, CompanyMembership, CompanyMembershipRequest, Announcement
+from .forms import CompanyRegistrationForm, CompanyAnnouncementEditForm, CompanyAnnouncementCreationForm
 
 
 def ensure_membership_roles():
@@ -17,6 +17,7 @@ def ensure_membership_roles():
     if bad_rows.exists():
         bad_rows.update(role="employee")
 
+
 # -------------------------------------------------------
 # Register a Company
 # -------------------------------------------------------
@@ -24,6 +25,11 @@ class RegisterCompany(LoginRequiredMixin, CreateView):
     model = Company
     form_class = CompanyRegistrationForm
     template_name = "company/register.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Register a New Company"
+        return context
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -63,13 +69,86 @@ class CompanyView(LoginRequiredMixin, DetailView):
         if viewer_membership is None and user == company.owner:
             viewer_membership = CompanyMembership.objects.get(company=company, user=company.owner)
 
+        announcements = company.announcements.all().order_by("-created_at")
+        if viewer_membership and viewer_membership.role in ["admin", "owner"]:
+            forms = {
+                a.id: CompanyAnnouncementEditForm(instance=a)
+                for a in announcements
+            }
+        else:
+            forms = {}
+
         context["memberships"] = memberships
         context["viewer_membership"] = viewer_membership
         context["can_manage_requests"] = viewer_membership and viewer_membership.role in ["admin", "owner"]
         context["already_requested"] = CompanyMembershipRequest.objects.filter(company=company, user=user).exists()
         context["requests"] = CompanyMembershipRequest.objects.filter(company=company)
+        context["announcements"] = announcements
+        context["announcement_forms"] = forms
+        context["is_admin"] = viewer_membership and viewer_membership.role in ["admin", "owner"]
         context["title"] = company.name + " - Company Profile"
         return context
+
+
+# TODO CHECK CREATE AND EDIT ANNOUNCEMENTS
+class CreateAnnouncementView(LoginRequiredMixin, CreateView):
+    model = Announcement
+    form_class = CompanyAnnouncementCreationForm
+    template_name = "company/create_announcement.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.company = get_object_or_404(Company, name=kwargs['name'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["company"] = self.company
+        context["title"] = f"Create Announcement"
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['company'] = self.company
+        return kwargs
+
+    def form_valid(self, form):
+        membership = CompanyMembership.objects.filter(
+            company=self.company, user=self.request.user
+        ).first()
+        if not (membership and membership.role in ["admin", "owner"]):
+            messages.error(self.request, "Only an admin can create announcements.")
+            return redirect("company:company", name=self.company.name)
+        form.instance.company = self.company
+        messages.success(self.request, f"Announcement created successfully for {self.company.name}.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("company:company", args=[self.company.name])
+
+
+class EditAnnouncementView(LoginRequiredMixin, UpdateView):
+    model = Announcement
+    form_class = CompanyAnnouncementEditForm
+    template_name = "company/edit_announcement.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = f"Edit Announcement - {self.object.title}"
+        return context
+
+    def form_valid(self, form):
+        announcement = self.get_object()
+        company = announcement.company
+        membership = CompanyMembership.objects.filter(company=company, user=self.request.user).first()
+        if not (membership and membership.role in ["admin", "owner"]):
+            messages.error(self.request, "Only an admin can edit announcements.")
+            return redirect("company:company", name=company.name)
+
+        messages.success(self.request, f"Announcement updated successfully for {company.name}.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("company:company", args=[self.object.company.name])
 
 
 # -------------------------------------------------------
@@ -178,25 +257,26 @@ def leave_company(request, name):
             messages.success(request, f"You have left the company {company.name}.")
     return _safe_redirect_back(request, fallback_url=reverse('company:company', args=[name]))
 
+
 class JoinCompanyListView(LoginRequiredMixin, ListView):
     """Show all companies that the user is not a member of."""
     model = Company
     template_name = "company/join_list.html"
     context_object_name = "companies"
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["requested_companies"] = CompanyMembershipRequest.objects.filter(user=self.request.user).values_list('company__name', flat=True)
+        context["requested_companies"] = CompanyMembershipRequest.objects.filter(user=self.request.user).values_list(
+            'company__name', flat=True)
         context["title"] = "Join Company Profiles"
 
         return context
 
-
     def get_queryset(self):
         # Show companies where the user is NOT already a member
         return Company.objects.exclude(memberships__user=self.request.user)
+
 
 # -------------------------------------------------------
 # Promote / Demote / Kick
