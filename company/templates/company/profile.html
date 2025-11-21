@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load company_extras %}
 {% block content %}
 <div class="container mt-4">
 
@@ -64,17 +65,63 @@
             {% if announcements %}
                 <ul class="list-group list-group-flush">
                     {% for announcement in announcements %}
-                        <li class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
+                        <li class="list-group-item p-3 position-relative
+                                   {% if is_admin %}cursor-pointer{% endif %}"
+                            {% if is_admin %}
+                                data-bs-toggle="modal"
+                                data-bs-target="#editAnnouncementModal-{{ announcement.id }}"
+                                style="transition: background-color .15s; cursor:pointer;"
+                            {% endif %}
+                        >
+                            <div class="d-flex justify-content-between">
                                 <div>
                                     <h5 class="mb-1">{{ announcement.title }}</h5>
-                                    <small class="text-muted">Posted on {{ announcement.created_at|date:"F j, Y, g:i a" }}</small>
-                                    <p>{{ announcement.content }}</p>
+                                    <small class="text-muted">Posted {{ announcement.created_at|date:"F j, Y, g:i a" }}</small>
+                                    <p class="mb-0 mt-2">{{ announcement.content }}</p>
+                                    {% if announcement.tasks.all %}
+                                        <!-- TODO PROBABLY DO SOMETHING FURTHER WITH TASKS AND INTERACTIVITY WITH ANNOUNCEMENTS -->
+                                        <small class="text-muted d-block mt-1">
+                                            Related Tasks:
+                                            {% for task in announcement.tasks.all %}
+                                                {{ task.title }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </small>
+                                    {% endif %}
                                 </div>
                             </div>
                         </li>
+                        {% if is_admin %}
+                            <div class="modal fade" id="editAnnouncementModal-{{ announcement.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <form method="post" action="{% url 'company:edit_announcement' company.name announcement.id %}">
+                                            {% csrf_token %}
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Edit Announcement</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {% with form=announcement_forms|get_item:announcement.id %}
+                                                    {{ form.as_p }}
+                                                {% endwith %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary">Save</button>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
                     {% endfor %}
                 </ul>
+                <script>
+                document.querySelectorAll('li.list-group-item[data-bs-target]').forEach(li => {
+                   li.addEventListener('mouseenter', () => li.style.backgroundColor = '#f8f9fa');
+                   li.addEventListener('mouseleave', () => li.style.backgroundColor = '');
+                });
+                </script>
             {% else %}
                 <p class="text-muted">There aren't any announcements yet!</p>
             {% endif %}

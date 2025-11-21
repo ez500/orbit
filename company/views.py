@@ -69,12 +69,22 @@ class CompanyView(LoginRequiredMixin, DetailView):
         if viewer_membership is None and user == company.owner:
             viewer_membership = CompanyMembership.objects.get(company=company, user=company.owner)
 
+        announcements = company.announcements.all().order_by("-created_at")
+        if viewer_membership and viewer_membership.role in ["admin", "owner"]:
+            forms = {
+                a.id: CompanyAnnouncementEditForm(instance=a)
+                for a in announcements
+            }
+        else:
+            forms = {}
+
         context["memberships"] = memberships
         context["viewer_membership"] = viewer_membership
         context["can_manage_requests"] = viewer_membership and viewer_membership.role in ["admin", "owner"]
         context["already_requested"] = CompanyMembershipRequest.objects.filter(company=company, user=user).exists()
         context["requests"] = CompanyMembershipRequest.objects.filter(company=company)
-        context["announcements"] = company.announcements.all().order_by("-created_at")
+        context["announcements"] = announcements
+        context["announcement_forms"] = forms
         context["is_admin"] = viewer_membership and viewer_membership.role in ["admin", "owner"]
         context["title"] = company.name + " - Company Profile"
         return context
@@ -123,12 +133,14 @@ class EditAnnouncementView(LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title"] = f"Edit Announcement - {self.object.name}"
+        context["title"] = f"Edit Announcement - {self.object.title}"
         return context
 
     def form_valid(self, form):
-        company = self.get_object()
-        if not company.memberships.filter(user=self.request.user, role="admin").exists():
+        announcement = self.get_object()
+        company = announcement.company
+        membership = CompanyMembership.objects.filter(company=company, user=self.request.user).first()
+        if not (membership and membership.role in ["admin", "owner"]):
             messages.error(self.request, "Only an admin can edit announcements.")
             return redirect("company:company", name=company.name)
 
@@ -136,7 +148,7 @@ class EditAnnouncementView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return f"/company/{self.object.name}/"
+        return reverse("company:company", args=[self.object.company.name])
 
 
 # -------------------------------------------------------
