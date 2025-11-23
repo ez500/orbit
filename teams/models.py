@@ -19,11 +19,21 @@ class Team(models.Model):
     def __str__(self):
         return self.name
 
+    def get_lead(self):
+        return self.memberships.filter(role="Lead").first()
+
 
 class TeamMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="memberships")
-    role = models.CharField(max_length=50, blank=True)  # "Owner", "Member", etc.
+    ROLE_CHOICES = [
+        ("Lead","Team Lead"),
+        ("Manager","Team Manager"),
+        ("Member","Team Member"),
+
+    ]
+
+    role = models.CharField(max_length=20,choices=ROLE_CHOICES,default="Member")
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

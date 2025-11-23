@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView
+from django.contrib.auth.models import User
 
 from dashboard.models import Task, Event
 from dashboard.forms import TaskForm, EventForm
@@ -32,6 +33,20 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
     template_name = "teams/team_detail.html"
     context_object_name = "team"
     extra_context = {'title': 'My Teams'}
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        team = self.get_object()
+
+        context["memberships"] = team.memberships.select_related("user")
+
+        try:
+            context["acting"] = TeamMembership.objects.get(user=self.request.user, team=team)
+        except TeamMembership.DoesNotExist:
+            context["acting"] = None
+
+        context["user_is_member"] = self.request.user in team.members.all()
+
+        return context
 
 
 # TODO: EDIT TEAM
@@ -47,7 +62,7 @@ class TeamCreateView(LoginRequiredMixin, CreateView):
         TeamMembership.objects.create(
             user=self.request.user,
             team=self.object,
-            role="Owner"
+            role="Lead"
         )
         return response
 
@@ -154,3 +169,71 @@ def leave_team(request, pk):
     else:
         messages.warning(request, "You are not a member of this team.")
     return redirect("teams:my_teams")
+
+@login_required
+def remove_member(request, team_pk, user_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    target = get_object_or_404(User, pk=user_pk)
+
+    acting = TeamMembership.objects.get(user=request.user, team=team)
+    target_mem = TeamMembership.objects.get(user=target, team=team)
+
+    if acting.role not in ["Lead", "Manager"]:
+        messages.error(request, "You do not have permission to remove members.")
+        return redirect("teams:detail", pk=team_pk)
+
+    if acting.role == "Manager" and acting.user == target:
+        messages.error(request, "Managers cannot remove themselves.")
+        return redirect("teams:detail", pk=team_pk)
+
+    if target_mem.role == "Lead":
+        messages.error(request, "You cannot remove the Team Lead.")
+        return redirect("teams:detail", pk=team_pk)
+
+    target_mem.delete()
+    messages.success(request, f"{target.username} has been removed from the team.")
+    return redirect("teams:detail", pk=team_pk)
+
+
+@login_required
+def promote_member(request, team_pk, user_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    target = get_object_or_404(User, pk=user_pk)
+
+    acting = TeamMembership.objects.get(user=request.user, team=team)
+    target_mem = TeamMembership.objects.get(user=target, team=team)
+
+    if acting.role != "Lead":
+        messages.error(request, "Only the Team Lead can promote members.")
+        return redirect("teams:detail", pk=team_pk)
+
+    if target_mem.role != "Member":
+        messages.error(request, "Only members can be promoted.")
+        return redirect("teams:detail", pk=team_pk)
+
+    target_mem.role = "Manager"
+    target_mem.save()
+    messages.success(request, f"{target.username} promoted to Manager.")
+    return redirect("teams:detail", pk=team_pk)
+
+
+@login_required
+def demote_member(request, team_pk, user_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    target = get_object_or_404(User, pk=user_pk)
+
+    acting = TeamMembership.objects.get(user=request.user, team=team)
+    target_mem = TeamMembership.objects.get(user=target, team=team)
+
+    if acting.role != "Lead":
+        messages.error(request, "Only the Team Lead can demote managers.")
+        return redirect("teams:detail", pk=team_pk)
+
+    if target_mem.role != "Manager":
+        messages.error(request, "Only managers can be demoted.")
+        return redirect("teams:detail", pk=team_pk)
+
+    target_mem.role = "Member"
+    target_mem.save()
+    messages.success(request, f"{target.username} demoted to Member.")
+    return redirect("teams:detail", pk=team_pk)
