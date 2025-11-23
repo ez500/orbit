@@ -96,6 +96,17 @@ def project_dashboard(request, pk):
     """Show a dedicated dashboard for the project with tasks and events."""
     project = get_object_or_404(Project, pk=pk)
 
+    user_teams = Team.objects.filter(members=request.user)
+    user_companies = CompanyMembership.objects.filter(user=request.user).values_list("company", flat=True)
+
+    user_projects = Project.objects.filter(
+        models.Q(lead=request.user)
+        | models.Q(collaborators=request.user)
+        | models.Q(team__in=user_teams)
+        | models.Q(companies__in=user_companies)
+    ).distinct()
+
+
     # Handle new Task submission
     if request.method == "POST":
         if "add_task" in request.POST:
@@ -124,6 +135,7 @@ def project_dashboard(request, pk):
         "events": events,
         "task_form": task_form,
         "event_form": event_form,
+        "user_projects":user_projects,
     })
 
 

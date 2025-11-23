@@ -14,6 +14,31 @@
     </div>
   </div>
 
+  <!-- ===== PROJECT SWITCHER (NEW) ===== -->
+  <div class="mb-4">
+    <label class="fw-semibold mb-2 text-primary">Switch Project</label>
+    <div class="border rounded p-2" style="max-height:150px; overflow-y:auto;">
+      {% for p in user_projects %}
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <button
+            onclick="switchProject({{ p.pk }})"
+            class="btn btn-sm {% if p.pk == project.pk %}btn-primary{% else %}btn-outline-primary{% endif %} w-100 text-start"
+          >
+            {{ p.name }}
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+  function switchProject(projectId) {
+      const currentId = {{ project.pk }};
+      if (projectId === currentId) return;
+      window.location.href = `/projects/${projectId}/dashboard/`;
+  }
+  </script>
+
   <!-- View Toggle -->
   <div class="d-flex justify-content-end mb-3">
     <div class="btn-group" role="group">
