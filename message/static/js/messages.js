@@ -6,21 +6,15 @@
   const conversationItems = document.querySelectorAll('.conversation-item');
   conversationItems.forEach(item => {
     item.addEventListener('click', function() {
-      // Remove active class from all conversations
-      conversationItems.forEach(conv => conv.classList.remove('active'));
-
-      // Add active class to clicked conversation
-      this.classList.add('active');
-
-      // Here you would typically load the conversation messages
-      // For now, we'll just update the thread header
       const conversationId = this.dataset.conversationId;
-      const conversationName = this.querySelector('.conversation-name').textContent;
-      const conversationAvatar = this.querySelector('.conversation-avatar img')?.src ||
-                                  this.querySelector('.team-avatar');
 
-      // Update thread header (if you want to show different conversations)
-      console.log(`Switched to conversation: ${conversationName}`);
+      // Get current username from the page URL
+      const currentUsername = window.location.pathname.split('/')[2]; // Extract from /message/{username}/
+
+      // Navigate to the conversation thread
+      if (conversationId && currentUsername) {
+        window.location.href = `/message/${currentUsername}/conversation/${conversationId}/`;
+      }
     });
   });
 

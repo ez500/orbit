@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/messages.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+  <!-- Conversations Sidebar -->
+  <div class="conversations-sidebar">
+    <div class="conversations-header">
+      <h5 class="mb-0">Messages</h5>
+      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newMessageModal">
+        <i class="fas fa-edit"></i>
+      </button>
+    </div>
+
+    <!-- Search Conversations -->
+    <div class="conversation-search">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Search conversations..."
+        id="conversationSearch"
+      />
+    </div>
+
+    <!-- Conversations List -->
+    <div class="conversations-list" id="conversationsList">
+      {% for conv in conversations %}
+      <a href="{% url 'message:conversation_thread' current_user.username conv.id %}"
+         class="conversation-item"
+         data-conversation-id="{{ conv.id }}">
+        <div class="conversation-avatar">
+          {% if conv.other_participant %}
+            {% if conv.other_participant.profile.profile_picture %}
+            <img src="{{ conv.other_participant.profile.profile_picture.url }}"
+                 alt="{{ conv.other_participant.get_full_name|default:conv.other_participant.username }}"
+                 class="rounded-circle">
+            {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ conv.other_participant.get_full_name|default:conv.other_participant.username|urlencode }}&background=random"
+                 alt="{{ conv.other_participant.get_full_name|default:conv.other_participant.username }}"
+                 class="rounded-circle">
+            {% endif %}
+            <span class="status-indicator online"></span>
+          {% else %}
+            <div class="team-avatar">
+              <i class="fas fa-users"></i>
+            </div>
+          {% endif %}
+        </div>
+        <div class="conversation-info">
+          <div class="conversation-header-row">
+            <h6 class="conversation-name">
+              {% if conv.other_participant %}
+                {{ conv.other_participant.get_full_name|default:conv.other_participant.username }}
+              {% else %}
+                {{ conv.title }}
+              {% endif %}
+            </h6>
+            <span class="conversation-time">{{ conv.last_message_time }}</span>
+          </div>
+          <p class="conversation-preview">
+            {% if conv.last_message %}
+              <span class="last-sender">
+                {% if conv.last_message.sender == current_user %}You:{% else %}{{ conv.last_message.sender.first_name|default:conv.last_message.sender.username }}:{% endif %}
+              </span>
+              {{ conv.last_message.content|truncatewords:8 }}
+            {% else %}
+              No messages yet
+            {% endif %}
+          </p>
+        </div>
+        {% if conv.unread_count > 0 %}
+        <span class="unread-badge">{{ conv.unread_count }}</span>
+        {% endif %}
+      </a>
+      {% empty %}
+      <div class="empty-state">
+        <i class="fas fa-inbox fa-3x mb-3"></i>
+        <p>No conversations yet</p>
+        <small class="text-muted">Start messaging your connections or team members</small>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- No Conversation Selected -->
+  <div class="message-thread">
+    <div class="no-conversation-selected">
+      <i class="fas fa-comments fa-4x mb-3"></i>
+      <h4>Select a conversation</h4>
+      <p>Choose a conversation from the list to start messaging</p>
+    </div>
+  </div>
+</div>
+
+<!-- New Message Modal -->
+<div class="modal fade" id="newMessageModal" tabindex="-1" aria-labelledby="newMessageModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newMessageModalLabel">New Message</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="recipientSearch" class="form-label">To:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="recipientSearch"
+            placeholder="Search for a connection or team member..."
+            autocomplete="off"
+          />
+          <div id="userSearchResults" class="user-search-results"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/messages.js' %}"></script>
+<script>
+  // Search conversations
+  const conversationSearch = document.getElementById('conversationSearch');
+  if (conversationSearch) {
+    conversationSearch.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      const conversations = document.querySelectorAll('.conversation-item');
+
+      conversations.forEach(conv => {
+        const name = conv.querySelector('.conversation-name').textContent.toLowerCase();
+        const preview = conv.querySelector('.conversation-preview').textContent.toLowerCase();
+
+        if (name.includes(searchTerm) || preview.includes(searchTerm)) {
+          conv.style.display = '';
+        } else {
+          conv.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // User search for new messages
+  const recipientSearch = document.getElementById('recipientSearch');
+  const userSearchResults = document.getElementById('userSearchResults');
+  let searchTimeout;
+
+  if (recipientSearch) {
+    recipientSearch.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      const query = this.value.trim();
+
+      if (query.length < 2) {
+        userSearchResults.classList.remove('active');
+        userSearchResults.innerHTML = '';
+        return;
+      }
+
+      searchTimeout = setTimeout(() => {
+        const currentUsername = '{{ current_user.username }}';
+        fetch(`/message/${currentUsername}/search-users/?q=${encodeURIComponent(query)}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.users && data.users.length > 0) {
+              renderUserResults(data.users);
+            } else {
+              userSearchResults.innerHTML = '<div class="p-3 text-muted text-center">No users found</div>';
+              userSearchResults.classList.add('active');
+            }
+          })
+          .catch(error => {
+            console.error('Error searching users:', error);
+          });
+      }, 300);
+    });
+  }
+
+  function renderUserResults(users) {
+    const currentUsername = '{{ current_user.username }}';
+    const html = users.map(user => `
+      <div class="user-result-item" onclick="window.location.href='/message/${currentUsername}/start/${user.username}/'">
+        <div class="user-result-avatar">
+          <img src="${user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name)}&background=random`}"
+               alt="${user.full_name}"
+               class="rounded-circle">
+        </div>
+        <div class="user-result-info">
+          <h6>${user.full_name}</h6>
+          <small>@${user.username}</small>
+        </div>
+      </div>
+    `).join('');
+
+    userSearchResults.innerHTML = html;
+    userSearchResults.classList.add('active');
+  }
+
+  // Close search results when clicking outside
+  document.addEventListener('click', function(e) {
+    if (userSearchResults && recipientSearch && !recipientSearch.contains(e.target) && !userSearchResults.contains(e.target)) {
+      userSearchResults.classList.remove('active');
+    }
+  });
+</script>
+{% endblock %}
