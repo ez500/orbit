@@ -115,8 +115,8 @@ def project_dashboard(request, pk):
     # Display data
     task_form = TaskForm()
     event_form = EventForm()
-    tasks = project.tasks.order_by("completed", "due_date")
-    events = project.events.order_by("start_date")
+    tasks = project.tasks.order_by("status", "deadline")
+    events = project.events.order_by("start_datetime")
 
     return render(request, "projects/project_dashboard.html", {
         "project": project,
