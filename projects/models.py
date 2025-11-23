@@ -52,9 +52,33 @@ class ProjectDocument(models.Model):
         "Project", related_name="documents", on_delete=models.CASCADE
     )
     name = models.CharField(max_length=255)
-    file = models.FileField(upload_to="project_docs/")
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    file = models.FileField(
+        upload_to="project_docs/",
+        null=True,
+        blank=True,
+        help_text="Uploaded file. Leave empty if creating internal document."
+    )
+
+    content = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Internal CRM document stored as HTML."
+    )
+
+    TYPE_CHOICES = [
+        ("file", "Uploaded File"),
+        ("internal", "Internal CRM Document"),
+    ]
+
+    doc_type = models.CharField(
+        default="file",
+        max_length=20,
+        choices=TYPE_CHOICES,
+        help_text="Document type: uploaded or created internally."
+    )
 
     def __str__(self):
         return f"{self.name} ({self.project.name})"

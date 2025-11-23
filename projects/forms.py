@@ -69,3 +69,20 @@ class ProjectDocumentForm(forms.ModelForm):
             "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Document name"}),
             "file": forms.ClearableFileInput(attrs={"class": "form-control"}),
         }
+
+class InternalDocumentForm(forms.ModelForm):
+    """
+    Used for creating/editing internal CRM documents written in the editor.
+    Stores HTML content in ProjectDocument.content.
+    """
+    class Meta:
+        model = ProjectDocument
+        fields = ["name", "content"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Document title"}),
+            "content": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 20,
+                "placeholder": "Write your document here..."
+            }),
+        }

@@ -17,5 +17,9 @@ urlpatterns = [
     path("<int:pk>/documents/add/", views.add_document, name="add_document"),
     path("<int:pk>/documents/<int:doc_id>/delete/", views.delete_document, name="delete_document"),
     path("<int:pk>/documents/<int:doc_id>/", views.view_document, name="view_document"),
+    path("<int:pk>/documents/create/", views.create_internal_document, name="create_internal_document"),
+    path("documents/<int:doc_id>/edit/", views.edit_internal_document, name="edit_internal_document"),
+    path("documents/<int:doc_id>/view/", views.view_internal_document, name="view_internal_document"),
+
 ]
 
