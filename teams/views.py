@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from dashboard.models import Task, Event
 from dashboard.forms import TaskForm, EventForm
-from .models import Team, TeamMembership
+from .models import Team, TeamMembership,TeamDocument
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import render
@@ -237,3 +237,89 @@ def demote_member(request, team_pk, user_pk):
     target_mem.save()
     messages.success(request, f"{target.username} demoted to Member.")
     return redirect("teams:detail", pk=team_pk)
+
+@login_required
+def team_add_document(request, team_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+
+    if request.method == "POST":
+        form = TeamDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            doc = form.save(commit=False)
+            doc.team = team
+            doc.uploaded_by = request.user
+            doc.save()
+            messages.success(request, "Document added successfully.")
+            return redirect("teams:team_dashboard", team_pk)
+    else:
+        form = TeamDocumentForm()
+
+    return render(request, "teams/team_add_document.html", {
+        "team": team,
+        "form": form
+    })
+
+
+@login_required
+def team_view_document(request, team_pk, doc_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    document = get_object_or_404(TeamDocument, pk=doc_pk, team=team)
+    return render(request, "teams/team_view_document.html", {
+        "team": team,
+        "document": document
+    })
+
+
+@login_required
+def team_delete_document(request, team_pk, doc_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    document = get_object_or_404(TeamDocument, pk=doc_pk, team=team)
+
+    if request.user not in team.members.all():
+        return HttpResponseForbidden("Not allowed")
+
+    document.delete()
+    messages.success(request, "Document deleted.")
+    return redirect("teams:team_dashboard", team_pk)
+
+
+@login_required
+def team_edit_internal_document(request, team_pk, doc_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    document = get_object_or_404(TeamDocument, pk=doc_pk, team=team)
+
+    if document.doc_type != "internal":
+        messages.error(request, "Only internal documents can be edited.")
+        return redirect("teams:team_view_document", team_pk, doc_pk)
+
+    if request.method == "POST":
+        document.content = request.POST.get("content")
+        document.save()
+        messages.success(request, "Document updated.")
+        return redirect("teams:team_view_document", team_pk, doc_pk)
+
+    return render(request, "teams/team_edit_document.html", {
+        "team": team,
+        "document": document
+    })
+
+@login_required
+def team_create_internal_document(request, team_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        content = request.POST.get("content")
+
+        doc = TeamDocument.objects.create(
+            team=team,
+            name=name,
+            doc_type="internal",
+            content=content,
+            uploaded_by=request.user
+        )
+        return redirect("teams:team_view_document", team_pk=team.pk, doc_pk=doc.pk)
+
+    return render(request, "teams/team_create_internal_document.html", {
+        "team": team
+    })

@@ -41,3 +41,30 @@ class TeamMembership(models.Model):
 
     def __str__(self):
         return f"{self.user} in {self.team} ({self.role or 'Member'})"
+
+class TeamDocument(models.Model):
+    TYPE_CHOICES = [
+        ("file", "Uploaded File"),
+        ("internal", "Internal Document"),
+        ("link", "External Link"),
+    ]
+
+    team = models.ForeignKey(
+        "Team",
+        related_name="documents",
+        on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=255)
+    doc_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="file")
+
+    file = models.FileField(upload_to="team_docs/", blank=True, null=True)
+
+    content = models.TextField(blank=True, null=True)
+
+    external_url = models.URLField(blank=True, null=True)
+
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.team.name})"
