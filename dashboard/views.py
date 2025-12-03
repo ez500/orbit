@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.core.serializers import serialize
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
 from rest_framework import status
@@ -15,9 +16,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from company.models import Company, Announcement
 from projects.models import Project
 from teams.models import Team
-from .models import Task
+from .models import Task, InsightSuggestion, Event
+from .orbit import generate_orbit_insights
 from .serializer import TaskViewSerializer, TaskCreateSerializer
 
 
@@ -38,6 +41,163 @@ def dashboard(request):
         'project_tasks': project_tasks,
     }
     return render(request, 'dashboard/dashboard.html', context)
+
+
+# TODO LOAD ORBIT PAGE FIRST, THEN FETCH SUGGESTIONS VIA API
+# TODO ADD CONFIRMATION PAGE BEFORE EXECUTING ANY SUGGESTION
+@login_required
+def orbit_insights(request):
+    """Orbit Insights view"""
+
+    data = generate_orbit_insights(request.user, persist=True)
+    batch_id = data["batch_id"]
+
+    suggestions = InsightSuggestion.objects.filter(
+        user=request.user,
+        batch_id=batch_id
+    ).order_by('-created_at')
+
+    context = {
+        "title": "Orbit Insights",
+        "suggestions": suggestions,
+        "fallback": data["fallback"],
+    }
+
+    return render(request, 'dashboard/orbit_insights.html', context)
+
+
+@login_required
+@require_POST
+def execute_suggestion(request, suggestion_id):
+    suggestion = get_object_or_404(
+        InsightSuggestion, id=suggestion_id, user=request.user
+    )
+    if suggestion.executed:
+        messages.info(request, "Suggestion already executed.")
+        return redirect("dashboard:orbit_insights")
+
+    payload = suggestion.raw_data or {}
+    suggestion_type = payload.get("type") or suggestion.suggestion_type
+
+    try:
+        if suggestion_type == "create_task":
+            title = payload.get("title") or "Orbit Task"
+            content = payload.get("description") or ""
+            deadline = payload.get("deadline")
+            project_or_team_id = payload.get("project_or_team_id")
+            user_ids = payload.get("users", [])
+
+            task = Task.objects.create(
+                title=title,
+                content=content,
+                deadline=deadline or None
+            )
+
+            if project_or_team_id:
+                project = Project.objects.filter(id=project_or_team_id).first()
+                if project:
+                    task.project = project
+                    task.save()
+                else:
+                    team = Team.objects.filter(id=project_or_team_id).first()
+                    if team:
+                        task.team = team
+                        task.save()
+
+            if user_ids:
+                task.users = User.objects.filter(id__in=user_ids)
+                task.save()
+
+            suggestion.mark_executed()
+            messages.success(request, "Task created from insight.")
+            return redirect("dashboard:tasks")
+
+        elif suggestion_type == "create_event":
+            title = payload.get("event_title") or "Orbit Event"
+            content = payload.get("event_description") or ""
+            start_datetime = payload.get("start_datetime")
+            end_datetime = payload.get("end_datetime")
+            project_or_team_id = payload.get("project_or_team_id")
+            user_ids = payload.get("users", [])
+
+            event = Event.objects.create(
+                title=title,
+                content=content,
+                start_datetime=start_datetime or None,
+                end_datetime=end_datetime or None
+            )
+
+            if project_or_team_id:
+                project = Project.objects.filter(id=project_or_team_id).first()
+                if project:
+                    event.project = project
+                    event.save()
+                else:
+                    team = Team.objects.filter(id=project_or_team_id).first()
+                    if team:
+                        event.team = team
+                        event.save()
+
+            if user_ids:
+                event.users = User.objects.filter(id__in=user_ids)
+                event.save()
+
+            suggestion.mark_executed()
+            messages.success(request, "Event created from insight.")
+            return redirect("dashboard:dashboard")
+
+        elif suggestion_type == "create_announcement":
+            company_id = payload.get("company_id")
+            company = get_object_or_404(Company, id=company_id)
+
+            announcement = Announcement.objects.create(
+                company=company,
+                title=payload.get("announcement_title") or "Orbit Announcement",
+                content=payload.get("announcement_content") or ""
+            )
+
+            task_ids = payload.get("tasks") or []
+            if task_ids:
+                announcement.tasks = Task.objects.filter(id__in=task_ids)
+                announcement.save()
+
+            suggestion.mark_executed()
+            messages.success(request, "Announcement created from insight.")
+            return redirect("company:company_detail", company_id=company.id)
+
+        # TODO IMPLEMENT MESSAGING WITH ORBIT INSIGHT
+        elif suggestion_type == "send_message":
+            request.session["orbit_message_draft"] = payload
+            suggestion.mark_executed()
+            return redirect(reverse("message:compose") + "?from_orbit=1")
+
+        # TODO IMPLEMENT EMAIL HELPER
+        elif suggestion_type == "send_email":
+            request.session["orbit_email_draft"] = payload
+            suggestion.mark_executed()
+            return redirect(reverse("email:compose") + "?from_orbit=1")
+
+        elif suggestion_type == "general_insight":
+            suggestion.mark_executed()
+            messages.info(request, "Maraked insight as read.")
+            return redirect("dashboard:orbit_insights")
+
+        else:
+            messages.error(request, "Unknown suggestion type.")
+            return redirect("dashboard:orbit_insights")
+
+    except Exception:
+        messages.error(request, "Failed to execute insight suggestion.")
+        return redirect("dashboard:orbit_insights")
+
+
+class OrbitInsightsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        insights = generate_orbit_insights(request.user)
+        return Response(insights, status=status.HTTP_200_OK)
+
 
 @login_required
 def tasks(request):

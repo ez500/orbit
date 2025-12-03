@@ -71,7 +71,7 @@ class CompanyAnnouncementCreationForm(forms.ModelForm):
     tasks = forms.ModelMultipleChoiceField(
         label='Related Tasks',
         queryset=Task.objects.none(),
-        required=True,
+        required=False,
         widget=forms.SelectMultiple(attrs={"class": "form-select"}),
     )
 

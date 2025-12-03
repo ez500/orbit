@@ -11,7 +11,6 @@
 
     <ul class="nav flex-column">
 	<li class="nav_item nav-item-fixed">
-         <!--TODO Implement search app-->
          <form action="{% url 'search:results' %}" method="get" class="nav-link search-wrapper d-flex align-items-center">
   	 <i class="fas fa-search me-2"></i>
   	 	<input
@@ -71,7 +70,7 @@
                 <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
                 <a
                         class="nav-link {% if request.resolver_match.url_name == 'insights' %}active{% endif %}"
-                        href="#"
+                        href="{% url 'dashboard:orbit_insights' %}"
                 >
                     <i class="fas fa-lightbulb"></i>
                     <span class="hide-on-collapse">Orbit Insights</span>

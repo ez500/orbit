@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
+from django.utils import timezone
 
 
 # Create your models here.
@@ -56,3 +58,32 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class InsightSuggestion(models.Model):
+    TYPE_CHOICES = [
+        ("create_task", "Create Task"),
+        ("create_event", "Create Event"),
+        ("create_announcement", "Create Announcement"),
+        ("send_message", "Send Message"),
+        ("send_email", "Send Email"),
+        ("general_insight", "General Insight"),
+    ]
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="insight_suggestions"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    suggestion_type = models.CharField(max_length=50, choices=TYPE_CHOICES)
+    raw_data = models.JSONField(encoder=DjangoJSONEncoder, default=dict)
+    executed = models.BooleanField(default=False)
+    executed_at = models.DateTimeField(null=True, blank=True)
+    batch_id = models.CharField(max_length=100, null=True, blank=True)
+
+    def mark_executed(self):
+        self.executed = True
+        self.executed_at = timezone.now()
+        self.save()
+
+    def __str__(self):
+        return f"{self.id} ({self.user.username} - {self.suggestion_type})"
