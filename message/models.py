@@ -34,7 +34,9 @@ def can_users_message(user1, user2):
 class Conversation(models.Model):
    id = models.AutoField(primary_key=True)
    is_team = models.BooleanField(default=False)
+   is_personal_notes = models.BooleanField(default=False)
    title = models.CharField(max_length=255, blank=True)
+   team = models.ForeignKey('teams.Team', null=True, blank=True, on_delete=models.CASCADE, related_name='conversations')
    created_at = models.DateTimeField(auto_now_add=True)
    updated_at = models.DateTimeField(auto_now=True)
    participants = models.ManyToManyField(User, through='Participant')
@@ -68,7 +70,7 @@ class Conversation(models.Model):
 
    def get_other_participant(self, current_user=None):
        """Get the other participant in a 1-on-1 conversation"""
-       if self.is_team or not current_user:
+       if self.is_team or self.is_personal_notes or not current_user:
            return None
        participants = self.participants.exclude(id=current_user.id)
        return participants.first() if participants.exists() else None
@@ -77,17 +79,34 @@ class Conversation(models.Model):
        """Get the most recent message in the conversation"""
        return self.messages.order_by('-timestamp').first()
 
-   def get_last_message_time(self):
-       """Get formatted time of last message"""
+   def get_last_message_time(self, user=None):
+       """Get formatted time of last message in user's timezone"""
        from django.utils import timezone
        from datetime import timedelta
+       from zoneinfo import ZoneInfo
 
        last_msg = self.get_last_message()
        if not last_msg:
            return ""
 
-       now = timezone.now()
-       diff = now - last_msg.timestamp
+       # Get user's timezone
+       user_tz = 'UTC'
+       if user:
+           try:
+               user_tz = user.profile.timezone or 'UTC'
+           except:
+               user_tz = 'UTC'
+
+       try:
+           tz = ZoneInfo(user_tz)
+           now = timezone.now().astimezone(tz)
+           msg_time = last_msg.timestamp.astimezone(tz)
+           diff = now - msg_time
+       except:
+           # Fallback to UTC if timezone conversion fails
+           now = timezone.now()
+           diff = now - last_msg.timestamp
+           msg_time = last_msg.timestamp
 
        if diff < timedelta(minutes=1):
            return "Just now"
@@ -101,7 +120,7 @@ class Conversation(models.Model):
            days = diff.days
            return f"{days}d"
        else:
-           return last_msg.timestamp.strftime("%b %d")
+           return msg_time.strftime("%b %d")
 
    def has_unread_messages(self, user):
        """Check if conversation has unread messages for user"""
@@ -111,7 +130,26 @@ class Conversation(models.Model):
        """Get count of unread messages for user"""
        return self.messages.filter(is_read=False).exclude(sender=user).count()
 
+   def is_user_admin(self, user):
+       """Check if a user is an admin in this conversation"""
+       if not self.is_team:
+           return False
+       try:
+           participant = Participant.objects.get(conversation=self, user=user)
+           return participant.role == 'admin'
+       except Participant.DoesNotExist:
+           return False
+
+   def get_admins(self):
+       """Get all admin participants in this conversation"""
+       return self.participants.filter(
+           participant__conversation=self,
+           participant__role='admin'
+       )
+
    def __str__(self):
+       if self.is_personal_notes:
+           return "Personal Notes"
        if self.is_team:
            return self.title or f"Team Conversation {self.id}"
        participants = list(self.participants.all()[:2])
@@ -120,20 +158,89 @@ class Conversation(models.Model):
        return f"Conversation {self.id}"
 
 class Participant(models.Model):
+   ROLE_CHOICES = [
+       ('member', 'Member'),
+       ('admin', 'Admin'),
+   ]
+
    user = models.ForeignKey(User, on_delete=models.CASCADE)
    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+   role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
    joined_at = models.DateTimeField(auto_now_add=True)
 
+   class Meta:
+       unique_together = ('user', 'conversation')
+
    def __str__(self):
-       return f"{self.user.username} in {self.conversation.id}"
+       return f"{self.user.username} ({self.role}) in {self.conversation.id}"
 
 class Message(models.Model):
+   MESSAGE_TYPE_CHOICES = [
+       ('regular', 'Regular'),
+       ('system', 'System'),
+   ]
+
    id = models.AutoField(primary_key=True)
    conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
-   sender = models.ForeignKey(User, on_delete=models.CASCADE)
+   sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
    content = models.TextField()
+   message_type = models.CharField(max_length=20, choices=MESSAGE_TYPE_CHOICES, default='regular')
    timestamp = models.DateTimeField(auto_now_add=True)
    is_read = models.BooleanField(default=False)
+   reply_to = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
+   thread_root = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='thread_replies')
+
+   def get_thread_count(self):
+       """Get the number of replies in this message's thread"""
+       return self.thread_replies.count()
+
+   def get_latest_thread_reply(self):
+       """Get the most recent reply in this thread"""
+       return self.thread_replies.order_by('-timestamp').first()
 
    def __str__(self):
-       return f"{self.sender.username}: {self.content[:50]}"
+       if self.message_type == 'system':
+           return f"[SYSTEM] {self.content[:50]}"
+       return f"{self.sender.username if self.sender else 'Unknown'}: {self.content[:50]}"
+
+
+# Signal to auto-add new team members to existing team chats
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender='teams.TeamMembership')
+def add_member_to_team_chat(sender, instance, created, **kwargs):
+    """Automatically add new team members to existing team chat"""
+    if created:
+        from teams.models import TeamMembership
+
+        # Get the team and user
+        team = instance.team
+        user = instance.user
+
+        # Check if a team conversation already exists
+        team_conversation = Conversation.objects.filter(
+            team=team,
+            is_team=True
+        ).first()
+
+        if team_conversation:
+            # Determine if user should be admin based on team role
+            is_admin = instance.role in ['Owner', 'Admin']
+            participant_role = 'admin' if is_admin else 'member'
+
+            # Add user to the conversation if not already a participant
+            participant, was_created = Participant.objects.get_or_create(
+                user=user,
+                conversation=team_conversation,
+                defaults={'role': participant_role}
+            )
+
+            # Create system message announcing the join
+            if was_created:
+                Message.objects.create(
+                    conversation=team_conversation,
+                    content=f"{user.get_full_name() or user.username} joined the conversation",
+                    message_type='system',
+                    sender=None
+                )

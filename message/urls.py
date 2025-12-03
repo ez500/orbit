@@ -26,6 +26,22 @@ urlpatterns = [
     # Get new messages for polling (AJAX)
     path("<str:username>/conversation/<int:conversation_id>/poll/", views.get_new_messages, name='poll_messages'),
 
+    # Personal notes
+    path("<str:username>/notes/", views.personal_notes, name='personal_notes'),
+
+    # Create team conversation
+    path("<str:username>/create-team-chat/", views.create_team_conversation, name='create_team_conversation'),
+
+    # Remove participant from team conversation (admin only)
+    path("<str:username>/conversation/<int:conversation_id>/remove/<int:user_id>/", views.remove_participant, name='remove_participant'),
+
+    # Rename team conversation (admin only)
+    path("<str:username>/conversation/<int:conversation_id>/rename/", views.rename_conversation, name='rename_conversation'),
+
+    # Thread functionality
+    path("<str:username>/conversation/<int:conversation_id>/thread/<int:message_id>/", views.get_thread_messages, name='get_thread'),
+    path("<str:username>/conversation/<int:conversation_id>/thread/<int:message_id>/reply/", views.send_thread_reply, name='send_thread_reply'),
+
     # Test email (legacy)
     path("send_email/", views.send_test_email, name='send_test_email'),
 ]

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load message_filters %}
 
 {% block title %}Messages - {{ other_participant.username }}{% endblock %}
 
@@ -13,9 +14,17 @@
   <div class="conversations-sidebar">
     <div class="conversations-header">
       <h5 class="mb-0">Messages</h5>
-      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newMessageModal">
-        <i class="fas fa-edit"></i>
-      </button>
+      <div class="d-flex gap-2">
+        <a href="{% url 'message:personal_notes' username=current_user.username %}" class="btn btn-sm" style="background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.1); color: var(--accent-color); border: none; border-radius: 11px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" title="Personal Notes">
+          <i class="fas fa-sticky-note"></i>
+        </a>
+        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#teamChatModal" style="background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.1); color: var(--accent-color); border: none; border-radius: 11px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" title="Team Chat">
+          <i class="fas fa-users"></i>
+        </button>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newMessageModal">
+          <i class="fas fa-edit"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Search Conversations -->
@@ -44,7 +53,7 @@
             <img src="https://ui-avatars.com/api/?name={{ conv.other_participant.get_full_name|default:conv.other_participant.username|urlencode }}&background=random"
                  alt="{{ conv.other_participant.get_full_name|default:conv.other_participant.username }}">
             {% endif %}
-            <span class="status-indicator online"></span>
+            <span class="status-indicator {{ conv.other_participant.profile.get_online_status }}"></span>
           {% else %}
             <div class="team-avatar">
               <i class="fas fa-users"></i>
@@ -64,10 +73,14 @@
           </div>
           <p class="conversation-preview">
             {% if conv.last_message %}
-              <span class="last-sender">
-                {% if conv.last_message.sender == current_user %}You:{% else %}{{ conv.last_message.sender.first_name|default:conv.last_message.sender.username }}:{% endif %}
-              </span>
-              {{ conv.last_message.content|truncatewords:8 }}
+              {% if conv.last_message.message_type == 'system' %}
+                <span class="text-muted"><i class="fas fa-info-circle"></i> {{ conv.last_message.content|truncatewords:8 }}</span>
+              {% else %}
+                <span class="last-sender">
+                  {% if conv.last_message.sender == current_user %}You:{% else %}{{ conv.last_message.sender.first_name|default:conv.last_message.sender.username }}:{% endif %}
+                </span>
+                {{ conv.last_message.content|truncatewords:8 }}
+              {% endif %}
             {% else %}
               No messages yet
             {% endif %}
@@ -114,12 +127,32 @@
               {{ conversation.title }}
             {% endif %}
           </h5>
+          {% if other_participant %}
           <small class="text-muted">
-            <span class="text-success"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Online</span>
+            {% with status=other_participant.profile.get_online_status %}
+              {% if status == 'online' %}
+                <span class="text-success"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Online</span>
+              {% elif status == 'away' %}
+                <span class="text-warning"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Away</span>
+              {% else %}
+                <span class="text-secondary"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Offline</span>
+              {% endif %}
+            {% endwith %}
           </small>
+          {% endif %}
         </div>
       </div>
       <div class="thread-actions">
+        {% if conversation.is_team %}
+        <button class="btn btn-link text-muted" data-bs-toggle="modal" data-bs-target="#participantsModal" title="View participants">
+          <i class="fas fa-users"></i>
+        </button>
+        {% if is_admin %}
+        <button class="btn btn-link text-muted" data-bs-toggle="modal" data-bs-target="#renameChatModal" title="Rename chat">
+          <i class="fas fa-edit"></i>
+        </button>
+        {% endif %}
+        {% endif %}
         <button class="btn btn-link text-muted">
           <i class="fas fa-ellipsis-v"></i>
         </button>
@@ -129,7 +162,17 @@
     <!-- Messages -->
     <div class="messages-container-scroll" id="messagesContainer">
       {% for message in conversation_messages %}
-      <div class="message-wrapper {% if message.sender == current_user %}sent{% else %}received{% endif %}">
+      {% if message.message_type == 'system' %}
+      <!-- System Message -->
+      <div class="system-message text-center my-3">
+        <small class="text-muted">
+          <i class="fas fa-info-circle"></i> {{ message.content }}
+          <span class="ms-2">{{ message.timestamp|user_timezone:current_user|date:"g:i A" }}</span>
+        </small>
+      </div>
+      {% else %}
+      <!-- Regular Message -->
+      <div class="message-wrapper {% if message.sender == current_user %}sent{% else %}received{% endif %}" style="position: relative;" data-message-id="{{ message.id }}">
         {% if message.sender != current_user %}
         <div class="message-avatar">
           {% if message.sender.profile.profile_picture %}
@@ -141,13 +184,45 @@
           {% endif %}
         </div>
         {% endif %}
-        <div class="message-bubble-wrapper">
+        <div class="message-bubble-wrapper" style="position: relative;">
           <div class="message-bubble">
-            <p class="message-content">{{ message.content }}</p>
-            <span class="message-time">{{ message.timestamp|date:"g:i A" }}</span>
+            <div class="message-header">
+              <span class="message-sender-name">{{ message.sender.get_full_name|default:message.sender.username }}</span>
+              <span class="message-time">{{ message.timestamp|user_timezone:current_user|date:"g:i A" }}</span>
+            </div>
+            {% if message.reply_to %}
+            <div class="message-reply-context" data-reply-to-id="{{ message.reply_to.id }}">
+              <div class="reply-context-sender">{{ message.reply_to.sender.get_full_name|default:message.reply_to.sender.username }}</div>
+              <div class="reply-context-content">{{ message.reply_to.content|truncatewords:15 }}</div>
+            </div>
+            {% endif %}
+            <p class="message-content">{{ message.content|highlight_mentions }}</p>
+          </div>
+          {% if message.get_thread_count > 0 %}
+          <div class="thread-count-indicator" data-message-id="{{ message.id }}" data-thread-count="{{ message.get_thread_count }}">
+            <i class="fas fa-comment-dots"></i>
+            <span class="thread-count">{{ message.get_thread_count }}</span> {{ message.get_thread_count|pluralize:"reply,replies" }}
+          </div>
+          {% endif %}
+          <div class="message-actions">
+            <button class="reply-btn"
+                    data-message-id="{{ message.id }}"
+                    data-sender-name="{{ message.sender.get_full_name|default:message.sender.username }}"
+                    data-message-content="{{ message.content|truncatewords:20 }}"
+                    title="Reply">
+              <i class="fas fa-reply"></i>
+            </button>
+            <button class="thread-reply-btn"
+                    data-message-id="{{ message.id }}"
+                    data-sender-name="{{ message.sender.get_full_name|default:message.sender.username }}"
+                    data-message-content="{{ message.content }}"
+                    title="Reply in thread">
+              <i class="fas fa-comment-dots"></i>
+            </button>
           </div>
         </div>
       </div>
+      {% endif %}
       {% empty %}
       <div class="empty-thread-state">
         <i class="fas fa-comments fa-3x mb-3"></i>
@@ -158,12 +233,25 @@
 
     <!-- Message Input -->
     <div class="message-input-container">
+      <!-- Reply Indicator -->
+      <div id="replyIndicator" class="reply-indicator">
+        <div class="reply-indicator-header">
+          <span class="reply-indicator-title">Replying to</span>
+          <button type="button" class="reply-indicator-close" id="cancelReplyBtn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="reply-indicator-sender" id="replyToSender"></div>
+        <div class="reply-indicator-content" id="replyToContent"></div>
+      </div>
+
       <form method="POST" action="{% url 'message:send_message' current_user.username conversation.id %}" id="messageForm" class="d-flex align-items-end gap-2">
         {% csrf_token %}
+        <input type="hidden" name="reply_to" id="replyToInput" value="">
         <button type="button" class="btn btn-link text-muted attachment-btn">
           <i class="fas fa-paperclip"></i>
         </button>
-        <div class="message-input-wrapper">
+        <div class="message-input-wrapper" style="position: relative;">
           <textarea
             name="content"
             class="form-control message-input"
@@ -172,10 +260,56 @@
             id="messageInput"
             required
           ></textarea>
+          <!-- Mentions Autocomplete Dropdown -->
+          <div id="mentionsDropdown" class="mentions-dropdown" style="display: none;"></div>
         </div>
         <button type="button" class="btn btn-link text-muted emoji-btn">
           <i class="fas fa-smile"></i>
         </button>
+        <button type="submit" class="btn btn-primary send-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Thread Sidebar -->
+  <div class="thread-sidebar" id="threadSidebar">
+    <div class="thread-sidebar-header">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-link text-muted p-0 me-3" id="closeThreadBtn">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <h6 class="mb-0">Thread</h6>
+      </div>
+    </div>
+
+    <div class="thread-sidebar-content" id="threadContent">
+      <!-- Root Message -->
+      <div class="thread-root-message" id="threadRootMessage">
+        <!-- Will be populated by JavaScript -->
+      </div>
+
+      <!-- Thread Replies -->
+      <div class="thread-replies" id="threadReplies">
+        <!-- Will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Thread Input -->
+    <div class="thread-input-container">
+      <form id="threadReplyForm" class="d-flex align-items-end gap-2">
+        {% csrf_token %}
+        <div class="thread-input-wrapper flex-grow-1">
+          <textarea
+            name="content"
+            class="form-control thread-input"
+            placeholder="Reply to thread..."
+            rows="1"
+            id="threadInput"
+            required
+          ></textarea>
+        </div>
         <button type="submit" class="btn btn-primary send-btn">
           <i class="fas fa-paper-plane"></i>
         </button>
@@ -209,6 +343,104 @@
   </div>
 </div>
 
+<!-- Team Chat Modal -->
+<div class="modal fade" id="teamChatModal" tabindex="-1" aria-labelledby="teamChatModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="teamChatModalLabel">Create Team Chat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="teamSelect" class="form-label">Select Team:</label>
+          <select class="form-control" id="teamSelect">
+            <option value="">Choose a team...</option>
+          </select>
+        </div>
+        <div id="teamChatMessage" class="alert" style="display: none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="createTeamChatBtn">Create Chat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Participants Modal (Team Chats Only) -->
+{% if conversation.is_team %}
+<div class="modal fade" id="participantsModal" tabindex="-1" aria-labelledby="participantsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="participantsModalLabel">
+          Participants ({{ participants|length }})
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="participants-list">
+          {% for participant in participants %}
+          <div class="participant-item d-flex align-items-center justify-content-between mb-3 p-2" data-user-id="{{ participant.user.id }}">
+            <a href="{% url 'accounts:profile_view' participant.user.username %}" class="d-flex align-items-center text-decoration-none flex-grow-1" style="color: inherit;">
+              <div class="participant-avatar me-2">
+                {% if participant.user.profile.profile_picture %}
+                <img src="{{ participant.user.profile.profile_picture.url }}" alt="{{ participant.user.get_full_name|default:participant.user.username }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ participant.user.get_full_name|default:participant.user.username|urlencode }}&background=random" alt="{{ participant.user.get_full_name|default:participant.user.username }}" class="rounded-circle" style="width: 40px; height: 40px;">
+                {% endif %}
+              </div>
+              <div>
+                <div class="fw-medium">{{ participant.user.get_full_name|default:participant.user.username }}</div>
+                <small class="text-muted">@{{ participant.user.username }}</small>
+                <div class="mt-1">
+                  <span class="badge bg-secondary">{{ participant.team_role }}</span>
+                  {% if participant.is_admin %}
+                  <span class="badge bg-primary ms-1">Chat Admin</span>
+                  {% endif %}
+                </div>
+              </div>
+            </a>
+            {% if is_admin and participant.user.id != current_user.id %}
+            <button class="btn btn-sm btn-outline-danger remove-participant-btn" data-user-id="{{ participant.user.id }}" data-username="{{ participant.user.username }}">
+              <i class="fas fa-times"></i> Remove
+            </button>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rename Chat Modal (Team Chats Only - Admins) -->
+{% if is_admin and conversation.is_team %}
+<div class="modal fade" id="renameChatModal" tabindex="-1" aria-labelledby="renameChatModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="renameChatModalLabel">Rename Chat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="newChatTitle" class="form-label">New Chat Name:</label>
+          <input type="text" class="form-control" id="newChatTitle" value="{{ conversation.title }}" maxlength="255">
+        </div>
+        <div id="renameMessage" class="alert" style="display: none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="renameChatBtn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
@@ -218,6 +450,30 @@
   const messagesContainer = document.getElementById('messagesContainer');
   if (messagesContainer) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  // Initialize reply variables
+  let currentReplyToId = null;
+  const replyIndicator = document.getElementById('replyIndicator');
+  const replyToInput = document.getElementById('replyToInput');
+  const replyToSender = document.getElementById('replyToSender');
+  const replyToContent = document.getElementById('replyToContent');
+  const cancelReplyBtn = document.getElementById('cancelReplyBtn');
+
+  // Reply helper functions
+  function showReplyIndicator(messageId, senderName, content) {
+    currentReplyToId = messageId;
+    if (replyToInput) replyToInput.value = messageId;
+    if (replyToSender) replyToSender.textContent = senderName;
+    if (replyToContent) replyToContent.textContent = content;
+    if (replyIndicator) replyIndicator.classList.add('active');
+    if (messageInput) messageInput.focus();
+  }
+
+  function hideReplyIndicator() {
+    currentReplyToId = null;
+    if (replyToInput) replyToInput.value = '';
+    if (replyIndicator) replyIndicator.classList.remove('active');
   }
 
   // Auto-resize textarea
@@ -256,6 +512,11 @@
 
       // Check if message is not empty
       if (!content) {
+        // Add shake animation to indicate empty message
+        messageInput.style.animation = 'shake 0.3s';
+        setTimeout(() => {
+          messageInput.style.animation = '';
+        }, 300);
         return false;
       }
 
@@ -269,32 +530,35 @@
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
       messageInput.disabled = true;
 
+      // Get reply_to value if replying to a message
+      const replyToValue = replyToInput ? replyToInput.value : '';
+
       // Send message via AJAX
+      const formData = new URLSearchParams({
+        'content': content
+      });
+
+      // Add reply_to if present
+      if (replyToValue) {
+        formData.append('reply_to', replyToValue);
+      }
+
       fetch(messageForm.action, {
         method: 'POST',
         headers: {
           'X-CSRFToken': csrfToken,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: new URLSearchParams({
-          'content': content
-        })
+        body: formData
       })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          // Create new message element
-          const messageWrapper = document.createElement('div');
-          messageWrapper.className = 'message-wrapper sent';
-
-          messageWrapper.innerHTML = `
-            <div class="message-bubble-wrapper">
-              <div class="message-bubble">
-                <p class="message-content">${escapeHtml(data.message.content)}</p>
-                <span class="message-time">${data.message.timestamp}</span>
-              </div>
-            </div>
-          `;
+          // Create new message element using the createMessageHTML function
+          const messageHTML = createMessageHTML(data.message, true);
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = messageHTML;
+          const messageWrapper = tempDiv.firstElementChild;
 
           // Append to messages container
           messagesContainer.appendChild(messageWrapper);
@@ -304,9 +568,10 @@
             lastMessageId = Math.max(lastMessageId, data.message.id);
           }
 
-          // Clear input
+          // Clear input and reply indicator
           messageInput.value = '';
           messageInput.style.height = 'auto';
+          hideReplyIndicator();
 
           // Scroll to bottom
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -314,12 +579,13 @@
           // Re-focus input
           messageInput.focus();
         } else {
-          alert('Failed to send message: ' + (data.error || 'Unknown error'));
+          // Show error message temporarily
+          showMessageError(data.error || 'Failed to send message');
         }
       })
       .catch(error => {
         console.error('Error sending message:', error);
-        alert('Failed to send message. Please try again.');
+        showMessageError('Failed to send message. Please try again.');
       })
       .finally(() => {
         // Re-enable submit button and input
@@ -335,6 +601,58 @@
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // Function to escape HTML without adding mentions (for reply contexts)
+  function escapeHtmlOnly(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Function to highlight mentions in message content
+  function highlightMentions(text) {
+    // Replace @username with highlighted span
+    return text.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+  }
+
+  // Function to escape and highlight mentions (for message content)
+  function escapeAndHighlight(text) {
+    const escaped = escapeHtml(text);
+    return highlightMentions(escaped);
+  }
+
+  // Show temporary error message
+  function showMessageError(errorText) {
+    // Create error message element
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'message-error-toast';
+    errorDiv.style.cssText = `
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+      animation: slideUp 0.3s ease-out;
+      font-size: 14px;
+      font-weight: 500;
+    `;
+    errorDiv.textContent = errorText;
+
+    document.body.appendChild(errorDiv);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+      errorDiv.style.animation = 'slideDown 0.3s ease-in';
+      setTimeout(() => {
+        document.body.removeChild(errorDiv);
+      }, 300);
+    }, 3000);
   }
 
   // Search conversations
@@ -438,32 +756,37 @@
       .then(data => {
         if (data.messages && data.messages.length > 0) {
           data.messages.forEach(message => {
-            // Create new message element for received message
-            const messageWrapper = document.createElement('div');
-            messageWrapper.className = 'message-wrapper received';
+            // Check if it's a system message
+            if (message.message_type === 'system') {
+              // Create system message element
+              const systemMessageDiv = document.createElement('div');
+              systemMessageDiv.className = 'system-message text-center my-3';
+              systemMessageDiv.innerHTML = `
+                <small class="text-muted">
+                  <i class="fas fa-info-circle"></i> ${escapeHtml(message.content)}
+                  <span class="ms-2">${message.timestamp}</span>
+                </small>
+              `;
 
-            const avatarUrl = message.sender.avatar ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(message.sender.full_name)}&background=random`;
+              // Append to messages container
+              if (messagesContainer) {
+                messagesContainer.appendChild(systemMessageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+              }
+            } else {
+              // Create new message element for received message using createMessageHTML
+              const messageHTML = createMessageHTML(message, false);
+              const tempDiv = document.createElement('div');
+              tempDiv.innerHTML = messageHTML;
+              const messageWrapper = tempDiv.firstElementChild;
 
-            messageWrapper.innerHTML = `
-              <div class="message-avatar">
-                <img src="${avatarUrl}"
-                     alt="${escapeHtml(message.sender.full_name)}">
-              </div>
-              <div class="message-bubble-wrapper">
-                <div class="message-bubble">
-                  <p class="message-content">${escapeHtml(message.content)}</p>
-                  <span class="message-time">${message.timestamp}</span>
-                </div>
-              </div>
-            `;
+              // Append to messages container
+              if (messagesContainer) {
+                messagesContainer.appendChild(messageWrapper);
 
-            // Append to messages container
-            if (messagesContainer) {
-              messagesContainer.appendChild(messageWrapper);
-
-              // Scroll to bottom smoothly
-              messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                // Scroll to bottom smoothly
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+              }
             }
 
             // Update lastMessageId
@@ -486,5 +809,794 @@
 
   // Do an initial poll after 1 second to catch any messages that arrived while page was loading
   setTimeout(pollNewMessages, 1000);
+
+  // Team Chat Modal - Load teams when modal opens
+  const teamChatModal = document.getElementById('teamChatModal');
+  if (teamChatModal) {
+    teamChatModal.addEventListener('show.bs.modal', function() {
+      const teamSelect = document.getElementById('teamSelect');
+      const currentUsername = '{{ current_user.username }}';
+
+      // Fetch user's teams
+      fetch(`/teams/api/my-teams/`)
+        .then(response => response.json())
+        .then(data => {
+          teamSelect.innerHTML = '<option value="">Choose a team...</option>';
+
+          if (data.teams && data.teams.length > 0) {
+            data.teams.forEach(team => {
+              const option = document.createElement('option');
+              option.value = team.id;
+              option.textContent = team.name;
+              teamSelect.appendChild(option);
+            });
+          } else {
+            teamSelect.innerHTML = '<option value="">No teams available</option>';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading teams:', error);
+          teamSelect.innerHTML = '<option value="">Error loading teams</option>';
+        });
+    });
+  }
+
+  // Handle team chat creation
+  const createTeamChatBtn = document.getElementById('createTeamChatBtn');
+  if (createTeamChatBtn) {
+    createTeamChatBtn.addEventListener('click', function() {
+      const teamSelect = document.getElementById('teamSelect');
+      const teamId = teamSelect.value;
+      const teamChatMessage = document.getElementById('teamChatMessage');
+      const currentUsername = '{{ current_user.username }}';
+
+      if (!teamId) {
+        teamChatMessage.className = 'alert alert-warning';
+        teamChatMessage.textContent = 'Please select a team';
+        teamChatMessage.style.display = 'block';
+        return;
+      }
+
+      // Get CSRF token
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      // Disable button while creating
+      createTeamChatBtn.disabled = true;
+      createTeamChatBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+      // Create team chat
+      fetch(`/message/${currentUsername}/create-team-chat/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          'team_id': teamId
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Redirect to the team conversation
+          window.location.href = `/message/${currentUsername}/conversation/${data.conversation_id}/`;
+        } else {
+          teamChatMessage.className = 'alert alert-danger';
+          teamChatMessage.textContent = data.error || 'Failed to create team chat';
+          teamChatMessage.style.display = 'block';
+        }
+      })
+      .catch(error => {
+        console.error('Error creating team chat:', error);
+        teamChatMessage.className = 'alert alert-danger';
+        teamChatMessage.textContent = 'Failed to create team chat. Please try again.';
+        teamChatMessage.style.display = 'block';
+      })
+      .finally(() => {
+        createTeamChatBtn.disabled = false;
+        createTeamChatBtn.innerHTML = 'Create Chat';
+      });
+    });
+  }
+
+  // Handle remove participant (admins only)
+  {% if is_admin and conversation.is_team %}
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-participant-btn')) {
+      const btn = e.target.closest('.remove-participant-btn');
+      const userId = btn.dataset.userId;
+      const username = btn.dataset.username;
+      const conversationId = {{ conversation.id }};
+      const currentUsername = '{{ current_user.username }}';
+
+      if (confirm(`Remove ${username} from this conversation?`)) {
+        // Disable button
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Remove participant
+        fetch(`/message/${currentUsername}/conversation/${conversationId}/remove/${userId}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Remove the participant item from the list
+            const participantItem = btn.closest('.participant-item');
+            participantItem.style.animation = 'slideDown 0.3s ease-in';
+            setTimeout(() => {
+              participantItem.remove();
+
+              // Update participant count
+              const participantCount = document.querySelectorAll('.participant-item').length;
+              document.querySelector('#participantsModalLabel').textContent = `Participants (${participantCount})`;
+
+              showMessageError(data.message || `${username} removed from conversation`, 'success');
+            }, 300);
+          } else {
+            showMessageError(data.error || 'Failed to remove participant');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-times"></i> Remove';
+          }
+        })
+        .catch(error => {
+          console.error('Error removing participant:', error);
+          showMessageError('Failed to remove participant. Please try again.');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-times"></i> Remove';
+        });
+      }
+    }
+  });
+
+  // Update showMessageError to support success messages
+  const originalShowMessageError = showMessageError;
+  showMessageError = function(errorText, type = 'error') {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'message-error-toast';
+    const bgColor = type === 'success' ? 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)' : 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)';
+    errorDiv.style.cssText = `
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: ${bgColor};
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+      animation: slideUp 0.3s ease-out;
+      font-size: 14px;
+      font-weight: 500;
+    `;
+    errorDiv.textContent = errorText;
+
+    document.body.appendChild(errorDiv);
+
+    setTimeout(() => {
+      errorDiv.style.animation = 'slideDown 0.3s ease-in';
+      setTimeout(() => {
+        document.body.removeChild(errorDiv);
+      }, 300);
+    }, 3000);
+  };
+
+  // Handle rename chat (admins only)
+  const renameChatBtn = document.getElementById('renameChatBtn');
+  if (renameChatBtn) {
+    renameChatBtn.addEventListener('click', function() {
+      const newTitleInput = document.getElementById('newChatTitle');
+      const newTitle = newTitleInput.value.trim();
+      const renameMessage = document.getElementById('renameMessage');
+      const conversationId = {{ conversation.id }};
+      const currentUsername = '{{ current_user.username }}';
+
+      // Validate title
+      if (!newTitle) {
+        renameMessage.className = 'alert alert-warning';
+        renameMessage.textContent = 'Chat name cannot be empty';
+        renameMessage.style.display = 'block';
+        return;
+      }
+
+      if (newTitle.length > 255) {
+        renameMessage.className = 'alert alert-warning';
+        renameMessage.textContent = 'Chat name is too long (max 255 characters)';
+        renameMessage.style.display = 'block';
+        return;
+      }
+
+      // Get CSRF token
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      // Disable button while renaming
+      renameChatBtn.disabled = true;
+      renameChatBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+      // Rename the chat
+      fetch(`/message/${currentUsername}/conversation/${conversationId}/rename/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          'title': newTitle
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update the conversation title in the header
+          const conversationTitle = document.querySelector('.conversation-header h5');
+          if (conversationTitle) {
+            conversationTitle.textContent = data.new_title;
+          }
+
+          // Update the title in the sidebar
+          const sidebarConvItem = document.querySelector(`.conversation-item[data-conversation-id="${conversationId}"] .conversation-name`);
+          if (sidebarConvItem) {
+            sidebarConvItem.textContent = data.new_title;
+          }
+
+          // Update the input field with new title
+          newTitleInput.value = data.new_title;
+
+          // Show success message
+          renameMessage.className = 'alert alert-success';
+          renameMessage.textContent = data.message || 'Chat renamed successfully';
+          renameMessage.style.display = 'block';
+
+          // Close modal after 1 second
+          setTimeout(() => {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('renameChatModal'));
+            if (modal) {
+              modal.hide();
+            }
+            renameMessage.style.display = 'none';
+          }, 1000);
+
+          // The system message will appear via polling
+        } else {
+          renameMessage.className = 'alert alert-danger';
+          renameMessage.textContent = data.error || 'Failed to rename chat';
+          renameMessage.style.display = 'block';
+        }
+      })
+      .catch(error => {
+        console.error('Error renaming chat:', error);
+        renameMessage.className = 'alert alert-danger';
+        renameMessage.textContent = 'Failed to rename chat. Please try again.';
+        renameMessage.style.display = 'block';
+      })
+      .finally(() => {
+        renameChatBtn.disabled = false;
+        renameChatBtn.innerHTML = 'Save';
+      });
+    });
+  }
+  {% endif %}
+
+  // Mentions Autocomplete (Team Chats Only)
+  {% if conversation.is_team %}
+  console.log('✓ Team chat detected - mentions enabled');
+  const mentionsDropdown = document.getElementById('mentionsDropdown');
+
+  // Convert participants to simple array format for mentions (exclude current user)
+  const allParticipants = [
+    {% for participant in participants %}
+    {
+      id: {{ participant.user.id }},
+      username: '{{ participant.user.username }}',
+      full_name: '{{ participant.user.get_full_name|default:participant.user.username }}',
+      avatar: {% if participant.user.profile.profile_picture %}'{{ participant.user.profile.profile_picture.url }}'{% else %}null{% endif %}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  // Filter out current user from mentions
+  const mentionUsers = allParticipants.filter(user => user.id !== {{ current_user.id }});
+
+  console.log('Mentions initialized for team chat');
+  console.log('Total participants:', allParticipants.length);
+  console.log('Mentionable users (excluding self):', mentionUsers.length);
+  console.log('Users:', mentionUsers);
+
+  let mentionStartPos = -1;
+  let selectedMentionIndex = 0;
+
+  if (messageInput) {
+    messageInput.addEventListener('input', function(e) {
+      const cursorPos = this.selectionStart;
+      const textBeforeCursor = this.value.substring(0, cursorPos);
+
+      // Find last @ symbol before cursor
+      const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+
+      if (lastAtIndex !== -1) {
+        // Check if there's a space before @ or it's at the start
+        const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
+        if (charBeforeAt === ' ' || charBeforeAt === '\n' || lastAtIndex === 0) {
+          // Get the query after @
+          const query = textBeforeCursor.substring(lastAtIndex + 1);
+
+          // Check if query contains a space (mention complete)
+          if (!query.includes(' ') && !query.includes('\n')) {
+            mentionStartPos = lastAtIndex;
+            showMentionsDropdown(query.toLowerCase());
+            return;
+          }
+        }
+      }
+
+      // Hide dropdown if @ not found or conditions not met
+      hideMentionsDropdown();
+    });
+
+    // Handle keyboard navigation in mentions dropdown
+    messageInput.addEventListener('keydown', function(e) {
+      if (mentionsDropdown.style.display === 'none') return;
+
+      const mentionItems = mentionsDropdown.querySelectorAll('.mention-item');
+      if (mentionItems.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedMentionIndex = (selectedMentionIndex + 1) % mentionItems.length;
+        updateSelectedMention(mentionItems);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedMentionIndex = (selectedMentionIndex - 1 + mentionItems.length) % mentionItems.length;
+        updateSelectedMention(mentionItems);
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        if (mentionsDropdown.style.display !== 'none') {
+          e.preventDefault();
+          const selectedItem = mentionItems[selectedMentionIndex];
+          if (selectedItem) {
+            insertMention(selectedItem.dataset.username);
+          }
+        }
+      } else if (e.key === 'Escape') {
+        hideMentionsDropdown();
+      }
+    });
+  }
+
+  function showMentionsDropdown(query) {
+    // Check if we have users to mention
+    if (mentionUsers.length === 0) {
+      console.log('No users available to mention');
+      hideMentionsDropdown();
+      return;
+    }
+
+    // Filter users based on query
+    const filteredUsers = mentionUsers.filter(user =>
+      user.username.toLowerCase().includes(query) ||
+      user.full_name.toLowerCase().includes(query)
+    );
+
+    console.log(`Filtered ${filteredUsers.length} users for query: "${query}"`);
+
+    if (filteredUsers.length === 0) {
+      hideMentionsDropdown();
+      return;
+    }
+
+    // Build dropdown HTML
+    const html = filteredUsers.map((user, index) => {
+      const avatarUrl = user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name)}&background=random`;
+      return `
+        <div class="mention-item ${index === 0 ? 'selected' : ''}" data-username="${user.username}" data-index="${index}">
+          <div class="mention-item-avatar">
+            <img src="${avatarUrl}" alt="${user.full_name}">
+          </div>
+          <div class="mention-item-info">
+            <div class="mention-item-name">${user.full_name}</div>
+            <div class="mention-item-username">@${user.username}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    mentionsDropdown.innerHTML = html;
+    mentionsDropdown.style.display = 'block';
+    console.log('Mentions dropdown shown with', filteredUsers.length, 'users');
+    selectedMentionIndex = 0;
+
+    // Add click handlers
+    const mentionItems = mentionsDropdown.querySelectorAll('.mention-item');
+    mentionItems.forEach((item, index) => {
+      item.addEventListener('click', () => {
+        insertMention(item.dataset.username);
+      });
+
+      item.addEventListener('mouseenter', () => {
+        selectedMentionIndex = index;
+        updateSelectedMention(mentionItems);
+      });
+    });
+  }
+
+  function hideMentionsDropdown() {
+    mentionsDropdown.style.display = 'none';
+    mentionStartPos = -1;
+    selectedMentionIndex = 0;
+  }
+
+  function updateSelectedMention(items) {
+    items.forEach((item, index) => {
+      if (index === selectedMentionIndex) {
+        item.classList.add('selected');
+        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      } else {
+        item.classList.remove('selected');
+      }
+    });
+  }
+
+  function insertMention(username) {
+    if (mentionStartPos === -1) return;
+
+    const currentValue = messageInput.value;
+    const beforeMention = currentValue.substring(0, mentionStartPos);
+    const afterCursor = currentValue.substring(messageInput.selectionStart);
+
+    messageInput.value = beforeMention + '@' + username + ' ' + afterCursor;
+
+    // Set cursor position after the mention
+    const newCursorPos = mentionStartPos + username.length + 2; // +2 for @ and space
+    messageInput.setSelectionRange(newCursorPos, newCursorPos);
+
+    hideMentionsDropdown();
+    messageInput.focus();
+  }
+
+  // Close mentions dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    if (mentionsDropdown && messageInput &&
+        !messageInput.contains(e.target) &&
+        !mentionsDropdown.contains(e.target)) {
+      hideMentionsDropdown();
+    }
+  });
+  {% else %}
+  console.log('✗ 1-on-1 chat - mentions not available');
+  {% endif %}
+
+  // Reply Functionality
+  // Handle reply button clicks
+  document.addEventListener('click', function(e) {
+    const replyBtn = e.target.closest('.reply-btn');
+    if (replyBtn) {
+      const messageId = replyBtn.dataset.messageId;
+      const senderName = replyBtn.dataset.senderName;
+      const messageContent = replyBtn.dataset.messageContent;
+
+      showReplyIndicator(messageId, senderName, messageContent);
+    }
+  });
+
+  // Cancel reply button
+  if (cancelReplyBtn) {
+    cancelReplyBtn.addEventListener('click', hideReplyIndicator);
+  }
+
+  // Update message display to show reply context
+  function createMessageHTML(message, isSent = false) {
+    const wrapperClass = isSent ? 'sent' : 'received';
+    const avatarUrl = message.sender.avatar ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(message.sender.full_name)}&background=random`;
+
+    let replyContextHTML = '';
+    if (message.reply_to) {
+      replyContextHTML = `
+        <div class="message-reply-context" data-reply-to-id="${message.reply_to.id}">
+          <div class="reply-context-sender">${escapeHtmlOnly(message.reply_to.sender.full_name)}</div>
+          <div class="reply-context-content">${escapeHtmlOnly(message.reply_to.content)}</div>
+        </div>
+      `;
+    }
+
+    if (isSent) {
+      return `
+        <div class="message-wrapper sent" style="position: relative;" data-message-id="${message.id}">
+          <div class="message-bubble-wrapper" style="position: relative;">
+            <div class="message-bubble">
+              <div class="message-header">
+                <span class="message-sender-name">${escapeHtml(message.sender.full_name)}</span>
+                <span class="message-time">${message.timestamp}</span>
+              </div>
+              ${replyContextHTML}
+              <p class="message-content">${escapeAndHighlight(message.content)}</p>
+            </div>
+            <div class="message-actions">
+              <button class="reply-btn" data-message-id="${message.id}" data-sender-name="${escapeHtml(message.sender.full_name)}" data-message-content="${escapeHtmlOnly(message.content)}" title="Reply">
+                <i class="fas fa-reply"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      return `
+        <div class="message-wrapper received" style="position: relative;" data-message-id="${message.id}">
+          <div class="message-avatar">
+            <img src="${avatarUrl}" alt="${escapeHtml(message.sender.full_name)}">
+          </div>
+          <div class="message-bubble-wrapper" style="position: relative;">
+            <div class="message-bubble">
+              <div class="message-header">
+                <span class="message-sender-name">${escapeHtml(message.sender.full_name)}</span>
+                <span class="message-time">${message.timestamp}</span>
+              </div>
+              ${replyContextHTML}
+              <p class="message-content">${escapeAndHighlight(message.content)}</p>
+            </div>
+            <div class="message-actions">
+              <button class="reply-btn" data-message-id="${message.id}" data-sender-name="${escapeHtml(message.sender.full_name)}" data-message-content="${escapeHtmlOnly(message.content)}" title="Reply">
+                <i class="fas fa-reply"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Thread Functionality
+  let currentThreadMessageId = null;
+  const threadSidebar = document.getElementById('threadSidebar');
+  const threadRootMessage = document.getElementById('threadRootMessage');
+  const threadReplies = document.getElementById('threadReplies');
+  const threadInput = document.getElementById('threadInput');
+  const threadReplyForm = document.getElementById('threadReplyForm');
+  const closeThreadBtn = document.getElementById('closeThreadBtn');
+
+  // Open thread when clicking "Reply in thread" button
+  document.addEventListener('click', function(e) {
+    const threadBtn = e.target.closest('.thread-reply-btn');
+    if (threadBtn) {
+      const messageId = threadBtn.dataset.messageId;
+      openThread(messageId);
+    }
+
+    // Also open thread when clicking on thread count indicator
+    const threadCountIndicator = e.target.closest('.thread-count-indicator');
+    if (threadCountIndicator) {
+      const messageId = threadCountIndicator.dataset.messageId;
+      openThread(messageId);
+    }
+  });
+
+  // Close thread sidebar
+  if (closeThreadBtn) {
+    closeThreadBtn.addEventListener('click', closeThread);
+  }
+
+  function openThread(messageId) {
+    currentThreadMessageId = messageId;
+
+    // Show thread sidebar
+    if (threadSidebar) {
+      threadSidebar.classList.add('active');
+    }
+
+    // Load thread messages
+    loadThreadMessages(messageId);
+  }
+
+  function closeThread() {
+    if (threadSidebar) {
+      threadSidebar.classList.remove('active');
+    }
+    currentThreadMessageId = null;
+    if (threadInput) {
+      threadInput.value = '';
+    }
+  }
+
+  function loadThreadMessages(messageId) {
+    const currentUsername = '{{ current_user.username }}';
+    const conversationId = {{ conversation.id }};
+
+    fetch(`/message/${currentUsername}/conversation/${conversationId}/thread/${messageId}/`)
+      .then(response => response.json())
+      .then(data => {
+        // Display root message
+        displayRootMessage(data.root_message);
+
+        // Display thread replies
+        displayThreadReplies(data.messages);
+
+        // Scroll to bottom of thread
+        const threadContent = document.getElementById('threadContent');
+        if (threadContent) {
+          threadContent.scrollTop = threadContent.scrollHeight;
+        }
+      })
+      .catch(error => {
+        console.error('Error loading thread:', error);
+      });
+  }
+
+  function displayRootMessage(rootMessage) {
+    if (!threadRootMessage) return;
+
+    const avatarUrl = rootMessage.sender.avatar ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(rootMessage.sender.full_name)}&background=random`;
+
+    threadRootMessage.innerHTML = `
+      <div class="message-wrapper" data-message-id="${rootMessage.id}">
+        <div class="d-flex align-items-start gap-2">
+          <div class="message-avatar" style="width: 32px; height: 32px;">
+            <img src="${avatarUrl}" alt="${escapeHtml(rootMessage.sender.full_name)}" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover;">
+          </div>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-baseline gap-2 mb-1">
+              <span class="fw-bold" style="font-size: 0.875rem;">${escapeHtml(rootMessage.sender.full_name)}</span>
+              <span class="text-muted" style="font-size: 0.75rem;">${rootMessage.timestamp}</span>
+            </div>
+            <p class="mb-0" style="font-size: 0.875rem;">${escapeHtml(rootMessage.content)}</p>
+          </div>
+        </div>
+      </div>
+      <div class="thread-divider">
+        <span><span class="thread-count" id="threadReplyCount">0</span> replies</span>
+      </div>
+    `;
+  }
+
+  function displayThreadReplies(messages) {
+    if (!threadReplies) return;
+
+    threadReplies.innerHTML = messages.map(msg => createThreadReplyHTML(msg)).join('');
+
+    // Update reply count
+    const threadReplyCount = document.getElementById('threadReplyCount');
+    if (threadReplyCount) {
+      threadReplyCount.textContent = messages.length;
+    }
+  }
+
+  function createThreadReplyHTML(message) {
+    const avatarUrl = message.sender.avatar ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(message.sender.full_name)}&background=random`;
+
+    const isCurrentUser = message.sender.id === currentUserId;
+
+    return `
+      <div class="thread-reply ${isCurrentUser ? 'thread-reply-sent' : ''}" data-message-id="${message.id}">
+        <div class="d-flex align-items-start gap-2">
+          <div class="message-avatar" style="width: 32px; height: 32px;">
+            <img src="${avatarUrl}" alt="${escapeHtml(message.sender.full_name)}" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover;">
+          </div>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-baseline gap-2 mb-1">
+              <span class="fw-bold" style="font-size: 0.875rem;">${escapeHtml(message.sender.full_name)}</span>
+              <span class="text-muted" style="font-size: 0.75rem;">${message.timestamp}</span>
+            </div>
+            <p class="mb-0" style="font-size: 0.875rem;">${escapeHtml(message.content)}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Handle thread reply form submission
+  if (threadReplyForm) {
+    threadReplyForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      if (!currentThreadMessageId) return;
+
+      const content = threadInput.value.trim();
+      if (!content) return;
+
+      const currentUsername = '{{ current_user.username }}';
+      const conversationId = {{ conversation.id }};
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      // Disable input while sending
+      threadInput.disabled = true;
+
+      fetch(`/message/${currentUsername}/conversation/${conversationId}/thread/${currentThreadMessageId}/reply/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          'content': content
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Add new reply to thread
+          const replyHTML = createThreadReplyHTML(data.message);
+          threadReplies.insertAdjacentHTML('beforeend', replyHTML);
+
+          // Clear input
+          threadInput.value = '';
+          threadInput.style.height = 'auto';
+
+          // Update thread count
+          const threadReplyCount = document.getElementById('threadReplyCount');
+          if (threadReplyCount) {
+            threadReplyCount.textContent = data.thread_count;
+          }
+
+          // Update thread count in main conversation
+          updateThreadCountInMainChat(currentThreadMessageId, data.thread_count);
+
+          // Scroll to bottom
+          const threadContent = document.getElementById('threadContent');
+          if (threadContent) {
+            threadContent.scrollTop = threadContent.scrollHeight;
+          }
+
+          // Re-focus input
+          threadInput.focus();
+        }
+      })
+      .catch(error => {
+        console.error('Error sending thread reply:', error);
+      })
+      .finally(() => {
+        threadInput.disabled = false;
+      });
+    });
+  }
+
+  // Auto-resize thread input
+  if (threadInput) {
+    threadInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+  }
+
+  function updateThreadCountInMainChat(messageId, count) {
+    // Find or create thread count indicator
+    const messageWrapper = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (!messageWrapper) return;
+
+    let threadCountIndicator = messageWrapper.querySelector('.thread-count-indicator');
+
+    if (count > 0) {
+      if (!threadCountIndicator) {
+        // Create thread count indicator
+        const messageBubble = messageWrapper.querySelector('.message-bubble');
+        if (messageBubble) {
+          const countHTML = `
+            <div class="thread-count-indicator" data-message-id="${messageId}" data-thread-count="${count}">
+              <i class="fas fa-comment-dots"></i>
+              <span class="thread-count">${count}</span> ${count === 1 ? 'reply' : 'replies'}
+            </div>
+          `;
+          messageBubble.insertAdjacentHTML('afterend', countHTML);
+        }
+      } else {
+        // Update existing count
+        const countSpan = threadCountIndicator.querySelector('.thread-count');
+        if (countSpan) {
+          countSpan.textContent = count;
+        }
+        const countText = threadCountIndicator.childNodes[threadCountIndicator.childNodes.length - 1];
+        if (countText) {
+          countText.textContent = ` ${count === 1 ? 'reply' : 'replies'}`;
+        }
+        threadCountIndicator.dataset.threadCount = count;
+      }
+    }
+  }
 </script>
 {% endblock %}

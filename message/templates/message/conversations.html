@@ -13,9 +13,17 @@
   <div class="conversations-sidebar">
     <div class="conversations-header">
       <h5 class="mb-0">Messages</h5>
-      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newMessageModal">
-        <i class="fas fa-edit"></i>
-      </button>
+      <div class="d-flex gap-2">
+        <a href="{% url 'message:personal_notes' username=current_user.username %}" class="btn btn-sm" style="background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.1); color: var(--accent-color); border: none; border-radius: 11px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" title="Personal Notes">
+          <i class="fas fa-sticky-note"></i>
+        </a>
+        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#teamChatModal" style="background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.1); color: var(--accent-color); border: none; border-radius: 11px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" title="Team Chat">
+          <i class="fas fa-users"></i>
+        </button>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newMessageModal">
+          <i class="fas fa-edit"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Search Conversations -->
@@ -46,7 +54,7 @@
                  alt="{{ conv.other_participant.get_full_name|default:conv.other_participant.username }}"
                  class="rounded-circle">
             {% endif %}
-            <span class="status-indicator online"></span>
+            <span class="status-indicator {{ conv.other_participant.profile.get_online_status }}"></span>
           {% else %}
             <div class="team-avatar">
               <i class="fas fa-users"></i>
@@ -66,10 +74,14 @@
           </div>
           <p class="conversation-preview">
             {% if conv.last_message %}
-              <span class="last-sender">
-                {% if conv.last_message.sender == current_user %}You:{% else %}{{ conv.last_message.sender.first_name|default:conv.last_message.sender.username }}:{% endif %}
-              </span>
-              {{ conv.last_message.content|truncatewords:8 }}
+              {% if conv.last_message.message_type == 'system' %}
+                <span class="text-muted"><i class="fas fa-info-circle"></i> {{ conv.last_message.content|truncatewords:8 }}</span>
+              {% else %}
+                <span class="last-sender">
+                  {% if conv.last_message.sender == current_user %}You:{% else %}{{ conv.last_message.sender.first_name|default:conv.last_message.sender.username }}:{% endif %}
+                </span>
+                {{ conv.last_message.content|truncatewords:8 }}
+              {% endif %}
             {% else %}
               No messages yet
             {% endif %}
@@ -119,6 +131,31 @@
           />
           <div id="userSearchResults" class="user-search-results"></div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Team Chat Modal -->
+<div class="modal fade" id="teamChatModal" tabindex="-1" aria-labelledby="teamChatModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="teamChatModalLabel">Create Team Chat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="teamSelect" class="form-label">Select Team:</label>
+          <select class="form-control" id="teamSelect">
+            <option value="">Choose a team...</option>
+          </select>
+        </div>
+        <div id="teamChatMessage" class="alert" style="display: none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="createTeamChatBtn">Create Chat</button>
       </div>
     </div>
   </div>
@@ -210,5 +247,94 @@
       userSearchResults.classList.remove('active');
     }
   });
+
+  // Team Chat Modal - Load teams when modal opens
+  const teamChatModal = document.getElementById('teamChatModal');
+  if (teamChatModal) {
+    teamChatModal.addEventListener('show.bs.modal', function() {
+      const teamSelect = document.getElementById('teamSelect');
+      const currentUsername = '{{ current_user.username }}';
+
+      // Fetch user's teams
+      fetch(`/teams/api/my-teams/`)
+        .then(response => response.json())
+        .then(data => {
+          teamSelect.innerHTML = '<option value="">Choose a team...</option>';
+
+          if (data.teams && data.teams.length > 0) {
+            data.teams.forEach(team => {
+              const option = document.createElement('option');
+              option.value = team.id;
+              option.textContent = team.name;
+              teamSelect.appendChild(option);
+            });
+          } else {
+            teamSelect.innerHTML = '<option value="">No teams available</option>';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading teams:', error);
+          teamSelect.innerHTML = '<option value="">Error loading teams</option>';
+        });
+    });
+  }
+
+  // Handle team chat creation
+  const createTeamChatBtn = document.getElementById('createTeamChatBtn');
+  if (createTeamChatBtn) {
+    createTeamChatBtn.addEventListener('click', function() {
+      const teamSelect = document.getElementById('teamSelect');
+      const teamId = teamSelect.value;
+      const teamChatMessage = document.getElementById('teamChatMessage');
+      const currentUsername = '{{ current_user.username }}';
+
+      if (!teamId) {
+        teamChatMessage.className = 'alert alert-warning';
+        teamChatMessage.textContent = 'Please select a team';
+        teamChatMessage.style.display = 'block';
+        return;
+      }
+
+      // Get CSRF token (from the new message modal since we're on the conversations page)
+      const csrfToken = '{{ csrf_token }}';
+
+      // Disable button while creating
+      createTeamChatBtn.disabled = true;
+      createTeamChatBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+      // Create team chat
+      fetch(`/message/${currentUsername}/create-team-chat/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          'team_id': teamId
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Redirect to the team conversation
+          window.location.href = `/message/${currentUsername}/conversation/${data.conversation_id}/`;
+        } else {
+          teamChatMessage.className = 'alert alert-danger';
+          teamChatMessage.textContent = data.error || 'Failed to create team chat';
+          teamChatMessage.style.display = 'block';
+        }
+      })
+      .catch(error => {
+        console.error('Error creating team chat:', error);
+        teamChatMessage.className = 'alert alert-danger';
+        teamChatMessage.textContent = 'Failed to create team chat. Please try again.';
+        teamChatMessage.style.display = 'block';
+      })
+      .finally(() => {
+        createTeamChatBtn.disabled = false;
+        createTeamChatBtn.innerHTML = 'Create Chat';
+      });
+    });
+  }
 </script>
 {% endblock %}

@@ -6,8 +6,9 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.db.models import Q, Prefetch
 from django.contrib import messages
+from zoneinfo import ZoneInfo
 
-from .models import Conversation, Message, can_users_message
+from .models import Conversation, Message, Participant, can_users_message
 from .serializer import ConversationSerializer, MessageSerializer
 
 # Create your views here.
@@ -32,14 +33,26 @@ def conversations_list(request, username):
         messages.error(request, "You can only view your own messages.")
         return redirect('message:conversations_list', username=user.username)
 
-    # Get all conversations for this user
-    conversations = Conversation.objects.filter(
-        participants=user
+    # Get conversations for this user
+    # Get 3 most recent team chats
+    team_conversations = Conversation.objects.filter(
+        participants=user,
+        is_team=True
+    ).prefetch_related('participants', 'messages').order_by('-updated_at')[:3]
+
+    # Get all 1-on-1 conversations
+    personal_conversations = Conversation.objects.filter(
+        participants=user,
+        is_team=False,
+        is_personal_notes=False
     ).prefetch_related('participants', 'messages').order_by('-updated_at')
+
+    # Combine them - team chats first, then personal
+    all_conversations = list(team_conversations) + list(personal_conversations)
 
     # Prepare conversation data with last message and other participant info
     conversation_data = []
-    for conv in conversations:
+    for conv in all_conversations:
         last_message = conv.get_last_message()
         other_participant = conv.get_other_participant(user)
 
@@ -49,7 +62,7 @@ def conversations_list(request, username):
             'title': conv.title,
             'other_participant': other_participant,
             'last_message': last_message,
-            'last_message_time': conv.get_last_message_time(),
+            'last_message_time': conv.get_last_message_time(user),
             'unread_count': conv.get_unread_count(user),
             'updated_at': conv.updated_at,
         })
@@ -80,10 +93,22 @@ def conversation_thread(request, username, conversation_id):
     # Get all messages in the conversation
     conversation_messages = conversation.messages.select_related('sender').order_by('timestamp')
 
-    # Get all conversations for sidebar
-    all_conversations = Conversation.objects.filter(
-        participants=user
+    # Get conversations for sidebar
+    # Get 3 most recent team chats
+    team_conversations = Conversation.objects.filter(
+        participants=user,
+        is_team=True
+    ).prefetch_related('participants').order_by('-updated_at')[:3]
+
+    # Get all 1-on-1 conversations
+    personal_conversations = Conversation.objects.filter(
+        participants=user,
+        is_team=False,
+        is_personal_notes=False
     ).prefetch_related('participants').order_by('-updated_at')
+
+    # Combine them - team chats first, then personal
+    all_conversations = list(team_conversations) + list(personal_conversations)
 
     conversation_data = []
     for conv in all_conversations:
@@ -94,9 +119,38 @@ def conversation_thread(request, username, conversation_id):
             'title': conv.title,
             'other_participant': other_participant,
             'last_message': conv.get_last_message(),
-            'last_message_time': conv.get_last_message_time(),
+            'last_message_time': conv.get_last_message_time(user),
             'unread_count': conv.get_unread_count(user),
         })
+
+    # Get participant information for team chats
+    participants_with_roles = []
+    if conversation.is_team:
+        from teams.models import TeamMembership
+
+        participants = Participant.objects.filter(
+            conversation=conversation
+        ).select_related('user', 'user__profile').order_by('role', 'user__username')
+
+        for participant in participants:
+            # Get team role
+            team_role = 'Member'
+            if conversation.team:
+                try:
+                    membership = TeamMembership.objects.get(
+                        team=conversation.team,
+                        user=participant.user
+                    )
+                    team_role = membership.role or 'Member'
+                except TeamMembership.DoesNotExist:
+                    team_role = 'Former Member'
+
+            participants_with_roles.append({
+                'user': participant.user,
+                'role': participant.role,
+                'team_role': team_role,
+                'is_admin': participant.role == 'admin',
+            })
 
     context = {
         'conversation': conversation,
@@ -104,6 +158,8 @@ def conversation_thread(request, username, conversation_id):
         'conversations': conversation_data,
         'current_user': user,
         'other_participant': conversation.get_other_participant(user),
+        'is_admin': conversation.is_user_admin(user),
+        'participants': participants_with_roles,
     }
 
     return render(request, 'message/thread.html', context)
@@ -151,15 +207,25 @@ def send_message(request, username, conversation_id):
         conversation = get_object_or_404(Conversation, id=conversation_id, participants=user)
 
         content = request.POST.get('content', '').strip()
+        reply_to_id = request.POST.get('reply_to', None)
 
         if not content:
             return JsonResponse({'error': 'Message cannot be empty'}, status=400)
+
+        # Get the message being replied to (if any)
+        reply_to_message = None
+        if reply_to_id:
+            try:
+                reply_to_message = Message.objects.get(id=reply_to_id, conversation=conversation)
+            except Message.DoesNotExist:
+                pass  # Ignore invalid reply_to
 
         # Create the message
         message = Message.objects.create(
             conversation=conversation,
             sender=user,
-            content=content
+            content=content,
+            reply_to=reply_to_message
         )
 
         # Update conversation timestamp
@@ -172,18 +238,40 @@ def send_message(request, username, conversation_id):
         except:
             avatar_url = None
 
+        # Convert timestamp to user's timezone
+        try:
+            user_tz = user.profile.timezone or 'UTC'
+            tz = ZoneInfo(user_tz)
+            local_time = message.timestamp.astimezone(tz)
+            formatted_time = local_time.strftime('%I:%M %p')
+        except:
+            formatted_time = message.timestamp.strftime('%I:%M %p')
+
+        # Prepare reply_to data
+        reply_to_data = None
+        if message.reply_to:
+            reply_to_data = {
+                'id': message.reply_to.id,
+                'content': message.reply_to.content[:100],  # Truncate long messages
+                'sender': {
+                    'username': message.reply_to.sender.username if message.reply_to.sender else 'Unknown',
+                    'full_name': message.reply_to.sender.get_full_name() if message.reply_to.sender else 'Unknown',
+                }
+            }
+
         return JsonResponse({
             'success': True,
             'message': {
                 'id': message.id,
                 'content': message.content,
-                'timestamp': message.timestamp.strftime('%I:%M %p'),
+                'timestamp': formatted_time,
                 'sender': {
                     'id': user.id,
                     'username': user.username,
                     'full_name': user.get_full_name() or user.username,
                     'avatar': avatar_url,
-                }
+                },
+                'reply_to': reply_to_data
             }
         })
 
@@ -275,9 +363,292 @@ def get_new_messages(request, username, conversation_id):
     # Mark new messages as read
     new_messages.filter(is_read=False).update(is_read=True)
 
+    # Get user's timezone
+    try:
+        user_tz = user.profile.timezone or 'UTC'
+        tz = ZoneInfo(user_tz)
+    except:
+        user_tz = 'UTC'
+        tz = ZoneInfo('UTC')
+
     # Prepare response
     messages_data = []
     for msg in new_messages:
+        # Convert timestamp to user's timezone
+        try:
+            local_time = msg.timestamp.astimezone(tz)
+            formatted_time = local_time.strftime('%I:%M %p')
+        except:
+            formatted_time = msg.timestamp.strftime('%I:%M %p')
+
+        # Build message data
+        message_data = {
+            'id': msg.id,
+            'content': msg.content,
+            'timestamp': formatted_time,
+            'message_type': msg.message_type,
+        }
+
+        # Add sender info only for regular messages
+        if msg.message_type == 'regular' and msg.sender:
+            try:
+                avatar_url = msg.sender.profile.profile_picture.url if msg.sender.profile.profile_picture else None
+            except:
+                avatar_url = None
+
+            message_data['sender'] = {
+                'id': msg.sender.id,
+                'username': msg.sender.username,
+                'full_name': msg.sender.get_full_name() or msg.sender.username,
+                'avatar': avatar_url,
+            }
+
+        # Add reply_to info if message is a reply
+        if msg.reply_to:
+            message_data['reply_to'] = {
+                'id': msg.reply_to.id,
+                'content': msg.reply_to.content[:100],
+                'sender': {
+                    'username': msg.reply_to.sender.username if msg.reply_to.sender else 'Unknown',
+                    'full_name': msg.reply_to.sender.get_full_name() if msg.reply_to.sender else 'Unknown',
+                }
+            }
+
+        messages_data.append(message_data)
+
+    return JsonResponse({'messages': messages_data})
+
+@login_required
+def personal_notes(request, username):
+    """Get or create personal notes conversation"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        messages.error(request, "Invalid request.")
+        return redirect('message:conversations_list', username=user.username)
+
+    # Get or create personal notes conversation
+    conversation = Conversation.objects.filter(
+        participants=user,
+        is_personal_notes=True
+    ).first()
+
+    if not conversation:
+        # Create new personal notes conversation
+        conversation = Conversation.objects.create(
+            is_personal_notes=True,
+            title="Personal Notes"
+        )
+        Participant.objects.create(user=user, conversation=conversation)
+
+    # Redirect to the conversation thread
+    return redirect('message:conversation_thread', username=username, conversation_id=conversation.id)
+
+@login_required
+def create_team_conversation(request, username):
+    """Create a new team conversation"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'error': 'Invalid request'}, status=403)
+
+    if request.method == 'POST':
+        team_id = request.POST.get('team_id')
+
+        if not team_id:
+            return JsonResponse({'error': 'Team ID is required'}, status=400)
+
+        from teams.models import Team, TeamMembership
+
+        # Get the team and verify user is a member
+        try:
+            team = Team.objects.get(id=team_id, members=user)
+        except Team.DoesNotExist:
+            return JsonResponse({'error': 'Team not found or you are not a member'}, status=404)
+
+        # Check if team conversation already exists
+        existing_conv = Conversation.objects.filter(
+            team=team,
+            is_team=True
+        ).first()
+
+        if existing_conv:
+            return JsonResponse({
+                'success': True,
+                'conversation_id': existing_conv.id,
+                'message': 'Team conversation already exists'
+            })
+
+        # Create new team conversation
+        conversation = Conversation.objects.create(
+            is_team=True,
+            title=f"{team.name} Team Chat",
+            team=team
+        )
+
+        # Add all team members as participants with appropriate roles
+        team_memberships = TeamMembership.objects.filter(team=team).select_related('user')
+        for membership in team_memberships:
+            # Team owners and admins get admin role in the chat
+            is_admin = membership.role in ['Owner', 'Admin']
+            participant_role = 'admin' if is_admin else 'member'
+
+            Participant.objects.create(
+                user=membership.user,
+                conversation=conversation,
+                role=participant_role
+            )
+
+        return JsonResponse({
+            'success': True,
+            'conversation_id': conversation.id,
+            'message': 'Team conversation created successfully'
+        })
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@login_required
+def remove_participant(request, username, conversation_id, user_id):
+    """Remove a participant from a team conversation (admin only)"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'error': 'Invalid request'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    # Get the conversation and verify user is a participant
+    conversation = get_object_or_404(Conversation, id=conversation_id, participants=user)
+
+    # Check if conversation is a team conversation
+    if not conversation.is_team:
+        return JsonResponse({'error': 'Can only remove participants from team conversations'}, status=400)
+
+    # Check if user is an admin
+    if not conversation.is_user_admin(user):
+        return JsonResponse({'error': 'Only admins can remove participants'}, status=403)
+
+    # Get the participant to remove
+    try:
+        participant_to_remove = Participant.objects.get(
+            conversation=conversation,
+            user_id=user_id
+        )
+    except Participant.DoesNotExist:
+        return JsonResponse({'error': 'Participant not found'}, status=404)
+
+    # Prevent removing the last admin
+    admin_count = Participant.objects.filter(
+        conversation=conversation,
+        role='admin'
+    ).count()
+
+    if participant_to_remove.role == 'admin' and admin_count <= 1:
+        return JsonResponse({'error': 'Cannot remove the last admin'}, status=400)
+
+    # Remove the participant
+    removed_username = participant_to_remove.user.username
+    participant_to_remove.delete()
+
+    return JsonResponse({
+        'success': True,
+        'message': f'{removed_username} removed from conversation'
+    })
+
+@login_required
+def rename_conversation(request, username, conversation_id):
+    """Rename a team conversation (admin only)"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'error': 'Invalid request'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    # Get the conversation and verify user is a participant
+    conversation = get_object_or_404(Conversation, id=conversation_id, participants=user)
+
+    # Check if conversation is a team conversation
+    if not conversation.is_team:
+        return JsonResponse({'error': 'Can only rename team conversations'}, status=400)
+
+    # Check if user is an admin
+    if not conversation.is_user_admin(user):
+        return JsonResponse({'error': 'Only admins can rename conversations'}, status=403)
+
+    # Get the new title
+    new_title = request.POST.get('title', '').strip()
+
+    if not new_title:
+        return JsonResponse({'error': 'Title cannot be empty'}, status=400)
+
+    if len(new_title) > 255:
+        return JsonResponse({'error': 'Title is too long (max 255 characters)'}, status=400)
+
+    # Store old title for system message
+    old_title = conversation.title
+
+    # Update the conversation title
+    conversation.title = new_title
+    conversation.save()
+
+    # Create system message announcing the rename
+    Message.objects.create(
+        conversation=conversation,
+        content=f"{user.get_full_name() or user.username} renamed the chat from \"{old_title}\" to \"{new_title}\"",
+        message_type='system',
+        sender=None
+    )
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Conversation renamed successfully',
+        'new_title': new_title
+    })
+
+@login_required
+def get_thread_messages(request, username, conversation_id, message_id):
+    """Get all messages in a thread"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'error': 'Invalid request'}, status=403)
+
+    # Get the conversation and verify user is a participant
+    conversation = get_object_or_404(Conversation, id=conversation_id, participants=user)
+
+    # Get the root message
+    root_message = get_object_or_404(Message, id=message_id, conversation=conversation)
+
+    # Get all thread replies
+    thread_messages = Message.objects.filter(thread_root=root_message).select_related('sender', 'sender__profile').order_by('timestamp')
+
+    # Get user timezone
+    try:
+        user_tz = user.profile.timezone or 'UTC'
+        tz = ZoneInfo(user_tz)
+    except:
+        user_tz = 'UTC'
+        tz = ZoneInfo('UTC')
+
+    # Prepare response data
+    messages_data = []
+    for msg in thread_messages:
+        # Convert timestamp to user's timezone
+        try:
+            local_time = msg.timestamp.astimezone(tz)
+            formatted_time = local_time.strftime('%I:%M %p')
+        except:
+            formatted_time = msg.timestamp.strftime('%I:%M %p')
+
+        # Get avatar URL
         try:
             avatar_url = msg.sender.profile.profile_picture.url if msg.sender.profile.profile_picture else None
         except:
@@ -286,7 +657,7 @@ def get_new_messages(request, username, conversation_id):
         messages_data.append({
             'id': msg.id,
             'content': msg.content,
-            'timestamp': msg.timestamp.strftime('%I:%M %p'),
+            'timestamp': formatted_time,
             'sender': {
                 'id': msg.sender.id,
                 'username': msg.sender.username,
@@ -295,7 +666,100 @@ def get_new_messages(request, username, conversation_id):
             }
         })
 
-    return JsonResponse({'messages': messages_data})
+    # Also get root message data
+    try:
+        root_avatar_url = root_message.sender.profile.profile_picture.url if root_message.sender.profile.profile_picture else None
+    except:
+        root_avatar_url = None
+
+    try:
+        root_local_time = root_message.timestamp.astimezone(tz)
+        root_formatted_time = root_local_time.strftime('%I:%M %p')
+    except:
+        root_formatted_time = root_message.timestamp.strftime('%I:%M %p')
+
+    root_message_data = {
+        'id': root_message.id,
+        'content': root_message.content,
+        'timestamp': root_formatted_time,
+        'sender': {
+            'id': root_message.sender.id,
+            'username': root_message.sender.username,
+            'full_name': root_message.sender.get_full_name() or root_message.sender.username,
+            'avatar': root_avatar_url,
+        }
+    }
+
+    return JsonResponse({
+        'root_message': root_message_data,
+        'messages': messages_data
+    })
+
+@login_required
+def send_thread_reply(request, username, conversation_id, message_id):
+    """Send a reply to a thread"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'error': 'Invalid request'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    # Get the conversation and verify user is a participant
+    conversation = get_object_or_404(Conversation, id=conversation_id, participants=user)
+
+    # Get the root message
+    root_message = get_object_or_404(Message, id=message_id, conversation=conversation)
+
+    # Get message content
+    content = request.POST.get('content', '').strip()
+
+    if not content:
+        return JsonResponse({'error': 'Message cannot be empty'}, status=400)
+
+    # Create the thread reply
+    thread_reply = Message.objects.create(
+        conversation=conversation,
+        sender=user,
+        content=content,
+        thread_root=root_message
+    )
+
+    # Update conversation timestamp
+    conversation.updated_at = timezone.now()
+    conversation.save()
+
+    # Prepare response
+    try:
+        avatar_url = user.profile.profile_picture.url if user.profile.profile_picture else None
+    except:
+        avatar_url = None
+
+    try:
+        user_tz = user.profile.timezone or 'UTC'
+        tz = ZoneInfo(user_tz)
+        local_time = thread_reply.timestamp.astimezone(tz)
+        formatted_time = local_time.strftime('%I:%M %p')
+    except:
+        formatted_time = thread_reply.timestamp.strftime('%I:%M %p')
+
+    return JsonResponse({
+        'success': True,
+        'message': {
+            'id': thread_reply.id,
+            'content': thread_reply.content,
+            'timestamp': formatted_time,
+            'sender': {
+                'id': user.id,
+                'username': user.username,
+                'full_name': user.get_full_name() or user.username,
+                'avatar': avatar_url,
+            }
+        },
+        'thread_count': root_message.get_thread_count()
+    })
 
 @login_required
 def messages_view(request, username):
