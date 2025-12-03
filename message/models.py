@@ -4,7 +4,9 @@ from django.contrib.auth.models import User
 import uuid
 
 # Create your models here.
-   
+
+
+# TODO INTEGRATE GEMINI INTO MESSAGES WITH EMBEDDED APPLICATION CONTEXT
 class Conversation(models.Model):
    id = models.AutoField(primary_key=True)
    is_team = models.BooleanField(default=False)
