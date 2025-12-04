@@ -41,7 +41,8 @@ class Project(models.Model):
         # ✅ Automatically add all team members as collaborators
         if self.team:
             for member in self.team.members.all():
-                self.collaborators.add(member)
+                if member != self.lead:
+                    self.collaborators.add(member)
 
     def __str__(self):
         return self.name
