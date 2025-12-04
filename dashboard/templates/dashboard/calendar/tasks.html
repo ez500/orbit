@@ -24,9 +24,9 @@
                 <button
                         class="btn btn-primary"
                         data-bs-toggle="modal"
-                        data-bs-target="#addTaskModal"
+                        data-bs-target="#addTaskEventModal"
                 >
-                    <i class="fas fa-plus"></i> Add Task
+                    <i class="fas fa-plus"></i> Add Task or Event
                 </button>
             </div>
         </div>
@@ -203,7 +203,7 @@
 
     <!-- TODO EDIT TASK -->
     <!-- Add Task Modal -->
-    {% include 'calendar/_add_task_modal.html' %}
+    {% include 'dashboard/calendar/_add_task_event_modal.html' %}
 
     <div class="modal fade" id="viewTaskModal" tabindex="-1" aria-labelledby="viewTaskModalLabel" aria-hidden="true">
         <div class="modal-dialog">

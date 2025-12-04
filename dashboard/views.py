@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 from company.models import Company, Announcement
 from projects.models import Project
 from teams.models import Team
+from .forms import TaskForm, EventForm
 from .models import Task, InsightSuggestion, Event
 from .orbit import generate_orbit_insights
 from .serializer import TaskViewSerializer, TaskCreateSerializer
@@ -77,6 +78,21 @@ class OrbitInsightsAPIView(APIView):
 
 
 @login_required
+def confirm_suggestion(request, suggestion_id):
+    suggestion = get_object_or_404(InsightSuggestion, id=suggestion_id, user=request.user)
+    payload = suggestion.raw_data or {}
+    suggestion_type = payload.get("type") or suggestion.suggestion_type
+
+    context = {
+        "title": "Confirm Suggestion",
+        "suggestion": suggestion,
+        "payload": payload,
+        "suggestion_type": suggestion_type,
+    }
+    return render(request, "dashboard/confirm_suggestion.html", context)
+
+
+@login_required
 @require_POST
 def execute_suggestion(request, suggestion_id):
     suggestion = get_object_or_404(
@@ -91,9 +107,9 @@ def execute_suggestion(request, suggestion_id):
 
     try:
         if suggestion_type == "create_task":
-            title = payload.get("title") or "Orbit Task"
-            content = payload.get("description") or ""
-            deadline = payload.get("deadline")
+            title = request.POST.get("title") or payload.get("title") or "Orbit Task"
+            content = request.POST.get("content") or payload.get("content") or ""
+            deadline = request.POST.get("deadline") or payload.get("deadline")
             project_or_team_id = payload.get("project_or_team_id")
             user_ids = payload.get("users", [])
 
@@ -123,10 +139,14 @@ def execute_suggestion(request, suggestion_id):
             return redirect("dashboard:tasks")
 
         elif suggestion_type == "create_event":
-            title = payload.get("event_title") or "Orbit Event"
-            content = payload.get("event_description") or ""
-            start_datetime = payload.get("start_datetime")
-            end_datetime = payload.get("end_datetime")
+            title = request.POST.get("title") or payload.get("title") or "Orbit Event"
+            content = (
+                request.POST.get("content")
+                or payload.get("content")
+                or ""
+            )
+            start_datetime = request.POST.get("start_datetime") or payload.get("start_datetime")
+            end_datetime = request.POST.get("end_datetime") or payload.get("end_datetime")
             project_or_team_id = payload.get("project_or_team_id")
             user_ids = payload.get("users", [])
 
@@ -160,10 +180,22 @@ def execute_suggestion(request, suggestion_id):
             company_id = payload.get("company_id")
             company = get_object_or_404(Company, id=company_id)
 
+            title = (
+                request.POST.get("title")
+                or payload.get("title")
+                or "Orbit Announcement"
+            )
+
+            content = (
+                request.POST.get("content")
+                or payload.get("content")
+                or ""
+            )
+
             announcement = Announcement.objects.create(
                 company=company,
-                title=payload.get("announcement_title") or "Orbit Announcement",
-                content=payload.get("announcement_content") or ""
+                title=title,
+                content=content
             )
 
             task_ids = payload.get("tasks") or []
@@ -177,19 +209,31 @@ def execute_suggestion(request, suggestion_id):
 
         # TODO IMPLEMENT MESSAGING WITH ORBIT INSIGHT
         elif suggestion_type == "send_message":
+            payload["content"] = (
+                request.POST.get("content")
+                or payload.get("content")
+            )
             request.session["orbit_message_draft"] = payload
             suggestion.mark_executed()
             return redirect(reverse("message:compose") + "?from_orbit=1")
 
         # TODO IMPLEMENT EMAIL HELPER
         elif suggestion_type == "send_email":
+            payload["subject"] = (
+                request.POST.get("subject")
+                or payload.get("subject")
+            )
+            payload["body"] = (
+                request.POST.get("body")
+                or payload.get("body")
+            )
             request.session["orbit_email_draft"] = payload
             suggestion.mark_executed()
             return redirect(reverse("email:compose") + "?from_orbit=1")
 
         elif suggestion_type == "general_insight":
             suggestion.mark_executed()
-            messages.info(request, "Maraked insight as read.")
+            messages.info(request, "Marked insight as read.")
             return redirect("dashboard:orbit_insights")
 
         else:
@@ -252,6 +296,24 @@ def tasks(request):
 
     serializer = TaskViewSerializer(tasks_list, many=True)
 
+    if request.method == "POST":
+        if "add_task" in request.POST:
+            task_form = TaskForm(request.POST)
+            if task_form.is_valid():
+                new_task = task_form.save(commit=False)
+                new_task.save()
+                messages.success(request, "Task created successfully.")
+        elif "add_event" in request.POST:
+            event_form = EventForm(request.POST)
+            if event_form.is_valid():
+                new_event = event_form.save(commit=False)
+                new_event.save()
+                messages.success(request, "Task created successfully.")
+        return redirect("dashboard:tasks")
+
+    task_form = TaskForm()
+    event_form = EventForm()
+
     context = {
         'title': 'Tasks',
         'tasks_qs': tasks_list,
@@ -265,9 +327,11 @@ def tasks(request):
         'deadline_filter': deadline_filter,
         'sort_by': sort_by,
         'empty': not tasks_list.exists(),
+        'task_form': task_form,
+        'event_form': event_form,
     }
 
-    return render(request, 'calendar/tasks.html', context)
+    return render(request, 'dashboard/calendar/tasks.html', context)
 
 
 @login_required
@@ -298,7 +362,7 @@ def get_project_or_team_members(request):
 
 class TaskDetailModalView(DetailView):
     model = Task
-    template_name = 'calendar/task_modal.html'
+    template_name = 'dashboard/calendar/_view_task_modal.html'
 
 
 class TaskCreateAPIView(APIView):

@@ -1,0 +1,44 @@
+<div class="modal fade" id="addTaskEventModal" tabindex="-1" aria-labelledby="addTaskEventModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="addTaskEventModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Add Task or Event
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" id="addTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="task-tab" data-bs-toggle="tab" data-bs-target="#taskFormTab"
+                                type="button" role="tab">Task
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="event-tab" data-bs-toggle="tab" data-bs-target="#eventFormTab"
+                                type="button" role="tab">Event
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="taskFormTab" role="tabpanel">
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ task_form.as_p }}
+                            <button type="submit" name="add_task" class="btn btn-primary mt-2">Save Task</button>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="eventFormTab" role="tabpanel">
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ event_form.as_p }}
+                            <button type="submit" name="add_event" class="btn btn-primary mt-2">Save Event</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
