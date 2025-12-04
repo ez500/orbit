@@ -184,8 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const response = await fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
             if (!response.ok) throw new Error('Load failed.');
-            const html = await response.text();
-            document.getElementById("viewTaskModalContent").innerHTML = html;
+            document.getElementById("viewTaskModalContent").innerHTML = await response.text();
             new bootstrap.Modal(document.getElementById("viewTaskModal")).show();
         } catch (error) {
             console.error('Error:', error);
