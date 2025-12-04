@@ -1,225 +1,238 @@
 {% extends "base.html" %}
 {% load static %}
+{% load task_extras %}
+{% block extra_css %}
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-
-<div class="container-fluid py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold text-primary mb-0">
-      <i class="fas fa-clipboard-list me-2"></i>{{ project.name }} Dashboard
-    </h3>
-    <div>
-      <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-outline-secondary btn-sm">
-        <i class="fas fa-arrow-left me-1"></i> Back
-      </a>
-    </div>
-  </div>
-
-  <!-- View Toggle -->
-  <div class="d-flex justify-content-end mb-3">
-    <div class="btn-group" role="group">
-      <button class="btn btn-outline-primary active" id="listViewBtn"><i class="fas fa-list-ul"></i> List</button>
-      <button class="btn btn-outline-primary" id="calendarViewBtn"><i class="fas fa-calendar-alt"></i> Calendar</button>
-    </div>
-  </div>
-
-  <!-- ===== LIST VIEW ===== -->
-  <div id="listView">
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-semibold text-primary mb-0">
-            <i class="fas fa-tasks me-2"></i>Tasks & Events
-          </h5>
-          <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaskEventModal">
-            <i class="fas fa-plus"></i> Add
-          </button>
-        </div>
-
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th scope="col">Title</th>
-                <th scope="col">Type</th>
-                <th scope="col">Date</th>
-                <th scope="col">Status</th>
-                <th scope="col" class="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for task in tasks %}
-                <tr>
-                  <td><strong>{{ task.title }}</strong></td>
-                  <td><span class="badge bg-info">Task</span></td>
-                  <td>{{ task.due_date|default:"—" }}</td>
-                  <td>
-                    <span class="badge {% if task.completed %}bg-success{% else %}bg-warning text-dark{% endif %}">
-                      {% if task.completed %}Done{% else %}Pending{% endif %}
-                    </span>
-                  </td>
-                  <td class="text-end">
-                    {% if request.user == project.lead %}
-                      <a href="{% url 'projects:remove_task' project.pk task.pk %}"
-                         class="btn btn-outline-danger btn-sm"
-                         onclick="return confirm('Delete task {{ task.title }}?');">
-                         <i class="fas fa-trash"></i>
-                      </a>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-
-              {% for event in events %}
-                <tr>
-                  <td><strong>{{ event.title }}</strong></td>
-                  <td><span class="badge bg-primary">Event</span></td>
-                  <td>{{ event.start_date }}{% if event.end_date %} → {{ event.end_date }}{% endif %}</td>
-                  <td><span class="badge bg-light text-dark">Scheduled</span></td>
-                  <td class="text-end">
-                    {% if request.user == project.lead %}
-                      <a href="{% url 'projects:remove_event' project.pk event.pk %}"
-                         class="btn btn-outline-danger btn-sm"
-                         onclick="return confirm('Delete event {{ event.title }}?');">
-                         <i class="fas fa-trash"></i>
-                      </a>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-
-        {% if tasks|length == 0 and events|length == 0 %}
-          <p class="text-muted text-center mt-3">No tasks or events yet.</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- ===== DOCUMENTS SECTION (NEW) ===== -->
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-semibold text-primary mb-0">
-            <i class="fas fa-file-alt me-2"></i>Project Documents
-          </h5>
-          <a href="{% url 'projects:add_document' project.pk %}" class="btn btn-primary btn-sm">
-            <i class="fas fa-upload me-1"></i> Upload
-          </a>
-        </div>
-
-        {% if project.documents.all %}
-          <ul class="list-group">
-            {% for doc in project.documents.all %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <a href="{% url 'projects:view_document' project.pk doc.pk %}" class="text-decoration-none">
-                  <i class="fas fa-file me-2 text-secondary"></i>{{ doc.name }}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-primary mb-0">
+                <i class="fas fa-clipboard-list me-2"></i>{{ project.name }} Dashboard
+            </h3>
+            <div>
+                <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Back
                 </a>
-                <div class="d-flex align-items-center">
-                  <small class="text-muted me-3">Uploaded by {{ doc.uploaded_by.username }}</small>
-                  {% if request.user == project.lead or request.user == doc.uploaded_by %}
-                    <a href="{% url 'projects:delete_document' project.pk doc.pk %}"
-                       class="btn btn-outline-danger btn-sm"
-                       onclick="return confirm('Delete document {{ doc.name }}?');">
-                       <i class="fas fa-trash"></i>
-                    </a>
-                  {% endif %}
+            </div>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="d-flex justify-content-end mb-3">
+            <div class="btn-group" role="group">
+                <button class="btn btn-outline-primary active" id="listViewBtn"><i class="fas fa-list-ul"></i> List
+                </button>
+                <button class="btn btn-outline-primary" id="calendarViewBtn"><i class="fas fa-calendar-alt"></i>
+                    Calendar
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== LIST VIEW ===== -->
+        <div id="listView">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-semibold text-primary mb-0">
+                            <i class="fas fa-tasks me-2"></i>Tasks & Events
+                        </h5>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#addTaskEventModal">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                            <tr>
+                                <th scope="col">Title</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for task in tasks %}
+                                <tr class="task-item p-3 border-bottom" data-task-id="{{ task.id }}"
+                                     role="button" aria-label="View Task {{ task.title }}">
+                                    <td><strong>{{ task.title }}</strong></td>
+                                    <td><span class="badge bg-info">Task</span></td>
+                                    <td>{{ task.deadline|date:"n/j/y"|default:"—" }}</td>
+                                    <td>
+                                        <span class="badge {{ task.status|status_badge }}">{{ task.get_status_display }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        {% if request.user == project.lead %}
+                                            <a href="{% url 'projects:remove_task' project.pk task.pk %}"
+                                               class="btn btn-outline-danger btn-sm"
+                                               onclick="return confirm('Delete task {{ task.title }}?');">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+                            {% for event in events %}
+                                <tr>
+                                    <td><strong>{{ event.title }}</strong></td>
+                                    <td><span class="badge bg-primary">Event</span></td>
+                                    <td>{{ event.start_datetime|date:"n/j/y h:sa" }}{% if event.end_datetime %} -
+                                        {{ event.end_datetime|date:"n/j/y h:sa" }}{% endif %}</td>
+                                    <td><span class="badge bg-light text-dark">Scheduled</span></td>
+                                    <td class="text-end">
+                                        {% if request.user == project.lead %}
+                                            <a href="{% url 'projects:remove_event' project.pk event.pk %}"
+                                               class="btn btn-outline-danger btn-sm"
+                                               onclick="return confirm('Delete event {{ event.title }}?');">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if tasks|length == 0 and events|length == 0 %}
+                        <p class="text-muted text-center mt-3">No tasks or events yet.</p>
+                    {% endif %}
                 </div>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p class="text-muted text-center mt-3">No documents uploaded yet.</p>
-        {% endif %}
-      </div>
+            </div>
+
+            <!-- ===== DOCUMENTS SECTION (NEW) ===== -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-semibold text-primary mb-0">
+                            <i class="fas fa-file-alt me-2"></i>Project Documents
+                        </h5>
+                        <a href="{% url 'projects:add_document' project.pk %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-upload me-1"></i> Upload
+                        </a>
+                    </div>
+
+                    {% if project.documents.all %}
+                        <ul class="list-group">
+                            {% for doc in project.documents.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'projects:view_document' project.pk doc.pk %}"
+                                       class="text-decoration-none">
+                                        <i class="fas fa-file me-2 text-secondary"></i>{{ doc.name }}
+                                    </a>
+                                    <div class="d-flex align-items-center">
+                                        <small class="text-muted me-3">Uploaded
+                                            by {{ doc.uploaded_by.username }}</small>
+                                        {% if request.user == project.lead or request.user == doc.uploaded_by %}
+                                            <a href="{% url 'projects:delete_document' project.pk doc.pk %}"
+                                               class="btn btn-outline-danger btn-sm"
+                                               onclick="return confirm('Delete document {{ doc.name }}?');">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted text-center mt-3">No documents uploaded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CALENDAR VIEW ===== -->
+        <div id="calendarView" style="display:none;">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="fw-semibold text-primary mb-3">
+                        <i class="fas fa-calendar-alt me-2"></i>Project Calendar
+                    </h5>
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ADD MODAL ===== -->
+        {% include "dashboard/calendar/_add_task_event_modal.html" %}
+        {% include 'dashboard/calendar/_view_task_modal_shell.html' %}
     </div>
-  </div>
+{% endblock %}
 
-  <!-- ===== CALENDAR VIEW ===== -->
-  <div id="calendarView" style="display:none;">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <h5 class="fw-semibold text-primary mb-3">
-          <i class="fas fa-calendar-alt me-2"></i>Project Calendar
-        </h5>
-        <div id="calendar"></div>
-      </div>
-    </div>
-  </div>
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
-  <!-- ===== ADD MODAL ===== -->
-  {% include "dashboard/calendar/_add_task_event_modal.html" %}
-</div>
+    <style>
+        #calendar {
+            min-height: 700px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px;
+        }
 
-<!-- ===== FULLCALENDAR JS + CSS ===== -->
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+        .fc .fc-toolbar-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #0d6efd;
+        }
 
-<style>
-#calendar {
-  min-height: 700px;
-  background: #fff;
-  border-radius: 8px;
-  padding: 10px;
-}
-.fc .fc-toolbar-title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #0d6efd;
-}
-.fc-event {
-  font-size: 0.9rem;
-  border-radius: 4px;
-}
-</style>
+        .fc-event {
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+    </style>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const listBtn = document.getElementById('listViewBtn');
-  const calBtn = document.getElementById('calendarViewBtn');
-  const listView = document.getElementById('listView');
-  const calView = document.getElementById('calendarView');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const listBtn = document.getElementById('listViewBtn');
+            const calBtn = document.getElementById('calendarViewBtn');
+            const listView = document.getElementById('listView');
+            const calView = document.getElementById('calendarView');
 
-  listBtn.addEventListener('click', () => {
-    listView.style.display = 'block';
-    calView.style.display = 'none';
-    listBtn.classList.add('active');
-    calBtn.classList.remove('active');
-  });
+            listBtn.addEventListener('click', () => {
+                listView.style.display = 'block';
+                calView.style.display = 'none';
+                listBtn.classList.add('active');
+                calBtn.classList.remove('active');
+            });
 
-  calBtn.addEventListener('click', () => {
-    listView.style.display = 'none';
-    calView.style.display = 'block';
-    calBtn.classList.add('active');
-    listBtn.classList.remove('active');
-  });
+            calBtn.addEventListener('click', () => {
+                listView.style.display = 'none';
+                calView.style.display = 'block';
+                calBtn.classList.add('active');
+                listBtn.classList.remove('active');
+            });
 
-  const calendarEl = document.getElementById('calendar');
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 700,
-    themeSystem: 'bootstrap5',
-    events: '{% url "projects:project_events_json" project.pk %}',
-    eventDisplay: 'block',
-    eventTextColor: '#fff',
-    eventDidMount: function(info) {
-      if (info.event.extendedProps.description) {
-        new bootstrap.Tooltip(info.el, {
-          title: info.event.extendedProps.description,
-          placement: 'top',
-          trigger: 'hover',
-          container: 'body'
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                height: 700,
+                themeSystem: 'bootstrap5',
+                events: '{% url "projects:project_events_json" project.pk %}',
+                eventDisplay: 'block',
+                eventTextColor: '#fff',
+                eventDidMount: function (info) {
+                    if (info.event.extendedProps.description) {
+                        new bootstrap.Tooltip(info.el, {
+                            title: info.event.extendedProps.description,
+                            placement: 'top',
+                            trigger: 'hover',
+                            container: 'body'
+                        });
+                    }
+                },
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,listWeek'
+                }
+            });
+            calendar.render();
         });
-      }
-    },
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,listWeek'
-    }
-  });
-  calendar.render();
-});
-</script>
-
+    </script>
+    <script src="{% static 'js/viewTaskModal.js' %}"></script>
 {% endblock %}

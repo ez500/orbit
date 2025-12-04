@@ -204,16 +204,11 @@
     <!-- TODO EDIT TASK -->
     <!-- Add Task Modal -->
     {% include 'dashboard/calendar/_add_task_event_modal.html' %}
-
-    <div class="modal fade" id="viewTaskModal" tabindex="-1" aria-labelledby="viewTaskModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content" id="viewTaskModalContent">
-            </div>
-        </div>
-    </div>
+    {% include 'dashboard/calendar/_view_task_modal_shell.html' %}
 
 {% endblock %}
 {% block extra_js %}
     {{ tasks|json_script:"tasks-data" }}
     <script src="{% static 'js/listCalendar.js' %}"></script>
+    <script src="{% static 'js/viewTaskModal.js' %}"></script>
 {% endblock %}

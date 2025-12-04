@@ -138,12 +138,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 addTaskButton.className = "btn btn-sm btn-outline-primary add-task-btn";
                 addTaskButton.setAttribute("aria-label", "Add task");
                 addTaskButton.dataset.bsToggle = "modal";
-                addTaskButton.dataset.bsTarget = "#addTaskModal";
+                addTaskButton.dataset.bsTarget = "#addTaskEventModal";
                 addTaskButton.innerHTML = `<i class="fas fa-plus fa-sm"></i>`;
                 elementToAddButton.appendChild(addTaskButton);
 
                 addTaskButton.addEventListener("click", () => {
-                    document.getElementById("taskDeadline").value = dateStr;
+                    document.getElementById("id_deadline").value = dateStr;
                 })
             });
 
@@ -170,35 +170,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Initial render
     renderCalendar();
-
-    // View task functionality
-    document.addEventListener("click", async(e) => {
-        const el = e.target.closest(".calendar-task, .task-item");
-        if (!el) return;
-
-        const taskId = el.getAttribute("data-task-id");
-        if (!taskId) return;
-
-        const url = `/dashboard/tasks/${taskId}/view/`;
-
-        try {
-            const response = await fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
-            if (!response.ok) throw new Error('Load failed.');
-            document.getElementById("viewTaskModalContent").innerHTML = await response.text();
-            new bootstrap.Modal(document.getElementById("viewTaskModal")).show();
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    });
-
-    // Keyboard accessibility for task viewing
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-            const el = e.target.closest(".calendar-task, .task-item");
-            if (el) {
-                e.preventDefault();
-                el.click();
-            }
-        }
-    })
 });

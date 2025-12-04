@@ -126,6 +126,7 @@ def project_dashboard(request, pk):
     events = project.events.order_by("start_datetime")
 
     return render(request, "projects/project_dashboard.html", {
+        "title": f'{project.name} Dashboard',
         "project": project,
         "tasks": tasks,
         "events": events,
