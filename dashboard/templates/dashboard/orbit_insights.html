@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load orbit_extras %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
@@ -15,65 +14,34 @@
     </div>
   </div>
 
-  {% if fallback %}
-    <div class="alert alert-info">
-      No strong suggestions were found for your current context.
-      You can start a new conversation with the assistant from the messaging area.
-    </div>
-  {% endif %}
+  <div id="orbit-loading" class="alert alert-secondary">
+      Generating insights for you. This may take a moment...
+  </div>
 
-  {% if suggestions %}
-    <div class="row">
-      {% for s in suggestions %}
-        {% with data=s.raw_data %}
-        <div class="col-md-6 mb-3">
-          <div class="card h-100">
-            <div class="card-body">
-              <h5 class="card-title">
-                {% if data.type == 'create_task' %}
-                  Task: {{ data.title|default:'AI Task' }}
-                {% elif data.type == 'create_event' %}
-                  Event: {{ data.event_title|default:'AI Event' }}
-                {% elif data.type == 'create_announcement' %}
-                  Announcement: {{ data.announcement_title|default:'AI Announcement' }}
-                {% elif data.type == 'send_message' %}
-                  Message Suggestion
-                {% elif data.type == 'send_email' %}
-                  Email Suggestion
-                {% else %}
-                  Insight
-                {% endif %}
-              </h5>
-              <p class="card-text">
-                {{ data|get_key:"description"|default:data|get_key:"event_description"|default:data|get_key:"announcement_content"|default:data|get_key:"message_content"|default:data|get_key:"email_body"|default:data|get_key:"insight_content" }}
-              </p>
-
-              <form method="post" action="{% url 'dashboard:execute_suggestion' s.id %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary btn-sm">
-                  {% if data.type == 'create_task' %}
-                    Create Task
-                  {% elif data.type == 'create_event' %}
-                    Create Event
-                  {% elif data.type == 'create_announcement' %}
-                    Create Announcement
-                  {% elif data.type == 'send_message' %}
-                    Open Message Draft
-                  {% elif data.type == 'send_email' %}
-                    Open Email Draft
-                  {% else %}
-                    Mark as Read
-                  {% endif %}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-        {% endwith %}
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="text-muted">No insights available at the moment.</p>
-  {% endif %}
+  <div id="orbit-suggestions-container"></div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const loadingEl = document.getElementById("orbit-loading");
+        const containerEl = document.getElementById("orbit-suggestions-container");
+
+        fetch("{% url 'dashboard:orbit_insights_api' %}")
+            .then((response) => response.json())
+            .then((data) => {
+                if (loadingEl) loadingEl.style.display = "none";
+                if (containerEl) containerEl.innerHTML = data.html || "";
+            })
+            .catch((error) => {
+                console.error("Orbit insights error", error);
+                if (loadingEl) {
+                    loadingEl.classList.remove("alert-secondary");
+                    loadingEl.classList.add("alert-danger");
+                    loadingEl.textContent = "Failed to load insights. Please try again later.";
+                }
+            });
+    });
+</script>
 {% endblock %}

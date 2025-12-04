@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.core.serializers import serialize
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
@@ -49,21 +50,30 @@ def dashboard(request):
 def orbit_insights(request):
     """Orbit Insights view"""
 
-    data = generate_orbit_insights(request.user, persist=True)
-    batch_id = data["batch_id"]
+    return render(request, 'dashboard/orbit_insights.html', {"title": "Orbit Insights"})
 
-    suggestions = InsightSuggestion.objects.filter(
-        user=request.user,
-        batch_id=batch_id
-    ).order_by('-created_at')
 
-    context = {
-        "title": "Orbit Insights",
-        "suggestions": suggestions,
-        "fallback": data["fallback"],
-    }
+class OrbitInsightsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    return render(request, 'dashboard/orbit_insights.html', context)
+    def get(self, request):
+        data = generate_orbit_insights(request.user, persist=True)
+        batch_id = data["batch_id"]
+
+        suggestions = InsightSuggestion.objects.filter(
+            user=request.user,
+            batch_id=batch_id
+        ).order_by('-created_at')
+
+        html = render_to_string(
+            "dashboard/_orbit_suggestion_cards.html",
+            {
+                "suggestions": suggestions,
+                "fallback": data["fallback"],
+            },
+            request=request
+        )
+        return Response({"html": html}, status=status.HTTP_200_OK)
 
 
 @login_required
@@ -189,14 +199,6 @@ def execute_suggestion(request, suggestion_id):
     except Exception:
         messages.error(request, "Failed to execute insight suggestion.")
         return redirect("dashboard:orbit_insights")
-
-
-class OrbitInsightsAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        insights = generate_orbit_insights(request.user)
-        return Response(insights, status=status.HTTP_200_OK)
 
 
 @login_required

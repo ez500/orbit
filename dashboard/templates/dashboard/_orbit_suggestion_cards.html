@@ -1,0 +1,59 @@
+{% load orbit_extras %}
+
+{% if fallback %}
+    <div class="alert alert-info">
+        No strong suggestions were found for your current context.
+        You can start a new conversation with the assistant from the messaging area.
+    </div>
+{% endif %}
+
+{% if suggestions %}
+    <div class="row">
+        {% for s in suggestions %}
+            {% with data=s.raw_data %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {% if data.type == 'create_task' %}
+                                    Task: {{ data.title|default:'AI Task' }}
+                                {% elif data.type == 'create_event' %}
+                                    Event: {{ data.event_title|default:'AI Event' }}
+                                {% elif data.type == 'create_announcement' %}
+                                    Announcement: {{ data.announcement_title|default:'AI Announcement' }}
+                                {% elif data.type == 'send_message' %}
+                                    Message Suggestion
+                                {% elif data.type == 'send_email' %}
+                                    Email Suggestion
+                                {% else %}
+                                    Insight
+                                {% endif %}
+                            </h5>
+                            <p class="card-text">
+                                {{ data|get_key:"description"|default:data|get_key:"event_description"|default:data|get_key:"announcement_content"|default:data|get_key:"message_content"|default:data|get_key:"email_body"|default:data|get_key:"insight_content" }}
+                            </p>
+
+                            <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">
+                                {% if data.type == 'create_task' %}
+                                    Review Task
+                                {% elif data.type == 'create_event' %}
+                                    Review Event
+                                {% elif data.type == 'create_announcement' %}
+                                    Review Announcement
+                                {% elif data.type == 'send_message' %}
+                                    Review Message Draft
+                                {% elif data.type == 'send_email' %}
+                                    Review Email Draft
+                                {% else %}
+                                    Review Insight
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endwith %}
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">No insights available at the moment.</p>
+{% endif %}
