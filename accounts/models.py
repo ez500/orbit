@@ -87,8 +87,15 @@ class Profile(models.Model):
         blank=True,
         help_text='Text and element spacing preference'
     )
+    timezone = models.CharField(
+        max_length=50,
+        default='UTC',
+        blank=True,
+        help_text='User timezone for displaying times'
+    )
     visibility = models.CharField(max_length=20, choices=[(tag.name, tag.value) for tag in Visibility],
                                   default=Visibility.PUBLIC.name)
+    last_active = models.DateTimeField(auto_now=True, help_text='Last time user was active')
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     notification_email = models.BooleanField(default=True)
@@ -108,6 +115,24 @@ class Profile(models.Model):
             'theme_color': self.theme_color,
             'accent_color': self.accent_color
         }
+
+    def get_online_status(self):
+        """Get user's online status based on last_active time"""
+        from django.utils import timezone
+        from datetime import timedelta
+
+        if not self.last_active:
+            return 'offline'
+
+        now = timezone.now()
+        time_since_active = now - self.last_active
+
+        if time_since_active < timedelta(minutes=5):
+            return 'online'  # Green
+        elif time_since_active < timedelta(minutes=30):
+            return 'away'  # Yellow
+        else:
+            return 'offline'  # Gray or hidden
 
 class ConnectionRequest(models.Model):
     from_profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='sent_requests')

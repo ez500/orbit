@@ -152,6 +152,10 @@
                       <label class="form-label">Location</label>
                       {{ profile_form.location }}
                     </div>
+                    <div class="mb-3">
+                      <label class="form-label">Timezone</label>
+                      {{ profile_form.timezone }}
+                    </div>
                     <a
                       href="{% url 'accounts:profile_edit' %}"
                       class="btn btn-outline-secondary btn-sm mt-2"

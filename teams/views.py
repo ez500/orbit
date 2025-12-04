@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .forms import JoinTeamForm
 from django.shortcuts import get_object_or_404, redirect
+from django.http import JsonResponse
 
 
 class MyTeamsView(LoginRequiredMixin, ListView):
@@ -154,3 +155,18 @@ def leave_team(request, pk):
     else:
         messages.warning(request, "You are not a member of this team.")
     return redirect("teams:my_teams")
+
+@login_required
+def my_teams_api(request):
+    """API endpoint to get user's teams as JSON"""
+    teams = Team.objects.filter(members=request.user).order_by("name")
+
+    teams_data = [
+        {
+            'id': team.id,
+            'name': team.name,
+        }
+        for team in teams
+    ]
+
+    return JsonResponse({'teams': teams_data})
