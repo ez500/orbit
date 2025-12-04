@@ -54,6 +54,11 @@ def project_create(request):
             project.lead = request.user
             project.save()
             form.save_m2m()
+            if project.team:
+                for member in project.team.members.all():
+                    if member != project.lead:
+                        project.collaborators.add(member)
+
             messages.success(request, f"Project '{project.name}' created successfully.")
             return redirect("projects:project_list")
     else:
