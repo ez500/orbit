@@ -42,6 +42,10 @@ urlpatterns = [
     path("<str:username>/conversation/<int:conversation_id>/thread/<int:message_id>/", views.get_thread_messages, name='get_thread'),
     path("<str:username>/conversation/<int:conversation_id>/thread/<int:message_id>/reply/", views.send_thread_reply, name='send_thread_reply'),
 
+    # Delete and edit messages
+    path("<str:username>/conversation/<int:conversation_id>/message/<int:message_id>/delete/", views.delete_message, name='delete_message'),
+    path("<str:username>/conversation/<int:conversation_id>/message/<int:message_id>/edit/", views.edit_message, name='edit_message'),
+
     # Test email (legacy)
     path("send_email/", views.send_test_email, name='send_test_email'),
 ]

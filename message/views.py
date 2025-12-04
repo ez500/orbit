@@ -765,3 +765,79 @@ def send_thread_reply(request, username, conversation_id, message_id):
 def messages_view(request, username):
     """Main messages UI view - Sample UI only"""
     return render(request, 'message/messages.html')
+
+@login_required
+def delete_message(request, username, conversation_id, message_id):
+    """Delete a message (only the sender can delete their own messages)"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'error': 'Invalid request'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    # Get the conversation and verify user is a participant
+    conversation = get_object_or_404(Conversation, id=conversation_id, participants=user)
+
+    # Get the message
+    message = get_object_or_404(Message, id=message_id, conversation=conversation)
+
+    # Verify the user is the sender
+    if message.sender != user:
+        return JsonResponse({'error': 'You can only delete your own messages'}, status=403)
+
+    # Don't allow deleting system messages
+    if message.message_type == 'system':
+        return JsonResponse({'error': 'Cannot delete system messages'}, status=400)
+
+    # Delete the message
+    message.delete()
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Message deleted successfully'
+    })
+
+@login_required
+def edit_message(request, username, conversation_id, message_id):
+    """Edit a message (only the sender can edit their own messages)"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'error': 'Invalid request'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    # Get the conversation and verify user is a participant
+    conversation = get_object_or_404(Conversation, id=conversation_id, participants=user)
+
+    # Get the message
+    message = get_object_or_404(Message, id=message_id, conversation=conversation)
+
+    # Verify the user is the sender
+    if message.sender != user:
+        return JsonResponse({'error': 'You can only edit your own messages'}, status=403)
+
+    # Don't allow editing system messages
+    if message.message_type == 'system':
+        return JsonResponse({'error': 'Cannot edit system messages'}, status=400)
+
+    # Get the new content
+    new_content = request.POST.get('content', '').strip()
+
+    if not new_content:
+        return JsonResponse({'error': 'Message cannot be empty'}, status=400)
+
+    # Update the message content
+    message.content = new_content
+    message.save()
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Message edited successfully',
+        'new_content': new_content
+    })
