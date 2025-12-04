@@ -10,7 +10,7 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h1 class="h3 mb-0">Orbit Insights</h1>
-      <p class="text-muted mb-0">Welcome back, {{ request.user.username }}</p>
+      <p class="text-muted mb-0">Welcome back, {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}</p>
     </div>
   </div>
 

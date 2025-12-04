@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.serializers import serialize
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
@@ -78,21 +79,6 @@ class OrbitInsightsAPIView(APIView):
 
 
 @login_required
-def confirm_suggestion(request, suggestion_id):
-    suggestion = get_object_or_404(InsightSuggestion, id=suggestion_id, user=request.user)
-    payload = suggestion.raw_data or {}
-    suggestion_type = payload.get("type") or suggestion.suggestion_type
-
-    context = {
-        "title": "Confirm Suggestion",
-        "suggestion": suggestion,
-        "payload": payload,
-        "suggestion_type": suggestion_type,
-    }
-    return render(request, "dashboard/confirm_suggestion.html", context)
-
-
-@login_required
 @require_POST
 def execute_suggestion(request, suggestion_id):
     suggestion = get_object_or_404(
@@ -141,9 +127,9 @@ def execute_suggestion(request, suggestion_id):
         elif suggestion_type == "create_event":
             title = request.POST.get("title") or payload.get("title") or "Orbit Event"
             content = (
-                request.POST.get("content")
-                or payload.get("content")
-                or ""
+                    request.POST.get("content")
+                    or payload.get("content")
+                    or ""
             )
             start_datetime = request.POST.get("start_datetime") or payload.get("start_datetime")
             end_datetime = request.POST.get("end_datetime") or payload.get("end_datetime")
@@ -181,15 +167,15 @@ def execute_suggestion(request, suggestion_id):
             company = get_object_or_404(Company, id=company_id)
 
             title = (
-                request.POST.get("title")
-                or payload.get("title")
-                or "Orbit Announcement"
+                    request.POST.get("title")
+                    or payload.get("title")
+                    or "Orbit Announcement"
             )
 
             content = (
-                request.POST.get("content")
-                or payload.get("content")
-                or ""
+                    request.POST.get("content")
+                    or payload.get("content")
+                    or ""
             )
 
             announcement = Announcement.objects.create(
@@ -210,8 +196,8 @@ def execute_suggestion(request, suggestion_id):
         # TODO IMPLEMENT MESSAGING WITH ORBIT INSIGHT
         elif suggestion_type == "send_message":
             payload["content"] = (
-                request.POST.get("content")
-                or payload.get("content")
+                    request.POST.get("content")
+                    or payload.get("content")
             )
             request.session["orbit_message_draft"] = payload
             suggestion.mark_executed()
@@ -220,12 +206,12 @@ def execute_suggestion(request, suggestion_id):
         # TODO IMPLEMENT EMAIL HELPER
         elif suggestion_type == "send_email":
             payload["subject"] = (
-                request.POST.get("subject")
-                or payload.get("subject")
+                    request.POST.get("subject")
+                    or payload.get("subject")
             )
             payload["body"] = (
-                request.POST.get("body")
-                or payload.get("body")
+                    request.POST.get("body")
+                    or payload.get("body")
             )
             request.session["orbit_email_draft"] = payload
             suggestion.mark_executed()
@@ -298,21 +284,26 @@ def tasks(request):
 
     if request.method == "POST":
         if "add_task" in request.POST:
-            task_form = TaskForm(request.POST)
+            task_form = TaskForm(request.POST, user=request.user)
             if task_form.is_valid():
-                new_task = task_form.save(commit=False)
+                new_task = task_form.save()
                 new_task.save()
                 messages.success(request, "Task created successfully.")
+                return redirect("dashboard:tasks")
+            else:
+                messages.error(request, "Error creating task.")
         elif "add_event" in request.POST:
-            event_form = EventForm(request.POST)
+            event_form = EventForm(request.POST, user=request.user)
             if event_form.is_valid():
-                new_event = event_form.save(commit=False)
+                new_event = event_form.save()
                 new_event.save()
                 messages.success(request, "Task created successfully.")
-        return redirect("dashboard:tasks")
+                return redirect("dashboard:tasks")
+            else:
+                messages.error(request, "Error creating event.")
 
-    task_form = TaskForm()
-    event_form = EventForm()
+    task_form = TaskForm(user=request.user)
+    event_form = EventForm(user=request.user)
 
     context = {
         'title': 'Tasks',
@@ -344,12 +335,13 @@ def get_project_or_team_members(request):
     elif data.get('project'):
         project = get_object_or_404(Project, id=data.get('project'))
         serialized_members = json.loads(serialize('json',
-                                                  project.collaborators.all() | User.objects.filter(pk=project.lead.pk),
+                                                  User.objects.filter(Q(led_projects=project)
+                                                                      | Q(collaborative_projects=project)).distinct(),
                                                   use_natural_foreign_keys=True))
     else:
-        serialized_members =(json.loads(serialize('json',
-                                                  User.objects.filter(pk=request.user.pk),
-                                                  use_natural_foreign_keys=True)))
+        serialized_members = (json.loads(serialize('json',
+                                                   User.objects.filter(pk=request.user.pk),
+                                                   use_natural_foreign_keys=True)))
 
     formatted_members = {}
     for member in serialized_members:

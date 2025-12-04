@@ -99,22 +99,29 @@ def project_dashboard(request, pk):
     # Handle new Task submission
     if request.method == "POST":
         if "add_task" in request.POST:
-            task_form = TaskForm(request.POST)
+            task_form = TaskForm(request.POST, user=request.user, project=project)
             if task_form.is_valid():
                 new_task = task_form.save(commit=False)
                 new_task.project = project
                 new_task.save()
+                task_form.save_m2m()
+                messages.success(request, f"Task '{new_task.title}' created successfully.")
+                return redirect("projects:project_dashboard", pk=project.pk)
+
         elif "add_event" in request.POST:
-            event_form = EventForm(request.POST)
+            event_form = EventForm(request.POST, user=request.user, project=project)
             if event_form.is_valid():
                 new_event = event_form.save(commit=False)
                 new_event.project = project
                 new_event.save()
-        return redirect("projects:project_dashboard", pk=project.pk)
+                event_form.save_m2m()
+                messages.success(request, f"Event '{new_event.title}' created successfully.")
+                return redirect("projects:project_dashboard", pk=project.pk)
+
+    task_form = TaskForm(user=request.user, project=project)
+    event_form = EventForm(user=request.user, project=project)
 
     # Display data
-    task_form = TaskForm()
-    event_form = EventForm()
     tasks = project.tasks.order_by("deadline")
     events = project.events.order_by("start_datetime")
 

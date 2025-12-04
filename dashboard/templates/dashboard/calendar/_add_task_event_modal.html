@@ -1,3 +1,4 @@
+{% load static %}
 <div class="modal fade" id="addTaskEventModal" tabindex="-1" aria-labelledby="addTaskEventModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -42,3 +43,7 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+    <script src="{% static 'js/addTaskModal.js' %}"></script>
+{% endblock %}

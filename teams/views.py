@@ -80,28 +80,30 @@ def team_dashboard(request, pk):
         messages.error(request, "You are not a member of this team.")
         return redirect("teams:my_teams")
 
-    task_form = TaskForm(team=team)
-    event_form = EventForm(team=team)
-
     # Handle adding tasks
     if request.method == "POST":
         if "add_task" in request.POST:
-            task_form = TaskForm(request.POST, team=team)
+            task_form = TaskForm(request.POST, user=request.user, team=team)
             if task_form.is_valid():
                 task = task_form.save(commit=False)
                 task.team = team
                 task.save()
+                task_form.save_m2m()
                 messages.success(request, f"Task '{task.title}' added.")
                 return redirect("teams:team_dashboard", pk=pk)
 
         elif "add_event" in request.POST:
-            event_form = EventForm(request.POST, team=team)
+            event_form = EventForm(request.POST, user=request.user, team=team)
             if event_form.is_valid():
                 event = event_form.save(commit=False)
                 event.team = team
                 event.save()
+                event_form.save_m2m()
                 messages.success(request, f"Event '{event.title}' created.")
                 return redirect("teams:team_dashboard", pk=pk)
+
+    task_form = TaskForm(team=team)
+    event_form = EventForm(team=team)
 
     tasks = team.tasks.all().order_by("-pub_date")
     events = team.events.all().order_by("-start_datetime")
