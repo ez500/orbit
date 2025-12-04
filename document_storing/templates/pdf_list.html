@@ -8,8 +8,8 @@
 <body>
     <h1>My Items</h1>
     <ul>
-        {% for item in documents %}
-            <li>{{ item.title }} - {{ item.uploaded_at }}</li>
+        {% for item in directory_entries %}
+            <li>{{ item }}</li>
         {% empty %}
             <li>No items found.</li>
         {% endfor %}

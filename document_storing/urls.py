@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("upload/", views.upload_pdf, name="upload_pdf"),
-    path("list/", views.pdf_list, name="pdf_list"),
+    path("", views.home, name="files"),
+    path("handle/", views.HandleFileUpload.as_view()),
+    path("download/<uid>/", views.download, name="download"),
+    path("pdf_list/", views.list, name="pdf_list"),
 ]
