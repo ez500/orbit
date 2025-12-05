@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VerAlgin Help</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for better readability and aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .wiki-card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 1rem;
+        }
+        .content-area h2 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e40af; /* Blue-700 */
+            border-bottom: 2px solid #bfdbfe; /* Blue-200 */
+            padding-bottom: 0.25rem;
+        }
+        .content-area h3 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151; /* Gray-700 */
+        }
+        code {
+            background-color: #e5e7eb;
+            padding: 0.15rem 0.3rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #b91c1c; /* Red-700 */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 wiki-card">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">Tasks</h1>
+            <a href="/" class="text-xl text-blue-500">VerAlign Home</a>
+        </header>
+
+        <main class="content-area">
+
+            <!-- Section 1: The Anatomy of a Wiki Page -->
+            <section class="mb-8">
+                <h2>Tasks</h2>
+                <p class="text-gray-600 mt-3">
+                    Tasks are items that will appear on your <a class="text-blue-500" href="{% url "help:account_help" %}">Account</a> and <a class="text-blue-500" href="{% url "help:company_help" %}">Company</a> calendars with due dates and descriptions.
+                </p>
+                
+                <!--div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+                    <p class="font-semibold text-blue-800">Key Concept: The Slug</p>
+                    <p class="text-blue-700 text-sm">The <strong>Slug</strong> is the short, unique, and URL-friendly label for the page, often derived from the title (e.g., "Getting Started" becomes <code>getting-started</code> in the URL). You can typically access a page by navigating to <code>/wiki/&lt;slug&gt;/</code>.</p>
+                </div-->
+                
+            </section>
+
+            <!-- Section 2: Viewing and Navigating -->
+            <section class="mb-8">
+                <h2>View Tasks</h2>
+                <p class="text-gray-600 mt-3">
+                    How to view tasks.
+                </p>
+
+                <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                    <li>Click the <strong>Tasks</strong> button on the sidebar.</li>
+                    <li>You may click the <strong>Calendar</strong> button if you want Calendar view of your tasks.</li>
+                </ul>
+                
+            </section>
+
+            <!-- Section 3: Creating and Editing Pages >
+            <section class="mb-8">
+                <h2>Personalizing Account</h2>
+                <p class="text-gray-600 mt-3">
+                    You can change details about your accoutn and customize preferences to your liking.
+                </p>
+                
+                <h3>Change Settings</h3>
+                <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                    <li>Click the <strong>Profile</strong> button on the sidebar.</li>
+                    <li>Click the <strong>Settings</strong> button on Profile Page.</li>
+                </ul>
+
+                <h3>Change Profile</h3>
+                <ul class="list-disc list-inside ml-4 space-y-2 text-gray-700">
+                    <li>Click the <strong>Profile</strong> button on the sidebar.</li>
+                    <li>Click the <strong>Edit Profile</strong> button on Profile Page.</li>
+                </ul>
+            </section-->
+
+            <!-- Section 4: Using Markdown for Formatting >
+            <section class="mb-8">
+                <h2>4. Using Markdown for Formatting</h2>
+                <p class="text-gray-600 mt-3">
+                    All content is written using <a href="https://www.markdownguide.org/basic-syntax/" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">Markdown</a>, a simple plain text formatting syntax. The Django app automatically converts this text to styled HTML when viewed.
+                </p>
+                
+                <h3>Common Markdown Syntax</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 mt-4 border border-gray-200 rounded-lg">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Style</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Markdown Syntax</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rendered Example</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap">Heading 1</td>
+                                <td class="px-4 py-3 whitespace-nowrap"><code># Title</code></td>
+                                <td class="px-4 py-3 text-lg font-bold">Title</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap">Paragraph/Break</td>
+                                <td class="px-4 py-3 whitespace-nowrap">Two Newlines</td>
+                                <td class="px-4 py-3 italic">A new paragraph</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap">Bold Text</td>
+                                <td class="px-4 py-3 whitespace-nowrap"><code>**word**</code> or <code>__word__</code></td>
+                                <td class="px-4 py-3 font-bold">word</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap">Italics</td>
+                                <td class="px-4 py-3 whitespace-nowrap"><code>*word*</code> or <code>_word_</code></td>
+                                <td class="px-4 py-3 italic">word</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap">Bullet List</td>
+                                <td class="px-4 py-3 whitespace-nowrap"><code>* Item 1</code></td>
+                                <td class="px-4 py-3 list-disc list-inside">- Item 1</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap">External Link</td>
+                                <td class="px-4 py-3 whitespace-nowrap"><code>[Text](URL)</code></td>
+                                <td class="px-4 py-3"><a href="#" class="text-indigo-500">Text</a></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap">Internal Wiki Link</td>
+                                <td class="px-4 py-3 whitespace-nowrap"><code>[[Page Slug]]</code> (or <code>[[Page Slug|Custom Title]]</code>)</td>
+                                <td class="px-4 py-3"><a href="#" class="text-green-500">Page Slug</a></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap">Code Block</td>
+                                <td class="px-4 py-3 whitespace-nowrap">Wrap with <code>```python\n...\n```</code></td>
+                                <td class="px-4 py-3"><code>print("Hello")</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+            </section>
+
+            <! Section 5: Troubleshooting & Support >
+            <section class="mb-8">
+                <h2>5. Troubleshooting & Support</h2>
+                
+                <h3>"Page Not Found" Error</h3>
+                <p class="text-gray-600 mt-3">
+                    If you try to follow an internal link and see a "Page Not Found" message, it means the target page (the slug) has not been created yet. You should see an option to "Create this page" to begin writing its content.
+                </p>
+
+                <h3>Formatting Issues</h3>
+                <p class="text-gray-600 mt-3">
+                    If your formatted text doesn't look correct, double-check your Markdown syntax. The editor often includes a "Preview" tab to show you how the finished page will look before you save.
+                </p>
+                
+                <div class="mt-6 p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg">
+                    <p class="font-semibold text-yellow-800">Need Further Assistance?</p>
+                    <p class="text-yellow-700 text-sm">If you encounter unexpected errors or need advanced help, please contact the system administrators or check the main Django project documentation.</p>
+                </div>
+            </section-->
+
+        </main>
+        
+        <!-- Footer -->
+        <footer class="text-center mt-10 pt-6 border-t border-gray-200">
+            <div class="container">
+        <p>
+            &copy; 2025 VerAlign. AI-based Customer Relationship Management. All
+            Rights Reserved. <a href="/admin/">Admin</a>
+        </p>
+    </div>
+        </footer>
+    </div>
+
+</body>
+</html>
