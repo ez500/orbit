@@ -21,21 +21,17 @@
                                 {{ data|get_key:"content" }}
                             </p>
 
-                            <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">
                                 {% if data.type == 'create_task' %}
-                                    Review Task
+                                    <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">Create Task</a>
                                 {% elif data.type == 'create_event' %}
-                                    Review Event
+                                    <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">Create Event</a>
                                 {% elif data.type == 'create_announcement' %}
-                                    Review Announcement
+                                    <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">Create Announcement</a>
                                 {% elif data.type == 'send_message' %}
-                                    Review Message Draft
+                                    <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">Send Message</a>
                                 {% elif data.type == 'send_email' %}
-                                    Review Email Draft
-                                {% else %}
-                                    Review Insight
+                                    <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">Review Email Draft</a>
                                 {% endif %}
-                            </a>
                         </div>
                     </div>
                 </div>

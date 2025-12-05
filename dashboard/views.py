@@ -20,6 +20,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from company.models import Company, Announcement
+from message.models import Message
 from projects.models import Project
 from teams.models import Team
 from .forms import TaskForm, EventForm
@@ -192,17 +193,30 @@ def execute_suggestion(request, suggestion_id):
 
             suggestion.mark_executed()
             messages.success(request, "Announcement created from insight.")
-            return redirect("company:company_detail", company_id=company.id)
+            return redirect("company:company", name=company.name)
 
-        # TODO IMPLEMENT MESSAGING WITH ORBIT INSIGHT
         elif suggestion_type == "send_message":
-            payload["content"] = (
-                    request.POST.get("content")
-                    or payload.get("content")
+            conversation_id = payload.get("conversation_id")
+            content = payload.get("content") or ""
+
+            message = Message.objects.create(
+                conversation_id=conversation_id,
+                sender=request.user,
+                content=content
             )
-            request.session["orbit_message_draft"] = payload
+
+            team_id = payload.get("team_id")
+            if team_id:
+                message.team_id = team_id
+                message.save()
+
             suggestion.mark_executed()
-            return redirect(reverse("message:compose") + "?from_orbit=1")
+            messages.success(request, "Message sent from insight.")
+            return redirect(
+                "message:conversation_thread",
+                username=request.user.username,
+                conversation_id=conversation_id
+            )
 
         # TODO IMPLEMENT EMAIL HELPER
         elif suggestion_type == "send_email":

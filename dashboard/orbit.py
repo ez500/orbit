@@ -9,6 +9,7 @@ from google import genai
 
 from company.models import Company, Announcement
 from dashboard.models import Task, InsightSuggestion
+from message.models import Conversation
 from projects.models import Project
 from teams.models import Team
 
@@ -40,6 +41,10 @@ def _gather_user_context(user):
     announcements = (
         Announcement.objects.filter(company__in=companies)
         .order_by("-created_at")
+    )
+
+    conversations = (
+        Conversation.objects.filter(participants=user)
     )
 
     return {
@@ -136,6 +141,35 @@ def _gather_user_context(user):
             }
             for announcement in announcements
         ],
+        "conversations": [
+            {
+                "id": conversation.id,
+                "title": conversation.title,
+                "participants": [
+                    {
+                        "id": participant.id,
+                        "username": participant.username,
+                        "email": participant.email,
+                    }
+                    for participant in conversation.participants.all()
+                ],
+                "team": conversation.team.id if conversation.team else None,
+                "messages": [
+                    {
+                        "id": message.id,
+                        "sender": {
+                            "id": message.sender.id,
+                            "username": message.sender.username,
+                            "email": message.sender.email,
+                        },
+                        "content": message.content,
+                        "timestamp": message.timestamp.isoformat(),
+                    }
+                    for message in conversation.messages.all().order_by("-timestamp")[:1]
+                ]
+            }
+            for conversation in conversations
+        ]
     }
 
 
@@ -145,7 +179,8 @@ def _build_prompt(ctx):
         "You receive CRM context as JSON in the `context` field below. "
         "Using that context, propose high-quality actionable suggestions for the user.\n\n"
         "Rules:\n"
-        "(1) Output **valid JSON only**. Do not include '```json' preceding the JSON content or '```' succeeding it.\n"
+        "(1) Output **valid JSON only**. Do not include '```json' preceding the JSON content or '```' succeeding it. "
+        "Do not output a Python list.\n"
         "(2) No commentary.\n"
         "(3) JSON schema:\n"
         "{\n"
@@ -173,8 +208,9 @@ def _build_prompt(ctx):
         '      "company_id": integer,\n'
         '      "tasks": [integer], // Related task IDs\n'
         "      // if type == send_message\n"
-        '      "recipient_user_ids": [integer],\n'
+        '      "conversation_id": integer\n,'
         '      "content": string, // Include source and context\n'
+        '      "team_id": integer | null, // If message is in thread with team\n'
         "      // if type == send_email\n"
         '      "recipient_user_ids": [integer],\n'
         '      "subject": string,\n'
@@ -187,6 +223,9 @@ def _build_prompt(ctx):
         "}\n\n"
         "(4) If there is not enough context or no good suggestions, use the fallback field set to true.\n"
         "The context is as follows: `context`=\n"
+        "(5) The `content` in each suggestion should follow with what the suggestion should accomplish. For example, "
+        "the `content` in a message suggestion should be addressed to recipient, rather than a description of the "
+        "message suggestion itself.\n"
         f"{json.dumps(ctx, ensure_ascii=False)}\n"
     )
 
