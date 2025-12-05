@@ -30,6 +30,12 @@ class ProjectForm(forms.ModelForm):
         widget=forms.SelectMultiple(attrs={"class": "form-select"})
     )
 
+    auto_add_team_members = forms.BooleanField(
+        required=False,
+        label="Automatically add all team members as project collaborators",
+        widget=forms.CheckboxInput()
+    )
+
     class Meta:
         model = Project
         fields = [
@@ -39,6 +45,7 @@ class ProjectForm(forms.ModelForm):
             "companies",
             "managers",   # NEW
             "members",    # NEW
+            "auto_add_team_members",
         ]
 
         widgets = {

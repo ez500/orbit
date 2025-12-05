@@ -39,7 +39,13 @@
           <label class="form-label">Assign Members (optional)</label>
           {{ form.members }}
         </div>
-
+        <!-- Auto-Add Team Members -->
+        <div class="mb-3 form-check">
+          {{ form.auto_add_team_members }}
+          <label class="form-check-label">
+            Add all team members to project collaborators
+          </label>
+        </div>
         <!-- Companies -->
         <div class="mb-3">
           <label class="form-label">Associated Companies</label>

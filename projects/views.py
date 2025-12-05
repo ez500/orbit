@@ -145,7 +145,6 @@ def project_create(request):
                 defaults={"role": "Lead"},
             )
             if not created:
-                # ensure role is correct
                 lead_mem.role = "Lead"
                 lead_mem.save()
 
@@ -159,7 +158,7 @@ def project_create(request):
                     defaults={"role": "Manager"},
                 )
                 if not created:
-                    mem.role = "Manager"  # update if exists
+                    mem.role = "Manager"
                     mem.save()
 
             # ---------------------------------------
@@ -172,13 +171,40 @@ def project_create(request):
                     defaults={"role": "Member"},
                 )
                 if not created and mem.role != "Lead":
-                    mem.role = "Member"  # update if exists
+                    mem.role = "Member"
                     mem.save()
 
             # ---------------------------------------
-            # 4. Auto-sync collaborators
-            # Managers + Members must be collaborators
-            # Lead must NOT be collaborator (per your rule)
+            # 4. Auto-add team members as collaborators (NEW)
+            # ---------------------------------------
+            if form.cleaned_data.get("auto_add_team_members") and project.team:
+
+                for tm in project.team.memberships.all():
+
+                    # Skip project lead
+                    if tm.user == project.lead:
+                        continue
+
+                    # Map team → project roles
+                    if tm.role == "Lead":
+                        proj_role = "Manager"   # team lead becomes project manager
+                    elif tm.role == "Manager":
+                        proj_role = "Manager"
+                    else:
+                        proj_role = "Member"
+
+                    mem, created = ProjectMembership.objects.get_or_create(
+                        user=tm.user,
+                        project=project,
+                        defaults={"role": proj_role},
+                    )
+
+                    if not created:
+                        mem.role = proj_role
+                        mem.save()
+
+            # ---------------------------------------
+            # 5. Sync collaborators (unchanged)
             # ---------------------------------------
             project.sync_roles()
 
@@ -189,7 +215,6 @@ def project_create(request):
         form = ProjectForm(user=request.user)
 
     return render(request, "projects/project_create.html", {"form": form})
-
 # ------------------------------------------------------------
 # ROLE MANAGEMENT HELPERS
 # ------------------------------------------------------------
