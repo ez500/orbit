@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, 
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.http import url_has_allowed_host_and_scheme

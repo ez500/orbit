@@ -92,38 +92,54 @@ class Conversation(models.Model):
        if not last_msg:
            return ""
 
-       # Get user's timezone
+       # Get user's timezone with better error handling
        user_tz = 'UTC'
        if user:
            try:
-               user_tz = user.profile.timezone or 'UTC'
-           except:
+               # Try to get timezone from user profile
+               if hasattr(user, 'profile') and user.profile:
+                   user_tz = user.profile.timezone or 'UTC'
+           except Exception as e:
+               # If profile doesn't exist or any error, default to UTC
                user_tz = 'UTC'
 
+       # Calculate time difference with proper timezone handling
        try:
            tz = ZoneInfo(user_tz)
            now = timezone.now().astimezone(tz)
            msg_time = last_msg.timestamp.astimezone(tz)
            diff = now - msg_time
-       except:
+       except Exception as e:
            # Fallback to UTC if timezone conversion fails
-           now = timezone.now()
-           diff = now - last_msg.timestamp
-           msg_time = last_msg.timestamp
+           try:
+               tz = ZoneInfo('UTC')
+               now = timezone.now().astimezone(tz)
+               msg_time = last_msg.timestamp.astimezone(tz)
+               diff = now - msg_time
+           except:
+               # Last resort: use aware datetimes without conversion
+               now = timezone.now()
+               msg_time = last_msg.timestamp
+               diff = now - msg_time
 
-       if diff < timedelta(minutes=1):
-           return "Just now"
-       elif diff < timedelta(hours=1):
-           minutes = int(diff.total_seconds() / 60)
-           return f"{minutes}m"
-       elif diff < timedelta(days=1):
-           hours = int(diff.total_seconds() / 3600)
-           return f"{hours}h"
-       elif diff < timedelta(days=7):
-           days = diff.days
-           return f"{days}d"
-       else:
-           return msg_time.strftime("%b %d")
+       # Format the time difference
+       try:
+           if diff < timedelta(minutes=1):
+               return "Just now"
+           elif diff < timedelta(hours=1):
+               minutes = int(diff.total_seconds() / 60)
+               return f"{minutes}m"
+           elif diff < timedelta(days=1):
+               hours = int(diff.total_seconds() / 3600)
+               return f"{hours}h"
+           elif diff < timedelta(days=7):
+               days = diff.days
+               return f"{days}d"
+           else:
+               return msg_time.strftime("%b %d")
+       except Exception as e:
+           # If all else fails, return a simple format
+           return "Recently"
 
    def has_unread_messages(self, user):
        """Check if conversation has unread messages for user"""
@@ -186,12 +202,20 @@ class Message(models.Model):
    id = models.AutoField(primary_key=True)
    conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
    sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-   content = models.TextField()
+   content = models.TextField(blank=True)
    message_type = models.CharField(max_length=20, choices=MESSAGE_TYPE_CHOICES, default='regular')
    timestamp = models.DateTimeField(auto_now_add=True)
    is_read = models.BooleanField(default=False)
    reply_to = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
    thread_root = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='thread_replies')
+
+   # File attachments
+   attachment = models.FileField(upload_to='message_attachments/%Y/%m/%d/', null=True, blank=True)
+   attachment_type = models.CharField(max_length=10, null=True, blank=True, choices=[
+       ('image', 'Image'),
+       ('pdf', 'PDF'),
+       ('other', 'Other'),
+   ])
 
    def get_thread_count(self):
        """Get the number of replies in this message's thread"""
@@ -200,6 +224,24 @@ class Message(models.Model):
    def get_latest_thread_reply(self):
        """Get the most recent reply in this thread"""
        return self.thread_replies.order_by('-timestamp').first()
+
+   def get_attachment_filename(self):
+       """Get just the filename from the attachment path"""
+       if self.attachment:
+           return self.attachment.name.split('/')[-1]
+       return None
+
+   def save(self, *args, **kwargs):
+       """Override save to automatically set attachment_type based on file extension"""
+       if self.attachment and not self.attachment_type:
+           file_ext = self.attachment.name.split('.')[-1].lower()
+           if file_ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']:
+               self.attachment_type = 'image'
+           elif file_ext == 'pdf':
+               self.attachment_type = 'pdf'
+           else:
+               self.attachment_type = 'other'
+       super().save(*args, **kwargs)
 
    def __str__(self):
        if self.message_type == 'system':

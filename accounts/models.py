@@ -101,6 +101,12 @@ class Profile(models.Model):
     notification_email = models.BooleanField(default=True)
     notification_web = models.BooleanField(default=True)
 
+    # Tour/onboarding tracking
+    has_completed_tour = models.BooleanField(
+        default=False,
+        help_text='Whether user has completed the initial guided tour'
+    )
+
     def __str__(self):
         return self.user.username
 

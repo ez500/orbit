@@ -26,6 +26,9 @@ urlpatterns = [
     # Get new messages for polling (AJAX)
     path("<str:username>/conversation/<int:conversation_id>/poll/", views.get_new_messages, name='poll_messages'),
 
+    # Poll sidebar conversations for live updates (AJAX)
+    path("<str:username>/poll-sidebar/", views.poll_sidebar_conversations, name='poll_sidebar'),
+
     # Personal notes
     path("<str:username>/notes/", views.personal_notes, name='personal_notes'),
 
@@ -41,6 +44,10 @@ urlpatterns = [
     # Thread functionality
     path("<str:username>/conversation/<int:conversation_id>/thread/<int:message_id>/", views.get_thread_messages, name='get_thread'),
     path("<str:username>/conversation/<int:conversation_id>/thread/<int:message_id>/reply/", views.send_thread_reply, name='send_thread_reply'),
+
+    # Delete and edit messages
+    path("<str:username>/conversation/<int:conversation_id>/message/<int:message_id>/delete/", views.delete_message, name='delete_message'),
+    path("<str:username>/conversation/<int:conversation_id>/message/<int:message_id>/edit/", views.edit_message, name='edit_message'),
 
     # Test email (legacy)
     path("send_email/", views.send_test_email, name='send_test_email'),

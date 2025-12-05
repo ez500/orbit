@@ -208,9 +208,23 @@ def send_message(request, username, conversation_id):
 
         content = request.POST.get('content', '').strip()
         reply_to_id = request.POST.get('reply_to', None)
+        attachment = request.FILES.get('attachment', None)
 
-        if not content:
+        # Message must have either content or attachment
+        if not content and not attachment:
             return JsonResponse({'error': 'Message cannot be empty'}, status=400)
+
+        # Validate attachment if present
+        if attachment:
+            # Check file size (max 10MB)
+            if attachment.size > 10 * 1024 * 1024:
+                return JsonResponse({'error': 'File size must be less than 10MB'}, status=400)
+
+            # Check file type
+            file_ext = attachment.name.split('.')[-1].lower()
+            allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf']
+            if file_ext not in allowed_extensions:
+                return JsonResponse({'error': 'Only images (JPG, PNG, GIF, WebP, SVG) and PDFs are allowed'}, status=400)
 
         # Get the message being replied to (if any)
         reply_to_message = None
@@ -225,7 +239,8 @@ def send_message(request, username, conversation_id):
             conversation=conversation,
             sender=user,
             content=content,
-            reply_to=reply_to_message
+            reply_to=reply_to_message,
+            attachment=attachment
         )
 
         # Update conversation timestamp
@@ -259,6 +274,15 @@ def send_message(request, username, conversation_id):
                 }
             }
 
+        # Prepare attachment data
+        attachment_data = None
+        if message.attachment:
+            attachment_data = {
+                'url': message.attachment.url,
+                'type': message.attachment_type,
+                'name': message.attachment.name.split('/')[-1],  # Get filename only
+            }
+
         return JsonResponse({
             'success': True,
             'message': {
@@ -271,7 +295,8 @@ def send_message(request, username, conversation_id):
                     'full_name': user.get_full_name() or user.username,
                     'avatar': avatar_url,
                 },
-                'reply_to': reply_to_data
+                'reply_to': reply_to_data,
+                'attachment': attachment_data
             }
         })
 
@@ -412,6 +437,14 @@ def get_new_messages(request, username, conversation_id):
                     'username': msg.reply_to.sender.username if msg.reply_to.sender else 'Unknown',
                     'full_name': msg.reply_to.sender.get_full_name() if msg.reply_to.sender else 'Unknown',
                 }
+            }
+
+        # Add attachment info if message has attachment
+        if msg.attachment:
+            message_data['attachment'] = {
+                'url': msg.attachment.url,
+                'type': msg.attachment_type,
+                'name': msg.attachment.name.split('/')[-1],
             }
 
         messages_data.append(message_data)
@@ -765,3 +798,132 @@ def send_thread_reply(request, username, conversation_id, message_id):
 def messages_view(request, username):
     """Main messages UI view - Sample UI only"""
     return render(request, 'message/messages.html')
+
+@login_required
+def delete_message(request, username, conversation_id, message_id):
+    """Delete a message (only the sender can delete their own messages)"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'error': 'Invalid request'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    # Get the conversation and verify user is a participant
+    conversation = get_object_or_404(Conversation, id=conversation_id, participants=user)
+
+    # Get the message
+    message = get_object_or_404(Message, id=message_id, conversation=conversation)
+
+    # Verify the user is the sender
+    if message.sender != user:
+        return JsonResponse({'error': 'You can only delete your own messages'}, status=403)
+
+    # Don't allow deleting system messages
+    if message.message_type == 'system':
+        return JsonResponse({'error': 'Cannot delete system messages'}, status=400)
+
+    # Delete the message
+    message.delete()
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Message deleted successfully'
+    })
+
+@login_required
+def edit_message(request, username, conversation_id, message_id):
+    """Edit a message (only the sender can edit their own messages)"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'error': 'Invalid request'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    # Get the conversation and verify user is a participant
+    conversation = get_object_or_404(Conversation, id=conversation_id, participants=user)
+
+    # Get the message
+    message = get_object_or_404(Message, id=message_id, conversation=conversation)
+
+    # Verify the user is the sender
+    if message.sender != user:
+        return JsonResponse({'error': 'You can only edit your own messages'}, status=403)
+
+    # Don't allow editing system messages
+    if message.message_type == 'system':
+        return JsonResponse({'error': 'Cannot edit system messages'}, status=400)
+
+    # Get the new content
+    new_content = request.POST.get('content', '').strip()
+
+    if not new_content:
+        return JsonResponse({'error': 'Message cannot be empty'}, status=400)
+
+    # Update the message content
+    message.content = new_content
+    message.save()
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Message edited successfully',
+        'new_content': new_content
+    })
+
+@login_required
+def poll_sidebar_conversations(request, username):
+    """Get recent conversations for sidebar live updates (AJAX polling)"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'error': 'Invalid request'}, status=403)
+
+    # Get user's 3 most recent conversations (excluding personal notes)
+    # Prefetch related data to avoid N+1 queries
+    conversations = Conversation.objects.filter(
+        participants=user,
+        is_personal_notes=False
+    ).select_related('team').prefetch_related('participants', 'messages').order_by('-updated_at')[:3]
+
+    # Ensure user profile is loaded for timezone
+    try:
+        user_profile = user.profile
+        user_timezone = user_profile.timezone or 'UTC'
+    except:
+        user_timezone = 'UTC'
+
+    # Prepare conversation data
+    conversation_data = []
+    for conv in conversations:
+        last_message = conv.get_last_message()
+
+        # Determine display name and avatar
+        if conv.is_team:
+            name = conv.title or f"Team Chat {conv.id}"
+            avatar_url = None  # Could add team avatar later
+        else:
+            other_user = conv.get_other_participant(user)
+            if other_user:
+                name = other_user.get_full_name() or other_user.username
+                # Use UI Avatars
+                avatar_url = f"https://ui-avatars.com/api/?name={name}&background=random"
+            else:
+                continue  # Skip if no other participant
+
+        conversation_data.append({
+            'id': conv.id,
+            'name': name,
+            'avatar_url': avatar_url,
+            'last_message_preview': last_message.content[:50] if last_message else 'No messages yet',
+            'last_message_time': conv.get_last_message_time(user),
+            'has_unread': conv.has_unread_messages(user),
+            'unread_count': conv.get_unread_count(user),
+        })
+
+    return JsonResponse({'conversations': conversation_data})

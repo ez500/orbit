@@ -35,6 +35,7 @@
     />
     <link rel="stylesheet" href="{% static 'css/theme.css' %}"/>
     <link rel="stylesheet" href="{% static 'css/template.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/help.css' %}"/>
     {% block extra_css %}{% endblock %}
 
     <style>
@@ -135,6 +136,7 @@
 <script src="{% static 'js/theme.js' %}"></script>
 <script src="{% static 'js/template.js' %}"></script>
 <script src="{% static 'js/base.js' %}"></script>
+<script src="{% static 'js/help.js' %}"></script>
 {% block extra_js %}{% endblock %} {% if user.is_authenticated %}
     <script>
         // Initialize theme data from Django template context
