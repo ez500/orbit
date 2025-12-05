@@ -2,7 +2,6 @@
 {% load static %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
-<link rel="stylesheet" href="{% static 'css/tour.css' %}" />
 {% endblock %}
 {% block content %}
 <div class="container-fluid p-4">
@@ -154,13 +153,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-  // Set tour completion status on body element
-  document.body.dataset.tourCompleted = {% if has_completed_tour %}'true'{% else %}'false'{% endif %};
-</script>
-<script src="{% static 'js/tour.js' %}"></script>
-<script src="{% static 'js/dashboard.js' %}"></script>
-<script src="{% static 'js/dashboard-tour.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
   // Show empty state if no widgets are present

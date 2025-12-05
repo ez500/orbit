@@ -954,3 +954,40 @@ def poll_sidebar_conversations(request, username):
         })
 
     return JsonResponse({'conversations': conversation_data})
+
+@login_required
+def delete_conversation(request, username, conversation_id):
+    """Delete a team conversation (only team conversations can be deleted)"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+    try:
+        # Get the conversation
+        conversation = Conversation.objects.get(id=conversation_id, participants=user)
+
+        # Only allow deletion of team conversations
+        if not conversation.is_team:
+            return JsonResponse({'success': False, 'error': 'Only team conversations can be deleted'}, status=400)
+
+        # Check if user is the team admin or conversation creator
+        # For now, allow any participant to delete (you can add more restrictions)
+        conversation_title = conversation.title or f"Team Chat {conversation.id}"
+
+        # Delete the conversation
+        conversation.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Conversation "{conversation_title}" deleted successfully'
+        })
+
+    except Conversation.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Conversation not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
