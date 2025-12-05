@@ -1,324 +1,227 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block content %}
 
-<div class="container-fluid py-4">
+<div class="container py-4">
+{% block head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+{% endblock %}
+  <!-- HEADER -->
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold text-primary mb-0">
-      <i class="fas fa-clipboard-list me-2"></i>{{ project.name }} Dashboard
+    <h3 class="fw-bold text-primary">
+      <i class="fas fa-folder-open me-2"></i>{{ project.name }} Dashboard
     </h3>
+
     <div>
-      <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-outline-secondary btn-sm">
-        <i class="fas fa-arrow-left me-1"></i> Back
-      </a>
+      <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+        <i class="fas fa-plus"></i> Add Task
+      </button>
+
+      <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addEventModal">
+        <i class="fas fa-calendar-plus"></i> Add Event
+      </button>
     </div>
   </div>
 
-  <!-- ===== PROJECT SWITCHER (NEW) ===== -->
-  <div class="mb-4">
-    <label class="fw-semibold mb-2 text-primary">Switch Project</label>
-    <div class="border rounded p-2" style="max-height:150px; overflow-y:auto;">
+  <!-- PROJECT SWITCHER -->
+  <div class="card shadow-sm border-0 mb-4 p-3">
+    <label class="fw-semibold mb-2"><i class="fas fa-list me-2 text-primary"></i>Your Projects</label>
+    <select id="project-switcher" class="form-select">
       {% for p in user_projects %}
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <button
-            onclick="switchProject({{ p.pk }})"
-            class="btn btn-sm {% if p.pk == project.pk %}btn-primary{% else %}btn-outline-primary{% endif %} w-100 text-start"
-          >
-            {{ p.name }}
-          </button>
-        </div>
+      <option value="{{ p.pk }}" {% if p.pk == project.pk %}selected{% endif %}>{{ p.name }}</option>
       {% endfor %}
-    </div>
+    </select>
   </div>
 
   <script>
-  function switchProject(projectId) {
-      const currentId = {{ project.pk }};
-      if (projectId === currentId) return;
-      window.location.href = `/projects/${projectId}/dashboard/`;
-  }
+    document.getElementById("project-switcher").addEventListener("change", function () {
+      if (this.value !== "{{ project.pk }}") {
+        window.location.href = `/projects/${this.value}/dashboard/`;
+      }
+    });
   </script>
 
-  <!-- View Toggle -->
-  <div class="d-flex justify-content-end mb-3">
-    <div class="btn-group" role="group">
-      <button class="btn btn-outline-primary active" id="listViewBtn"><i class="fas fa-list-ul"></i> List</button>
-      <button class="btn btn-outline-primary" id="calendarViewBtn"><i class="fas fa-calendar-alt"></i> Calendar</button>
-    </div>
-  </div>
+  <div class="row g-4">
 
-  <!-- ===== LIST VIEW ===== -->
-  <div id="listView">
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-semibold text-primary mb-0">
-            <i class="fas fa-tasks me-2"></i>Tasks & Events
+    <!-- LEFT COLUMN → CALENDAR -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="fw-semibold text-primary mb-3">
+            <i class="fas fa-calendar-alt me-2"></i>Calendar
           </h5>
-          <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaskEventModal">
-            <i class="fas fa-plus"></i> Add
-          </button>
+          <div id="calendar" style="height:650px;"></div>
         </div>
-
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th scope="col">Title</th>
-                <th scope="col">Type</th>
-                <th scope="col">Date</th>
-                <th scope="col">Status</th>
-                <th scope="col" class="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for task in tasks %}
-                <tr>
-                  <td><strong>{{ task.title }}</strong></td>
-                  <td><span class="badge bg-info">Task</span></td>
-                  <td>{{ task.due_date|default:"—" }}</td>
-                  <td>
-                    <span class="badge {% if task.completed %}bg-success{% else %}bg-warning text-dark{% endif %}">
-                      {% if task.completed %}Done{% else %}Pending{% endif %}
-                    </span>
-                  </td>
-                  <td class="text-end">
-                    {% if request.user == project.lead %}
-                      <a href="{% url 'projects:remove_task' project.pk task.pk %}"
-                         class="btn btn-outline-danger btn-sm"
-                         onclick="return confirm('Delete task {{ task.title }}?');">
-                         <i class="fas fa-trash"></i>
-                      </a>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-
-              {% for event in events %}
-                <tr>
-                  <td><strong>{{ event.title }}</strong></td>
-                  <td><span class="badge bg-primary">Event</span></td>
-                  <td>{{ event.start_date }}{% if event.end_date %} → {{ event.end_date }}{% endif %}</td>
-                  <td><span class="badge bg-light text-dark">Scheduled</span></td>
-                  <td class="text-end">
-                    {% if request.user == project.lead %}
-                      <a href="{% url 'projects:remove_event' project.pk event.pk %}"
-                         class="btn btn-outline-danger btn-sm"
-                         onclick="return confirm('Delete event {{ event.title }}?');">
-                         <i class="fas fa-trash"></i>
-                      </a>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-
-        {% if tasks|length == 0 and events|length == 0 %}
-          <p class="text-muted text-center mt-3">No tasks or events yet.</p>
-        {% endif %}
       </div>
     </div>
 
-    <!-- ===== DOCUMENTS SECTION (NEW) ===== -->
-    <div class="card border-0 shadow-sm mb-4">
-  <div class="card-body">
+    <!-- RIGHT COLUMN → TASKS / EVENTS / DOCS -->
+    <div class="col-lg-4">
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="fw-semibold text-primary mb-0">
-        <i class="fas fa-file-alt me-2"></i>Project Documents
-      </h5>
+      <!-- TASKS -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
 
-      <div>
-        <a href="{% url 'projects:add_document' project.pk %}" class="btn btn-primary btn-sm me-2">
-          <i class="fas fa-upload me-1"></i> Upload File
-        </a>
+          <div class="d-flex justify-content-between mb-3">
+            <h5 class="fw-semibold text-primary"><i class="fas fa-tasks me-2"></i>Tasks</h5>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
 
-        <a href="{% url 'projects:create_internal_document' project.pk %}"
-           class="btn btn-outline-primary btn-sm">
-          <i class="fas fa-file-alt me-1"></i> Create Document
-        </a>
-      </div>
-    </div>
-
-    <!-- Document List -->
-    {% if project.documents.all %}
-      <ul class="list-group">
-
-        {% for doc in project.documents.all %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-
-            <!-- Document Link -->
-            {% if doc.doc_type == "internal" %}
-              <!-- Internal CRM Document -->
-              <a href="{% url 'projects:view_internal_document' doc.pk %}"
-                 class="text-decoration-none">
-                <i class="fas fa-sticky-note me-2 text-warning"></i>
-                {{ doc.name }} <small class="text-muted">(Internal)</small>
+          {% if project_tasks %}
+          <ul class="list-group">
+            {% for task in project_tasks %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>
+                <i class="fas fa-check-circle me-2"></i>{{ task.title }}
+                {% if task.deadline %}
+                <span class="text-muted">(Due: {{ task.deadline }})</span>
+                {% endif %}
+              </span>
+              <a href="{% url 'projects:delete_project_task' project.pk task.pk %}" class="btn btn-sm btn-danger">
+                <i class="fas fa-trash"></i>
               </a>
-
-            {% elif doc.doc_type == "file" %}
-              <!-- Uploaded File -->
-                {% if doc.file %}
-                  <a href="{{ doc.file.url }}" target="_blank" class="text-decoration-none">
-                  <i class="fas fa-file me-2 text-secondary"></i>
-                 {{ doc.name }}
-                 </a>
-               {% else %}
-               <span class="text-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                  Missing File (corrupted entry)
-                 </span>
-               {% endif %}
-            {% endif %}
-            <!-- Right side: uploader + delete -->
-            <div class="d-flex align-items-center">
-              <small class="text-muted me-3">
-                Uploaded by {{ doc.uploaded_by.username }}
-              </small>
-
-              {% if request.user == project.lead or request.user == doc.uploaded_by %}
-                <a href="{% url 'projects:delete_document' project.pk doc.pk %}"
-                   class="btn btn-outline-danger btn-sm"
-                   onclick="return confirm('Delete document {{ doc.name }}?');">
-                  <i class="fas fa-trash"></i>
-                </a>
-              {% endif %}
-            </div>
-
-          </li>
-        {% endfor %}
-
-      </ul>
-    {% else %}
-      <p class="text-muted text-center mt-3">No documents uploaded yet.</p>
-    {% endif %}
-
-  </div>
-</div>
-  <!-- ===== CALENDAR VIEW ===== -->
-  <div id="calendarView" style="display:none;">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <h5 class="fw-semibold text-primary mb-3">
-          <i class="fas fa-calendar-alt me-2"></i>Project Calendar
-        </h5>
-        <div id="calendar"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== ADD MODAL ===== -->
-  <div class="modal fade" id="addTaskEventModal" tabindex="-1" aria-labelledby="addTaskEventModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content border-0 shadow">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title" id="addTaskEventModalLabel">
-            <i class="fas fa-plus-circle me-2"></i>Add Task or Event
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <ul class="nav nav-tabs mb-3" id="addTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="task-tab" data-bs-toggle="tab" data-bs-target="#taskFormTab" type="button" role="tab">Task</button>
             </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="event-tab" data-bs-toggle="tab" data-bs-target="#eventFormTab" type="button" role="tab">Event</button>
-            </li>
+            {% endfor %}
           </ul>
+          {% else %}
+          <p class="text-muted">No tasks yet.</p>
+          {% endif %}
+        </div>
+      </div>
 
-          <div class="tab-content">
-            <div class="tab-pane fade show active" id="taskFormTab" role="tabpanel">
-              <form method="post">
-                {% csrf_token %}
-                {{ task_form.as_p }}
-                <button type="submit" name="add_task" class="btn btn-primary mt-2">Save Task</button>
-              </form>
-            </div>
-            <div class="tab-pane fade" id="eventFormTab" role="tabpanel">
-              <form method="post">
-                {% csrf_token %}
-                {{ event_form.as_p }}
-                <button type="submit" name="add_event" class="btn btn-primary mt-2">Save Event</button>
-              </form>
+      <!-- EVENTS -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between mb-3">
+            <h5 class="fw-semibold text-primary"><i class="fas fa-calendar me-2"></i>Events</h5>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addEventModal">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+
+          {% if project_events %}
+          <ul class="list-group">
+            {% for event in project_events %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-calendar-day me-2"></i>{{ event.title }}</span>
+              <a href="{% url 'projects:delete_project_event' project.pk event.pk %}" class="btn btn-sm btn-danger">
+                <i class="fas fa-trash"></i>
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-muted">No events yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between mb-3">
+            <h5 class="fw-semibold text-primary"><i class="fas fa-file-alt me-2"></i>Documents</h5>
+            <div>
+              <a href="{% url 'projects:add_document' project.pk %}" class="btn btn-primary btn-sm me-2">
+                <i class="fas fa-upload"></i>
+              </a>
+              <a href="{% url 'projects:create_internal_document' project.pk %}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-file-alt"></i>
+              </a>
             </div>
           </div>
+
+          {% if project_documents %}
+          <ul class="list-group">
+            {% for doc in project_documents %}
+            <li class="list-group-item d-flex justify-content-between">
+              <a href="{{ doc.file.url }}">{{ doc.title }}</a>
+              <span class="text-muted small">{{ doc.uploaded_at|date:"Y-m-d" }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-muted">No documents yet.</p>
+          {% endif %}
+
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
-<!-- ===== FULLCALENDAR JS + CSS ===== -->
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<!-- ADD TASK MODAL -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST">{% csrf_token %}
+        <div class="modal-header"><h5 class="modal-title">Add Task</h5></div>
+        <div class="modal-body">{{ task_form.as_p }}</div>
+        <div class="modal-footer">
+          <button name="add_task" class="btn btn-primary">Add</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
-<style>
-#calendar {
-  min-height: 700px;
-  background: #fff;
-  border-radius: 8px;
-  padding: 10px;
-}
-.fc .fc-toolbar-title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #0d6efd;
-}
-.fc-event {
-  font-size: 0.9rem;
-  border-radius: 4px;
-}
-</style>
+<!-- ADD EVENT MODAL -->
+<div class="modal fade" id="addEventModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST">{% csrf_token %}
+        <div class="modal-header"><h5 class="modal-title">Add Event</h5></div>
+        <div class="modal-body">{{ event_form.as_p }}</div>
+        <div class="modal-footer">
+          <button name="add_event" class="btn btn-primary">Add</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- FULLCALENDAR -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const listBtn = document.getElementById('listViewBtn');
-  const calBtn = document.getElementById('calendarViewBtn');
-  const listView = document.getElementById('listView');
-  const calView = document.getElementById('calendarView');
+document.addEventListener("DOMContentLoaded", function () {
 
-  listBtn.addEventListener('click', () => {
-    listView.style.display = 'block';
-    calView.style.display = 'none';
-    listBtn.classList.add('active');
-    calBtn.classList.remove('active');
-  });
+  var calendar = new FullCalendar.Calendar(
+      document.getElementById("calendar"),
+      {
+        initialView: "dayGridMonth",
+        height: 650,
 
-  calBtn.addEventListener('click', () => {
-    listView.style.display = 'none';
-    calView.style.display = 'block';
-    calBtn.classList.add('active');
-    listBtn.classList.remove('active');
-  });
+        events: {
+          url: "{% url 'projects:project_events_json' project.pk %}",
+          method: "GET"
+        },
 
-  const calendarEl = document.getElementById('calendar');
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 700,
-    themeSystem: 'bootstrap5',
-    events: '{% url "projects:project_events_json" project.pk %}',
-    eventDisplay: 'block',
-    eventTextColor: '#fff',
-    eventDidMount: function(info) {
-      if (info.event.extendedProps.description) {
-        new bootstrap.Tooltip(info.el, {
-          title: info.event.extendedProps.description,
-          placement: 'top',
-          trigger: 'hover',
-          container: 'body'
-        });
+        eventDataTransform: function(event) {
+          return {
+            title: event.title,
+            start: event.start,
+            end: event.end,
+            description: event.description,
+            backgroundColor: event.color,
+            borderColor: event.color
+          };
+        },
+
+        eventClick: function(info) {
+          alert(info.event.title + "\n\n" + info.event.extendedProps.description);
+        }
       }
-    },
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,listWeek'
-    }
-  });
+  );
+
   calendar.render();
 });
 </script>

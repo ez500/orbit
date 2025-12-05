@@ -26,4 +26,14 @@ urlpatterns = [
     path("documents/<int:doc_id>/edit/", views.edit_internal_document, name="edit_internal_document"),
     path("documents/<int:doc_id>/view/", views.view_internal_document, name="view_internal_document"),
     path("<int:pk>/documents/<int:doc_id>/", views.view_document, name="view_document"),
+
+    # Delete task
+    path("<int:project_pk>/tasks/<int:task_pk>/delete/",
+       views.delete_project_task,
+       name="delete_project_task"),
+
+    # Delete event
+    path("<int:project_pk>/events/<int:event_pk>/delete/",
+        views.delete_project_event,
+        name="delete_project_event"),
 ]

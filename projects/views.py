@@ -15,6 +15,7 @@ from .forms import (
     AddManagerForm,
     AddMemberForm,
 )
+from django.db.models import Q
 
 from dashboard.forms import TaskForm, EventForm
 from dashboard.models import Task, Event
@@ -42,25 +43,34 @@ def delete_project(request, pk):
 # ------------------------------------------------------------
 # EVENTS JSON (for dashboard calendar)
 # ------------------------------------------------------------
-@require_GET
 @login_required
 def project_events_json(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    events = project.events.all().values(
-        "id",
-        "title",
-        "content",
-        "start_datetime",
-        "end_datetime",
-        "pub_date",
-        "team",
-        "users",
-        "project",
-    )
+    combined = []
 
-    return JsonResponse(list(events), safe=False)
+    # Events
+    for e in project.events.all():
+        combined.append({
+            "title": f"📅 {e.title}",
+            "start": e.start_datetime.isoformat(),
+            "end": e.end_datetime.isoformat() if e.end_datetime else e.start_datetime.isoformat(),
+            "description": e.content,
+            "color": "#0d6efd",
+        })
 
+    # Tasks
+    for t in project.tasks.all():
+        if t.deadline:
+            combined.append({
+                "title": f"📝 {t.title}",
+                "start": t.deadline.isoformat(),
+                "end": t.deadline.isoformat(),
+                "description": t.content,
+                "color": "#198754" if t.status == "completed" else "#20c997",
+            })
+
+    return JsonResponse(combined, safe=False)
 # ------------------------------------------------------------
 # PROJECT LIST
 # ------------------------------------------------------------
@@ -384,46 +394,39 @@ def remove_user(request, pk, user_id):
 def project_dashboard(request, pk):
     project = get_object_or_404(Project, pk=pk)
 
-    user_teams = Team.objects.filter(members=request.user)
-    user_companies = CompanyMembership.objects.filter(user=request.user).values_list("company", flat=True)
-
     user_projects = Project.objects.filter(
-        models.Q(lead=request.user)
-        | models.Q(collaborators=request.user)
-        | models.Q(team__in=user_teams)
-        | models.Q(companies__in=user_companies)
+        Q(lead=request.user) | Q(collaborators=request.user)
     ).distinct()
-
-    if request.method == "POST":
-        if "add_task" in request.POST:
-            form = TaskForm(request.POST)
-            if form.is_valid():
-                t = form.save(commit=False)
-                t.project = project
-                t.save()
-
-        elif "add_event" in request.POST:
-            form = EventForm(request.POST)
-            if form.is_valid():
-                e = form.save(commit=False)
-                e.project = project
-                e.save()
-
-        return redirect("projects:project_dashboard", pk=project.pk)
 
     task_form = TaskForm()
     event_form = EventForm()
 
+    if request.method == "POST":
+        if "add_task" in request.POST:
+            task_form = TaskForm(request.POST)
+            if task_form.is_valid():
+                t = task_form.save(commit=False)
+                t.project = project
+                t.save()
+                return redirect("projects:project_dashboard", pk=pk)
+
+        if "add_event" in request.POST:
+            event_form = EventForm(request.POST)
+            if event_form.is_valid():
+                e = event_form.save(commit=False)
+                e.project = project
+                e.save()
+                return redirect("projects:project_dashboard", pk=pk)
+
     return render(request, "projects/project_dashboard.html", {
         "project": project,
-        "tasks": project.tasks.order_by("status", "deadline"),
-        "events": project.events.order_by("start_datetime"),
+        "user_projects": user_projects,
+        "project_tasks": project.tasks.order_by("deadline"),
+        "project_events": project.events.order_by("start_datetime"),
+        "project_documents": project.documents.order_by("-uploaded_at"),
         "task_form": task_form,
         "event_form": event_form,
-        "user_projects": user_projects,
     })
-
-
 # ------------------------------------------------------------
 # DOCUMENT VIEWS (unchanged)
 # ------------------------------------------------------------
@@ -500,3 +503,30 @@ def view_document(request, pk, doc_id):
         return render(request, "projects/view_document.html", {"project": project, "document": document})
 
     return redirect("projects:view_internal_document", doc_id=document.pk)
+
+
+@login_required
+def delete_project_task(request, project_pk, task_pk):
+    project = get_object_or_404(Project, pk=project_pk)
+
+    # Ensure the user belongs to the project
+    if request.user not in project.collaborators.all() and request.user != project.lead:
+        return HttpResponseForbidden("You are not allowed to delete tasks from this project.")
+
+    task = get_object_or_404(Task, pk=task_pk, project=project)
+
+    task.delete()
+    return redirect("projects:project_dashboard", pk=project_pk)
+
+@login_required
+def delete_project_event(request, project_pk, event_pk):
+    project = get_object_or_404(Project, pk=project_pk)
+
+    # Ensure the user belongs to the project
+    if request.user not in project.collaborators.all() and request.user != project.lead:
+        return HttpResponseForbidden("You are not allowed to delete events from this project.")
+
+    event = get_object_or_404(Event, pk=event_pk, project=project)
+
+    event.delete()
+    return redirect("projects:project_dashboard", pk=project_pk)
