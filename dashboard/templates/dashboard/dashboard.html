@@ -2,6 +2,7 @@
 {% load static %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+<link rel="stylesheet" href="{% static 'css/tour.css' %}" />
 {% endblock %}
 {% block content %}
 <div class="container-fluid p-4">
@@ -9,9 +10,11 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h1 class="h3 mb-0">Dashboard</h1>
-      <p class="text-muted mb-0">Welcome back, {{ request.user.first_name }}</p>
+      <p class="text-muted mb-0">Welcome back, {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}</p>
     </div>
     <div class="d-flex gap-2">
+      <!-- TODO NOTIFICATIONS ON SIDEBAR + UNREAD CIRCLE -->
+      <a href="{% url 'dashboard:notifications' %}" class="btn btn-primary">View Notifications</a>
       <div class="dropdown">
         <button
           class="btn btn-outline-secondary dropdown-toggle"
@@ -151,7 +154,13 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+  // Set tour completion status on body element
+  document.body.dataset.tourCompleted = {% if has_completed_tour %}'true'{% else %}'false'{% endif %};
+</script>
+<script src="{% static 'js/tour.js' %}"></script>
 <script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/dashboard-tour.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
   // Show empty state if no widgets are present
@@ -240,4 +249,3 @@
   }
 </script>
 {% endblock %}
-

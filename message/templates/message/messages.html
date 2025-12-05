@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/messages.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+  <!-- Conversations Sidebar -->
+  <div class="conversations-sidebar">
+    <div class="conversations-header">
+      <h5 class="mb-0">Messages</h5>
+      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newMessageModal">
+        <i class="fas fa-edit"></i>
+      </button>
+    </div>
+
+    <!-- Search Conversations -->
+    <div class="conversation-search">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Search conversations..."
+        id="conversationSearch"
+      />
+    </div>
+
+    <!-- Conversations List -->
+    <div class="conversations-list" id="conversationsList">
+      <!-- Sample Conversation 1 - Active -->
+      <div class="conversation-item active" data-conversation-id="1">
+        <div class="conversation-avatar">
+          <img
+            src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=4f46e5"
+            alt="Sarah Johnson"
+            class="rounded-circle"
+          />
+          <span class="status-indicator online"></span>
+        </div>
+        <div class="conversation-info">
+          <div class="conversation-header-row">
+            <h6 class="conversation-name">Sarah Johnson</h6>
+            <span class="conversation-time">2m</span>
+          </div>
+          <p class="conversation-preview">
+            <span class="last-sender">Sarah:</span>
+            That sounds great! Let's schedule a meeting for next week.
+          </p>
+        </div>
+        <span class="unread-badge">3</span>
+      </div>
+
+      <!-- Sample Conversation 2 -->
+      <div class="conversation-item" data-conversation-id="2">
+        <div class="conversation-avatar">
+          <div class="team-avatar">
+            <i class="fas fa-users"></i>
+          </div>
+        </div>
+        <div class="conversation-info">
+          <div class="conversation-header-row">
+            <h6 class="conversation-name">Marketing Team</h6>
+            <span class="conversation-time">15m</span>
+          </div>
+          <p class="conversation-preview">
+            <span class="last-sender">You:</span>
+            I've uploaded the latest campaign materials to the shared drive.
+          </p>
+        </div>
+      </div>
+
+      <!-- Sample Conversation 3 -->
+      <div class="conversation-item" data-conversation-id="3">
+        <div class="conversation-avatar">
+          <img
+            src="https://ui-avatars.com/api/?name=Michael+Chen&background=10b981"
+            alt="Michael Chen"
+            class="rounded-circle"
+          />
+          <span class="status-indicator online"></span>
+        </div>
+        <div class="conversation-info">
+          <div class="conversation-header-row">
+            <h6 class="conversation-name">Michael Chen</h6>
+            <span class="conversation-time">1h</span>
+          </div>
+          <p class="conversation-preview">
+            <span class="last-sender">Michael:</span>
+            Can you review the pull request when you get a chance?
+          </p>
+        </div>
+        <span class="unread-badge">1</span>
+      </div>
+
+      <!-- Sample Conversation 4 -->
+      <div class="conversation-item" data-conversation-id="4">
+        <div class="conversation-avatar">
+          <img
+            src="https://ui-avatars.com/api/?name=Emily+Rodriguez&background=f59e0b"
+            alt="Emily Rodriguez"
+            class="rounded-circle"
+          />
+        </div>
+        <div class="conversation-info">
+          <div class="conversation-header-row">
+            <h6 class="conversation-name">Emily Rodriguez</h6>
+            <span class="conversation-time">3h</span>
+          </div>
+          <p class="conversation-preview">
+            <span class="last-sender">You:</span>
+            Thanks for the update! I'll take a look at the documents.
+          </p>
+        </div>
+      </div>
+
+      <!-- Sample Conversation 5 -->
+      <div class="conversation-item" data-conversation-id="5">
+        <div class="conversation-avatar">
+          <div class="team-avatar">
+            <i class="fas fa-users"></i>
+          </div>
+        </div>
+        <div class="conversation-info">
+          <div class="conversation-header-row">
+            <h6 class="conversation-name">Development Team</h6>
+            <span class="conversation-time">Yesterday</span>
+          </div>
+          <p class="conversation-preview">
+            <span class="last-sender">Alex:</span>
+            Don't forget about the sprint planning meeting tomorrow at 10 AM.
+          </p>
+        </div>
+      </div>
+
+      <!-- Sample Conversation 6 -->
+      <div class="conversation-item" data-conversation-id="6">
+        <div class="conversation-avatar">
+          <img
+            src="https://ui-avatars.com/api/?name=David+Park&background=ef4444"
+            alt="David Park"
+            class="rounded-circle"
+          />
+        </div>
+        <div class="conversation-info">
+          <div class="conversation-header-row">
+            <h6 class="conversation-name">David Park</h6>
+            <span class="conversation-time">Nov 15</span>
+          </div>
+          <p class="conversation-preview">
+            <span class="last-sender">David:</span>
+            The client presentation went well! They loved the new designs.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Thread -->
+  <div class="message-thread">
+    <!-- Thread Header -->
+    <div class="thread-header">
+      <div class="d-flex align-items-center">
+        <div class="thread-avatar me-3">
+          <img
+            src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=4f46e5"
+            alt="Sarah Johnson"
+            class="rounded-circle"
+          />
+        </div>
+        <div>
+          <h5 class="mb-0">Sarah Johnson</h5>
+          <small class="text-muted">
+            <span class="text-success"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Online</span>
+          </small>
+        </div>
+      </div>
+      <div class="thread-actions">
+        <button class="btn btn-link text-muted">
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-container-scroll" id="messagesContainer">
+      <!-- Received Message 1 -->
+      <div class="message-wrapper received">
+        <div class="message-avatar">
+          <img
+            src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=4f46e5"
+            alt="Sarah Johnson"
+            class="rounded-circle"
+          />
+        </div>
+        <div class="message-bubble-wrapper">
+          <div class="message-bubble">
+            <p class="message-content">Hi! I saw your message about the project update.</p>
+            <span class="message-time">2:30 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sent Message 1 -->
+      <div class="message-wrapper sent">
+        <div class="message-bubble-wrapper">
+          <div class="message-bubble">
+            <p class="message-content">Yes! I wanted to discuss the timeline for the next phase.</p>
+            <span class="message-time">2:31 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Received Message 2 -->
+      <div class="message-wrapper received">
+        <div class="message-avatar">
+          <img
+            src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=4f46e5"
+            alt="Sarah Johnson"
+            class="rounded-circle"
+          />
+        </div>
+        <div class="message-bubble-wrapper">
+          <div class="message-bubble">
+            <p class="message-content">Absolutely. I think we should schedule a meeting to go over the details.</p>
+            <span class="message-time">2:32 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sent Message 2 -->
+      <div class="message-wrapper sent">
+        <div class="message-bubble-wrapper">
+          <div class="message-bubble">
+            <p class="message-content">That sounds great! How about next week?</p>
+            <span class="message-time">2:33 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Received Message 3 -->
+      <div class="message-wrapper received">
+        <div class="message-avatar">
+          <img
+            src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=4f46e5"
+            alt="Sarah Johnson"
+            class="rounded-circle"
+          />
+        </div>
+        <div class="message-bubble-wrapper">
+          <div class="message-bubble">
+            <p class="message-content">That sounds great! Let's schedule a meeting for next week.</p>
+            <span class="message-time">2:34 PM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message Input -->
+    <div class="message-input-container">
+      <form method="POST" id="messageForm" class="d-flex align-items-end gap-2">
+        {% csrf_token %}
+        <button type="button" class="btn btn-link text-muted attachment-btn">
+          <i class="fas fa-paperclip"></i>
+        </button>
+        <div class="message-input-wrapper">
+          <textarea
+            name="content"
+            class="form-control message-input"
+            placeholder="Type a message..."
+            rows="1"
+            id="messageInput"
+          ></textarea>
+        </div>
+        <button type="button" class="btn btn-link text-muted emoji-btn">
+          <i class="fas fa-smile"></i>
+        </button>
+        <button type="submit" class="btn btn-primary send-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- New Message Modal -->
+<div class="modal fade" id="newMessageModal" tabindex="-1" aria-labelledby="newMessageModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newMessageModalLabel">New Message</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="recipientSearch" class="form-label">To:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="recipientSearch"
+            placeholder="Search for a user..."
+            autocomplete="off"
+          />
+          <div id="userSearchResults" class="user-search-results"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/messages.js' %}"></script>
+<script>
+  // Auto-scroll to bottom of messages
+  const messagesContainer = document.getElementById('messagesContainer');
+  if (messagesContainer) {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  // Auto-resize textarea
+  const messageInput = document.getElementById('messageInput');
+  if (messageInput) {
+    messageInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // Submit on Enter (but Shift+Enter for new line)
+    messageInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('messageForm').submit();
+      }
+    });
+  }
+
+  // Search conversations
+  const conversationSearch = document.getElementById('conversationSearch');
+  if (conversationSearch) {
+    conversationSearch.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      const conversations = document.querySelectorAll('.conversation-item');
+
+      conversations.forEach(conv => {
+        const name = conv.querySelector('.conversation-name').textContent.toLowerCase();
+        const preview = conv.querySelector('.conversation-preview').textContent.toLowerCase();
+
+        if (name.includes(searchTerm) || preview.includes(searchTerm)) {
+          conv.style.display = '';
+        } else {
+          conv.style.display = 'none';
+        }
+      });
+    });
+  }
+</script>
+{% endblock %}

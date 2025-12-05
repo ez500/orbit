@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, 
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -102,8 +102,15 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
         searched_is_visible = searched_profile.visibility != models.Profile.Visibility.HIDDEN.name
         requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
-        is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
-        is_self = requesting_user.profile == searched_profile
+
+        # Check if user is authenticated before accessing profile
+        if requesting_user.is_authenticated:
+            is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
+            is_self = requesting_user.profile == searched_profile
+        else:
+            is_connection = False
+            is_self = False
+
         return searched_is_visible or requesting_is_staff or is_connection or is_self
 
     def can_view_private_info(self):
@@ -112,8 +119,15 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
         searched_is_public = searched_profile.visibility == models.Profile.Visibility.PUBLIC.name
         requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
-        is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
-        is_self = requesting_user.profile == searched_profile
+
+        # Check if user is authenticated before accessing profile
+        if requesting_user.is_authenticated:
+            is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
+            is_self = requesting_user.profile == searched_profile
+        else:
+            is_connection = False
+            is_self = False
+
         return searched_is_public or requesting_is_staff or is_connection or is_self
 
 
@@ -150,8 +164,15 @@ class CompanyListView(LoginRequiredMixin, ListView):
 
         searched_is_visible = searched_profile.visibility != models.Profile.Visibility.HIDDEN.name
         requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
-        is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
-        is_self = requesting_user.profile == searched_profile
+
+        # Check if user is authenticated before accessing profile
+        if requesting_user.is_authenticated:
+            is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
+            is_self = requesting_user.profile == searched_profile
+        else:
+            is_connection = False
+            is_self = False
+
         return searched_is_visible or requesting_is_staff or is_connection or is_self
 
     def can_view_private_info(self):
@@ -160,8 +181,15 @@ class CompanyListView(LoginRequiredMixin, ListView):
 
         searched_is_public = searched_profile.visibility == models.Profile.Visibility.PUBLIC.name
         requesting_is_staff = requesting_user.is_staff or requesting_user.is_superuser
-        is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
-        is_self = requesting_user.profile == searched_profile
+
+        # Check if user is authenticated before accessing profile
+        if requesting_user.is_authenticated:
+            is_connection = requesting_user.profile.connections.filter(pk=searched_profile.pk).exists()
+            is_self = requesting_user.profile == searched_profile
+        else:
+            is_connection = False
+            is_self = False
+
         return searched_is_public or requesting_is_staff or is_connection or is_self
 
 

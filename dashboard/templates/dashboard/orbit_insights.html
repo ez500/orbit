@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-0">Orbit Insights</h1>
+      <p class="text-muted mb-0">Welcome back, {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}</p>
+    </div>
+  </div>
+
+  <div id="orbit-loading" class="alert alert-secondary">
+      Generating insights for you. This may take a moment...
+  </div>
+
+  <div id="orbit-suggestions-container"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const loadingEl = document.getElementById("orbit-loading");
+        const containerEl = document.getElementById("orbit-suggestions-container");
+
+        fetch("{% url 'dashboard:orbit_insights_api' %}")
+            .then((response) => response.json())
+            .then((data) => {
+                if (loadingEl) loadingEl.style.display = "none";
+                if (containerEl) containerEl.innerHTML = data.html || "";
+            })
+            .catch((error) => {
+                console.error("Orbit insights error", error);
+                if (loadingEl) {
+                    loadingEl.classList.remove("alert-secondary");
+                    loadingEl.classList.add("alert-danger");
+                    loadingEl.textContent = "Failed to load insights. Please try again later.";
+                }
+            });
+    });
+</script>
+{% endblock %}

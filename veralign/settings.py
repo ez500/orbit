@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "message",
     "rest_framework",
+    "document_storing",
+    "help",
 ]
 
 MIDDLEWARE = [
@@ -77,6 +79,9 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "message.context_processors.recent_conversations",
+                "dashboard.context_processors.unread_notifications",
+                "dashboard.context_processors.recall_orbit_insights"
             ],
         },
     },
@@ -165,7 +170,7 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Media
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MEDIA_URL = '/media/'
 
@@ -196,3 +201,5 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+X_FRAME_OPTIONS = "SAMEORIGIN"
