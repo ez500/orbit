@@ -1,3 +1,5 @@
+from tkinter.font import names
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
@@ -5,6 +7,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, CreateView, UpdateView, ListView
 from .models import Company, CompanyMembership, CompanyMembershipRequest, Announcement
 from .forms import CompanyRegistrationForm, CompanyAnnouncementEditForm, CompanyAnnouncementCreationForm
@@ -148,6 +151,19 @@ class EditAnnouncementView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse("company:company", args=[self.object.company.name])
+
+
+@require_POST
+@login_required
+def announcement_delete(request, name, pk):
+    announcement = get_object_or_404(Announcement, id=pk)
+
+    if not request.user.is_superuser and request.user not in announcement.company.memberships.all():
+        messages.error(request, "Not authorized.")
+        return redirect("dashboard:dashboard")
+    announcement.delete()
+    messages.success(request, "Task deleted successfully.")
+    return redirect("company:company", name=name)
 
 
 # -------------------------------------------------------

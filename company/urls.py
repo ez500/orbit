@@ -8,6 +8,7 @@ urlpatterns = [
     path("join/", views.JoinCompanyListView.as_view(), name="join_list"),
     path("<str:name>/announcements/create/", views.CreateAnnouncementView.as_view(), name="create_announcement"),
     path("<str:name>/announcements/<int:pk>/edit/", views.EditAnnouncementView.as_view(), name="edit_announcement"),
+    path("<str:name>/announcements/<int:pk>/delete/", views.announcement_delete, name="delete_announcement"),
     path("<str:name>/edit/", views.EditCompany.as_view(), name="edit"),
     path("<str:name>/send-join-request/", views.send_join_request, name="send_join_request"),
     path("<str:name>/accept/<str:username>", views.accept_join_request, name="accept_join_request"),
