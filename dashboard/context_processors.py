@@ -1,4 +1,6 @@
-from dashboard.models import Notification
+from django.db.models import Max
+
+from dashboard.models import Notification, InsightSuggestion
 
 
 def unread_notifications(request):
@@ -9,3 +11,20 @@ def unread_notifications(request):
     count = notifications.count()
 
     return {'count': count, 'unread': notifications}
+
+
+# TODO FIX BUG OF RELOADING INSIGHTS FOR CERTAIN ACTIONS
+def recall_orbit_insights(request):
+    if not request.user.is_authenticated:
+        return {}
+
+    latest_batch_id = InsightSuggestion.objects.aggregate(max_field_value=Max('batch_id'))['max_field_value']
+    recall_insights = InsightSuggestion.objects.filter(user=request.user, batch_id=latest_batch_id, executed=False)
+
+    context = dict()
+    context['orbit_insights'] = recall_insights
+    context['create_task_event_insights'] = (recall_insights.filter(suggestion_type='create_task')
+                                             | recall_insights.filter(suggestion_type='create_event'))
+    context['create_announcement_insights'] = recall_insights.filter(suggestion_type='create_announcement')
+
+    return context

@@ -79,6 +79,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "message.context_processors.recent_conversations",
                 "dashboard.context_processors.unread_notifications",
+                "dashboard.context_processors.recall_orbit_insights"
             ],
         },
     },

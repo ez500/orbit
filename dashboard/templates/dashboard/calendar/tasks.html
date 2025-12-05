@@ -187,6 +187,30 @@
         </div>
     </div>
 
+    {% load orbit_extras %}
+    {% if create_task_event_insights %}
+        <div class="container-fluid p-0">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5>Orbit Insights</h5>
+                    {% for insight in create_task_event_insights %}
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <p class="card-title fw-bold mb-0">
+                                {{ insight.get_suggestion_type_display }}{% if insight.raw_data.title %}: {{ insight.raw_data.title }}{% endif %}
+                            </p>
+                            <a href="{% url 'dashboard:execute_suggestion' insight.id %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Create Task
+                            </a>
+                        </div>
+                        <p class="card-text">
+                            {{ insight.raw_data|get_key:"content" }}
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     <!-- TODO IMPLEMENT EDIT TASK MODAL -->
     <!-- Add Task Modal -->
     {% include 'dashboard/calendar/_add_task_event_modal.html' %}
