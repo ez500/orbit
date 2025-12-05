@@ -701,7 +701,8 @@
         const form = document.getElementById('messageForm');
         if (messageInput.value.trim()) {
           // Trigger the form's submit event (which will be handled by AJAX)
-          form.dispatchEvent(new Event('submit'));
+          // Firefox requires bubbles and cancelable options
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
         }
       }
     });
