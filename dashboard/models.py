@@ -9,10 +9,20 @@ from django.utils import timezone
 
 
 class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
     message = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    announcement = models.ForeignKey(
+        "company.Announcement",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True
+    )
+
+    # TODO ADD OTHER MODELS TO NOTIFICATIONS
 
     def __str__(self):
         return f'Notification for {self.user.username}: {self.message}'

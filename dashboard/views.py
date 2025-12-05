@@ -23,7 +23,7 @@ from company.models import Company, Announcement
 from projects.models import Project
 from teams.models import Team
 from .forms import TaskForm, EventForm
-from .models import Task, InsightSuggestion, Event
+from .models import Task, InsightSuggestion, Event, Notification
 from .orbit import generate_orbit_insights
 from .serializer import TaskViewSerializer, TaskCreateSerializer
 
@@ -389,3 +389,13 @@ def task_delete(request, task_id):
     task.delete()
     messages.success(request, "Task deleted successfully.")
     return redirect("dashboard:tasks")
+
+
+@login_required
+def notifications(request):
+    notifications_list = Notification.objects.filter(user=request.user).order_by("-created_at")
+    return render(
+        request,
+        "dashboard/notifications.html",
+        {"title": "Notifications", "notifications": notifications_list},
+    )

@@ -13,6 +13,8 @@
       <p class="text-muted mb-0">Welcome back, {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}</p>
     </div>
     <div class="d-flex gap-2">
+      <!-- TODO NOTIFICATIONS ON SIDEBAR + UNREAD CIRCLE -->
+      <a href="{% url 'dashboard:notifications' %}" class="btn btn-primary">View Notifications</a>
       <div class="dropdown">
         <button
           class="btn btn-outline-secondary dropdown-toggle"
