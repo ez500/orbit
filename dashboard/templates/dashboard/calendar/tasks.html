@@ -199,7 +199,7 @@
                                 {{ insight.get_suggestion_type_display }}{% if insight.raw_data.title %}: {{ insight.raw_data.title }}{% endif %}
                             </p>
                             <a href="{% url 'dashboard:execute_suggestion' insight.id %}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Create Task
+                                <i class="fas fa-plus"></i> Create {% if insight.raw_data.type == 'create_task' %}Task{% elif insight.raw_data.type == 'create_event' %}Event{% endif %}
                             </a>
                         </div>
                         <p class="card-text">
