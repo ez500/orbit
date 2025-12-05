@@ -188,6 +188,7 @@ def _build_prompt(ctx):
         "    {\n"
         '      "type": "create_task" | "create_event" | "create_announcement" | '
         '"send_message" | "send_email" | "general_insight",\n'
+        '      "context": string, // Brief explanation of this suggestion\n'
         "      // if type == create_task\n"
         '      "title": string,\n'
         '      "content": string, // Include source and context\n'
@@ -222,10 +223,12 @@ def _build_prompt(ctx):
         '  "fallback": boolean // true if there is not enough context or there are no suggestions\n'
         "}\n\n"
         "(4) If there is not enough context or no good suggestions, use the fallback field set to true.\n"
-        "The context is as follows: `context`=\n"
         "(5) The `content` in each suggestion should follow with what the suggestion should accomplish. For example, "
         "the `content` in a message suggestion should be addressed to recipient, rather than a description of the "
         "message suggestion itself.\n"
+        "(6) Only include context/explanation of suggestion within the `context` field of each suggestion."
+        "That is, anything like sources, IDs, reasoning, etc.\n"
+        "The context is as follows: `context`=\n"
         f"{json.dumps(ctx, ensure_ascii=False)}\n"
     )
 
