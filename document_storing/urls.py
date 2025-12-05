@@ -1,9 +1,12 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
-    path("", views.home, name="files"),
-    path("handle/", views.HandleFileUpload.as_view()),
-    path("download/<uid>/", views.download, name="download"),
-    path("pdf_list/", views.list, name="pdf_list"),
+    path("", views.file_manager, name="file_manager"),
+    path("manage/", views.file_manager, name="file_manager"),
+    re_path(r"^manage/(?P<directory>.*)?/$", views.file_manager, name="file_manager"),
+    path("delete-file/<str:file_path>/", views.delete_file, name="delete_file"),
+    path("download-file/<str:file_path>/", views.download_file, name="download_file"),
+    path("upload-file/", views.upload_file, name="upload_file"),
+    path("save-info/<str:file_path>/", views.save_info, name="save_info"),
 ]
