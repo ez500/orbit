@@ -161,7 +161,7 @@ def _gather_user_context(user):
                             "id": message.sender.id,
                             "username": message.sender.username,
                             "email": message.sender.email,
-                        },
+                        } if message.sender else None,
                         "content": message.content,
                         "timestamp": message.timestamp.isoformat(),
                     }
@@ -287,6 +287,24 @@ def generate_orbit_insights(user, persist=True):
             "batch_id": None,
             "created": []
         }
+
+
+def generate_orbit_reply(prompt):
+    prompt = (
+        "You are Orbit, a helpful CRM productivity assistant. "
+        "Generate a concise, relevant, and helpful response to the user's input below.\n\n"
+        f"User input: {prompt}\n"
+    )
+
+    try:
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt
+        )
+        return (response.text or "").strip()
+    except Exception as e:
+        print("Orbit chat error:", e)
+        return "Sorry I cannot generate a response at this time."
 
 
 def test():

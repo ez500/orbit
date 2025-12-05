@@ -32,6 +32,9 @@ urlpatterns = [
     # Personal notes
     path("<str:username>/notes/", views.personal_notes, name='personal_notes'),
 
+    # Orbit Chat
+    path("<str:username>/orbit-chat/", views.orbit_chat, name='orbit_chat'),
+
     # Create team conversation
     path("<str:username>/create-team-chat/", views.create_team_conversation, name='create_team_conversation'),
 
