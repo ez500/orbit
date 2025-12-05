@@ -78,7 +78,7 @@
       <div class="d-flex justify-content-between align-items-center">
         <h5 class="text-success fw-semibold"><i class="fas fa-user-tie me-2"></i>Managers</h5>
 
-        {% if acting_role in "Lead Manager" %}
+        {% if acting_role in "Lead" %}
         <a href="{% url 'projects:add_manager' project.pk %}" class="btn btn-outline-success btn-sm">
           <i class="fas fa-user-plus"></i> Add Manager
         </a>
@@ -92,22 +92,19 @@
             <span>{{ mem.user.username }}</span>
 
             <div>
-              {% if acting_role == "Lead" or acting_role == "Manager" %}
-                
-                <!-- Demote -->
-                <a href="{% url 'projects:demote_manager' project.pk mem.user.pk %}"
-                   class="btn btn-outline-warning btn-sm me-2">
-                  <i class="fas fa-arrow-down"></i> Demote
-                </a>
+              {% if acting_role == "Lead" %}
+    <!-- Lead only: Demote Manager -->
+    <a href="{% url 'projects:demote_manager' project.pk mem.user.pk %}"
+       class="btn btn-outline-warning btn-sm me-2">
+      <i class="fas fa-arrow-down"></i> Demote
+    </a>
 
-                <!-- Remove -->
-                <a href="{% url 'projects:remove_user' project.pk mem.user.pk %}"
-                   class="btn btn-outline-danger btn-sm"
-                   onclick="return confirm('Remove {{ mem.user.username }} from the project?');">
-                  <i class="fas fa-user-minus"></i>
-                </a>
-
-              {% endif %}
+    <!-- Lead only: Remove Manager -->
+    <a href="{% url 'projects:remove_user' project.pk mem.user.pk %}"
+       class="btn btn-outline-danger btn-sm">
+      <i class="fas fa-user-minus"></i>
+    </a>
+{% endif %}
             </div>
 
           </li>

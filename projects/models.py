@@ -49,6 +49,19 @@ class Project(models.Model):
         m = self.memberships.filter(user=user).first()
         return m.role if m else None
 
+    def get_user_role(self, user):
+        """
+        Returns the role of a user on this project.
+        If no membership exists, return None.
+        """
+        if user == self.lead:
+            return "Lead"
+
+        membership = self.memberships.filter(user=user).first()
+        if membership:
+            return membership.role
+
+        return None
     # ------------------------------------------------------------
     # AUTO-SYNC: Lead + Collaborators ↔ ProjectMembership
     # ------------------------------------------------------------

@@ -50,10 +50,13 @@ def project_events_json(request, pk):
     events = project.events.all().values(
         "id",
         "title",
-        "description",
+        "content",
         "start_datetime",
         "end_datetime",
-        "color",
+        "pub_date",
+        "team",
+        "users",
+        "project",
     )
 
     return JsonResponse(list(events), safe=False)
@@ -279,29 +282,29 @@ def add_member(request, pk):
 @login_required
 def promote_member(request, pk, user_id):
     project = get_object_or_404(Project, pk=pk)
-    acting_role = can_manage_roles(project, request.user)
+    target = get_object_or_404(User, pk=user_id)
 
+    acting_role = project.get_user_role(request.user)
+    target_role = project.get_user_role(target)
+
+    # Manager/Lead can promote
     if acting_role not in ["Lead", "Manager"]:
-        return HttpResponseForbidden("No permission.")
-
-    target_user = get_object_or_404(User, pk=user_id)
-
-    if target_user == project.lead:
-        messages.error(request, "Cannot modify the Lead.")
+        messages.error(request, "You do not have permission to promote users.")
         return redirect("projects:project_detail", pk=pk)
 
-    mem = project.memberships.filter(user=target_user).first()
-    if not mem:
-        messages.error(request, "User is not in this project.")
+    # Cannot promote Lead
+    if target_role == "Lead":
+        messages.error(request, "Lead cannot be promoted.")
         return redirect("projects:project_detail", pk=pk)
 
-    mem.role = "Manager"
-    mem.save()
+    membership = ProjectMembership.objects.get(project=project, user=target)
+    membership.role = "Manager"
+    membership.save()
 
     project.sync_roles()
-    messages.success(request, f"{target_user.username} promoted to Manager.")
-    return redirect("projects:project_detail", pk=pk)
 
+    messages.success(request, f"{target.username} is now a Manager.")
+    return redirect("projects:project_detail", pk=pk)
 
 # ------------------------------------------------------------
 # DEMOTE (Manager → Member)
@@ -309,29 +312,43 @@ def promote_member(request, pk, user_id):
 @login_required
 def demote_manager(request, pk, user_id):
     project = get_object_or_404(Project, pk=pk)
-    acting_role = can_manage_roles(project, request.user)
+    target = get_object_or_404(User, pk=user_id)
 
-    if acting_role not in ["Lead", "Manager"]:
-        return HttpResponseForbidden("No permission.")
+    acting_role = project.get_user_role(request.user)  
+    target_role = project.get_user_role(target)
 
-    target_user = get_object_or_404(User, pk=user_id)
-
-    if target_user == project.lead:
-        messages.error(request, "Cannot modify the Lead.")
+    # ------------------------------
+    # BLOCK SELF-DEMOTION
+    # ------------------------------
+    if request.user.id == target.id:
+        messages.error(request, "You cannot demote yourself.")
         return redirect("projects:project_detail", pk=pk)
 
-    mem = project.memberships.filter(user=target_user).first()
-    if not mem or mem.role != "Manager":
-        messages.error(request, "User is not a Manager.")
+    # ------------------------------
+    # Only Lead can demote Managers
+    # ------------------------------
+    if acting_role != "Lead":
+        messages.error(request, "Only the project lead can demote a manager.")
         return redirect("projects:project_detail", pk=pk)
 
-    mem.role = "Member"
-    mem.save()
+    # ------------------------------
+    # Lead cannot be demoted
+    # ------------------------------
+    if target_role == "Lead":
+        messages.error(request, "The project lead cannot be demoted.")
+        return redirect("projects:project_detail", pk=pk)
+
+    # ------------------------------
+    # Perform Demotion → Manager → Member
+    # ------------------------------
+    membership = ProjectMembership.objects.get(project=project, user=target)
+    membership.role = "Member"
+    membership.save()
 
     project.sync_roles()
-    messages.success(request, f"{target_user.username} demoted to Member.")
-    return redirect("projects:project_detail", pk=pk)
 
+    messages.success(request, f"{target.username} has been demoted to Member.")
+    return redirect("projects:project_detail", pk=pk)
 
 # ------------------------------------------------------------
 # REMOVE USER FROM PROJECT
