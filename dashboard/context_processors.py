@@ -20,6 +20,8 @@ def recall_orbit_insights(request):
         return {}
 
     latest_batch_time = InsightSuggestion.objects.aggregate(max_field_value=Max('created_at'))['max_field_value']
+    if not InsightSuggestion.objects.filter(user=request.user).exists():
+        return {}
     latest_batch_id = InsightSuggestion.objects.filter(user=request.user, created_at=latest_batch_time).first().batch_id
     recall_insights = InsightSuggestion.objects.filter(user=request.user, batch_id=latest_batch_id, executed=False)
 
