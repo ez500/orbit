@@ -161,6 +161,29 @@
   </div>
 </div>
 
+<!-- Delete Conversation Confirmation Modal -->
+<div class="modal fade" id="deleteConversationModal" tabindex="-1" aria-labelledby="deleteConversationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConversationModalLabel">Delete Conversation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong id="deleteConversationName"></strong>?</p>
+        <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> This action cannot be undone. All messages in this conversation will be permanently deleted.</p>
+        <div id="deleteConversationMessage" class="alert" style="display: none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -336,5 +359,94 @@
       });
     });
   }
+
+  // Delete conversation functionality
+  let conversationToDelete = null;
+
+  function showDeleteConfirmation(conversationId, conversationTitle) {
+    conversationToDelete = conversationId;
+    const modal = new bootstrap.Modal(document.getElementById('deleteConversationModal'));
+    const nameElement = document.getElementById('deleteConversationName');
+    const messageElement = document.getElementById('deleteConversationMessage');
+
+    nameElement.textContent = conversationTitle || `Conversation #${conversationId}`;
+    messageElement.style.display = 'none';
+
+    modal.show();
+  }
+
+  // Handle delete confirmation
+  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+  if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener('click', function() {
+      if (!conversationToDelete) return;
+
+      const currentUsername = '{{ current_user.username }}';
+      const csrfToken = '{{ csrf_token }}';
+      const messageElement = document.getElementById('deleteConversationMessage');
+
+      // Disable button while deleting
+      confirmDeleteBtn.disabled = true;
+      confirmDeleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+      // Delete conversation
+      fetch(`/message/${currentUsername}/conversation/${conversationToDelete}/delete/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Close modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConversationModal'));
+          modal.hide();
+
+          // Remove conversation from list
+          const conversationWrapper = document.querySelector(`.conversation-item-wrapper[data-conversation-id="${conversationToDelete}"]`);
+          if (conversationWrapper) {
+            conversationWrapper.style.opacity = '0';
+            conversationWrapper.style.transform = 'translateX(-20px)';
+            setTimeout(() => {
+              conversationWrapper.remove();
+
+              // Check if list is empty
+              const conversationsList = document.getElementById('conversationsList');
+              if (conversationsList && !conversationsList.querySelector('.conversation-item-wrapper')) {
+                conversationsList.innerHTML = `
+                  <div class="empty-state">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p>No conversations yet</p>
+                    <small class="text-muted">Start messaging your connections or team members</small>
+                  </div>
+                `;
+              }
+            }, 300);
+          }
+
+          // Show success toast (optional)
+          console.log('Conversation deleted successfully');
+        } else {
+          messageElement.className = 'alert alert-danger';
+          messageElement.textContent = data.error || 'Failed to delete conversation';
+          messageElement.style.display = 'block';
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting conversation:', error);
+        messageElement.className = 'alert alert-danger';
+        messageElement.textContent = 'Failed to delete conversation. Please try again.';
+        messageElement.style.display = 'block';
+      })
+      .finally(() => {
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+      });
+    });
+  }
+
+  // Expose showDeleteConfirmation globally
+  window.showDeleteConfirmation = showDeleteConfirmation;
 </script>
 {% endblock %}
