@@ -90,7 +90,6 @@ class CompanyView(LoginRequiredMixin, DetailView):
         return context
 
 
-# TODO CHECK CREATE AND EDIT ANNOUNCEMENTS
 class CreateAnnouncementView(LoginRequiredMixin, CreateView):
     model = Announcement
     form_class = CompanyAnnouncementCreationForm

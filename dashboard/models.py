@@ -28,7 +28,6 @@ class Notification(models.Model):
         return f'Notification for {self.user.username}: {self.message}'
 
 
-# TODO: TEST TASK AND EVENT MODELS FOR PROJECT, TEAM, AND DASHBOARD INTEGRATION
 class Task(models.Model):
     STATUS = [
         ('todo', 'To Do'),
