@@ -196,7 +196,31 @@
               <div class="reply-context-content">{{ message.reply_to.content|truncatewords:15 }}</div>
             </div>
             {% endif %}
+            {% if message.content %}
             <p class="message-content">{{ message.content|highlight_mentions }}</p>
+            {% endif %}
+            {% if message.attachment %}
+            <div class="message-attachment">
+              {% if message.attachment_type == 'image' %}
+              <a href="{{ message.attachment.url }}" target="_blank">
+                <img src="{{ message.attachment.url }}" alt="Image attachment" class="attachment-image">
+              </a>
+              {% elif message.attachment_type == 'pdf' %}
+              <a href="{{ message.attachment.url }}" target="_blank" class="attachment-pdf">
+                <div class="attachment-icon">
+                  <i class="fas fa-file-pdf"></i>
+                </div>
+                <div class="attachment-details">
+                  <span class="attachment-name">{{ message.get_attachment_filename }}</span>
+                  <span class="attachment-type">PDF Document</span>
+                </div>
+                <div class="attachment-download">
+                  <i class="fas fa-download"></i>
+                </div>
+              </a>
+              {% endif %}
+            </div>
+            {% endif %}
           </div>
           {% if message.get_thread_count > 0 %}
           <div class="thread-count-indicator" data-message-id="{{ message.id }}" data-thread-count="{{ message.get_thread_count }}">
@@ -270,11 +294,28 @@
         <div class="edit-indicator-content" id="editOriginalContent"></div>
       </div>
 
-      <form method="POST" action="{% url 'message:send_message' current_user.username conversation.id %}" id="messageForm" class="d-flex align-items-end gap-2">
+      <!-- File Attachment Preview -->
+      <div id="filePreview" class="file-preview" style="display: none;">
+        <div class="file-preview-content">
+          <div class="file-preview-icon">
+            <i class="fas fa-file"></i>
+          </div>
+          <div class="file-preview-info">
+            <span class="file-preview-name"></span>
+            <span class="file-preview-size"></span>
+          </div>
+          <button type="button" class="file-preview-remove" id="removeFileBtn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <form method="POST" action="{% url 'message:send_message' current_user.username conversation.id %}" id="messageForm" class="d-flex align-items-end gap-2" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="hidden" name="reply_to" id="replyToInput" value="">
         <input type="hidden" name="edit_message_id" id="editMessageIdInput" value="">
-        <button type="button" class="btn btn-link text-muted attachment-btn">
+        <input type="file" id="fileInput" name="attachment" accept="image/*,.pdf" style="display: none;">
+        <button type="button" class="btn btn-link text-muted attachment-btn" id="attachmentBtn">
           <i class="fas fa-paperclip"></i>
         </button>
         <div class="message-input-wrapper" style="position: relative;">
@@ -500,6 +541,110 @@
     currentReplyToId = null;
     if (replyToInput) replyToInput.value = '';
     if (replyIndicator) replyIndicator.classList.remove('active');
+  }
+
+  // File attachment handling
+  const fileInput = document.getElementById('fileInput');
+  const attachmentBtn = document.getElementById('attachmentBtn');
+  const filePreview = document.getElementById('filePreview');
+  const removeFileBtn = document.getElementById('removeFileBtn');
+  let selectedFile = null;
+
+  if (attachmentBtn && fileInput) {
+    attachmentBtn.addEventListener('click', function() {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        // Validate file size (10MB max)
+        if (file.size > 10 * 1024 * 1024) {
+          alert('File size must be less than 10MB');
+          fileInput.value = '';
+          return;
+        }
+
+        // Validate file type
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        const allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf'];
+        if (!allowedTypes.includes(fileExt)) {
+          alert('Only images (JPG, PNG, GIF, WebP, SVG) and PDFs are allowed');
+          fileInput.value = '';
+          return;
+        }
+
+        selectedFile = file;
+        showFilePreview(file);
+      }
+    });
+
+    if (removeFileBtn) {
+      removeFileBtn.addEventListener('click', function() {
+        selectedFile = null;
+        fileInput.value = '';
+        hideFilePreview();
+      });
+    }
+  }
+
+  function showFilePreview(file) {
+    if (!filePreview) return;
+
+    const fileName = file.name;
+    const fileSize = formatFileSize(file.size);
+    const fileExt = fileName.split('.').pop().toLowerCase();
+
+    // Update preview content
+    const fileNameElement = filePreview.querySelector('.file-preview-name');
+    const fileSizeElement = filePreview.querySelector('.file-preview-size');
+    const fileIcon = filePreview.querySelector('.file-preview-icon i');
+
+    if (fileNameElement) fileNameElement.textContent = fileName;
+    if (fileSizeElement) fileSizeElement.textContent = fileSize;
+
+    // Update icon based on file type
+    if (fileIcon) {
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExt)) {
+        fileIcon.className = 'fas fa-image';
+        // Show image preview if it's an image
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const previewIcon = filePreview.querySelector('.file-preview-icon');
+            if (previewIcon) {
+              previewIcon.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width: 48px; height: 48px; object-fit: cover; border-radius: 4px;">`;
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      } else if (fileExt === 'pdf') {
+        fileIcon.className = 'fas fa-file-pdf';
+      } else {
+        fileIcon.className = 'fas fa-file';
+      }
+    }
+
+    filePreview.style.display = 'block';
+  }
+
+  function hideFilePreview() {
+    if (filePreview) {
+      filePreview.style.display = 'none';
+      // Reset icon
+      const fileIcon = filePreview.querySelector('.file-preview-icon');
+      if (fileIcon) {
+        fileIcon.innerHTML = '<i class="fas fa-file"></i>';
+      }
+    }
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   }
 
   // Auto-resize textarea
@@ -1239,6 +1384,36 @@
       `;
     }
 
+    let attachmentHTML = '';
+    if (message.attachment) {
+      if (message.attachment.type === 'image') {
+        attachmentHTML = `
+          <div class="message-attachment">
+            <a href="${message.attachment.url}" target="_blank">
+              <img src="${message.attachment.url}" alt="Image attachment" class="attachment-image">
+            </a>
+          </div>
+        `;
+      } else if (message.attachment.type === 'pdf') {
+        attachmentHTML = `
+          <div class="message-attachment">
+            <a href="${message.attachment.url}" target="_blank" class="attachment-pdf">
+              <div class="attachment-icon">
+                <i class="fas fa-file-pdf"></i>
+              </div>
+              <div class="attachment-details">
+                <span class="attachment-name">${escapeHtml(message.attachment.name)}</span>
+                <span class="attachment-type">PDF Document</span>
+              </div>
+              <div class="attachment-download">
+                <i class="fas fa-download"></i>
+              </div>
+            </a>
+          </div>
+        `;
+      }
+    }
+
     if (isSent) {
       return `
         <div class="message-wrapper sent" style="position: relative;" data-message-id="${message.id}">
@@ -1249,7 +1424,8 @@
                 <span class="message-time">${message.timestamp}</span>
               </div>
               ${replyContextHTML}
-              <p class="message-content">${escapeAndHighlight(message.content)}</p>
+              ${message.content ? `<p class="message-content">${escapeAndHighlight(message.content)}</p>` : ''}
+              ${attachmentHTML}
             </div>
             <div class="message-actions">
               <button class="reply-btn" data-message-id="${message.id}" data-sender-name="${escapeHtml(message.sender.full_name)}" data-message-content="${escapeHtmlOnly(message.content)}" title="Reply">
@@ -1281,7 +1457,8 @@
                 <span class="message-time">${message.timestamp}</span>
               </div>
               ${replyContextHTML}
-              <p class="message-content">${escapeAndHighlight(message.content)}</p>
+              ${message.content ? `<p class="message-content">${escapeAndHighlight(message.content)}</p>` : ''}
+              ${attachmentHTML}
             </div>
             <div class="message-actions">
               <button class="reply-btn" data-message-id="${message.id}" data-sender-name="${escapeHtml(message.sender.full_name)}" data-message-content="${escapeHtmlOnly(message.content)}" title="Reply">
@@ -1792,8 +1969,8 @@
 
   function handleNormalMessageSubmit(content) {
     // This is the existing message send logic
-    // Check if message is not empty
-    if (!content) {
+    // Check if message has content or attachment
+    if (!content && !selectedFile) {
       messageInput.style.animation = 'shake 0.3s';
       setTimeout(() => {
         messageInput.style.animation = '';
@@ -1814,21 +1991,27 @@
     // Get reply_to value if replying to a message
     const replyToValue = replyToInput ? replyToInput.value : '';
 
-    // Send message via AJAX
-    const formData = new URLSearchParams({
-      'content': content
-    });
+    // Use FormData to support file uploads
+    const formData = new FormData();
+    if (content) {
+      formData.append('content', content);
+    }
 
     // Add reply_to if present
     if (replyToValue) {
       formData.append('reply_to', replyToValue);
     }
 
+    // Add file attachment if present
+    if (selectedFile) {
+      formData.append('attachment', selectedFile);
+    }
+
     fetch(messageForm.action, {
       method: 'POST',
       headers: {
         'X-CSRFToken': csrfToken,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
       },
       body: formData
     })
@@ -1853,6 +2036,13 @@
         messageInput.value = '';
         messageInput.style.height = 'auto';
         hideReplyIndicator();
+
+        // Clear file attachment
+        if (selectedFile) {
+          selectedFile = null;
+          fileInput.value = '';
+          hideFilePreview();
+        }
 
         // Scroll to bottom
         messagesContainer.scrollTop = messagesContainer.scrollHeight;

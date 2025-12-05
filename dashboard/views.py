@@ -32,10 +32,14 @@ def dashboard(request):
         project__in=Project.objects.filter(collaborators=user) | Project.objects.filter(lead=user)
     ).order_by('-pub_date')[:5]
 
+    # Check if user has completed the tour
+    has_completed_tour = user.profile.has_completed_tour if hasattr(user, 'profile') else False
+
     context = {
         'title': 'Dashboard',
         'personal_tasks': personal_tasks,
         'project_tasks': project_tasks,
+        'has_completed_tour': has_completed_tour,
     }
     return render(request, 'dashboard/dashboard.html', context)
 

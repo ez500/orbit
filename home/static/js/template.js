@@ -357,3 +357,154 @@ function logout() {
     window.getSidebarNavigationItems = getNavigationItems;
     window.resetSidebarToDefaults = resetToDefaults;
 })();
+
+// Sidebar Recent Messages Live Updates
+(function initSidebarMessagesPolling() {
+    'use strict';
+
+    // Check if user is authenticated
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    const chatList = sidebar.querySelector('.chat-list');
+    if (!chatList) return;
+
+    // Get username from the page - check multiple possible sources
+    let currentUsername = null;
+
+    // Try to get from data attribute on body or sidebar
+    if (document.body.dataset.username) {
+        currentUsername = document.body.dataset.username;
+    } else if (sidebar.dataset.username) {
+        currentUsername = sidebar.dataset.username;
+    } else {
+        // Try to extract from URL (works on most pages)
+        const pathParts = window.location.pathname.split('/');
+        // Look for common patterns like /message/{username}/ or /{app}/{username}/
+        if (pathParts.length >= 3) {
+            // Try different positions where username might be
+            for (let i = 1; i < pathParts.length; i++) {
+                if (pathParts[i] && pathParts[i] !== 'message' && pathParts[i] !== 'conversation' &&
+                    pathParts[i] !== 'dashboard' && pathParts[i] !== 'teams' && pathParts[i] !== 'projects' &&
+                    !pathParts[i].match(/^\d+$/)) {
+                    currentUsername = pathParts[i];
+                    break;
+                }
+            }
+        }
+    }
+
+    // If we still don't have username, try to get it from a link in the sidebar
+    if (!currentUsername) {
+        const messageLink = sidebar.querySelector('a[href*="/message/"]');
+        if (messageLink) {
+            const match = messageLink.href.match(/\/message\/([^\/]+)\//);
+            if (match) {
+                currentUsername = match[1];
+            }
+        }
+    }
+
+    if (!currentUsername) {
+        console.log('[Sidebar Messages] Could not determine username, polling disabled');
+        return;
+    }
+
+    console.log('[Sidebar Messages] Initializing live updates for user:', currentUsername);
+
+    // Function to update the sidebar recent messages
+    function updateSidebarMessages(conversations) {
+        if (!chatList) return;
+
+        // Clear current list
+        chatList.innerHTML = '';
+
+        if (!conversations || conversations.length === 0) {
+            chatList.innerHTML = `
+                <div class="text-white-50 text-center py-3">
+                    <small>No recent messages</small>
+                </div>
+            `;
+            return;
+        }
+
+        // Create HTML for each conversation
+        conversations.forEach(conv => {
+            const chatItem = document.createElement('a');
+            chatItem.href = `/message/${currentUsername}/conversation/${conv.id}/`;
+            chatItem.className = 'chat-item text-decoration-none';
+
+            chatItem.innerHTML = `
+                <img src="${conv.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(conv.name) + '&background=random'}"
+                     alt="${escapeHtml(conv.name)}"
+                     class="rounded-circle"
+                     width="32"
+                     height="32"/>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="fw-medium text-white">${truncateText(escapeHtml(conv.name), 20)}</div>
+                        ${conv.last_message_time ? `<small class="text-white-50">${escapeHtml(conv.last_message_time)}</small>` : ''}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-white-50">${truncateText(escapeHtml(conv.last_message_preview), 30)}</small>
+                        ${conv.unread_count > 0 ? `<span class="badge bg-primary rounded-pill">${conv.unread_count}</span>` : ''}
+                    </div>
+                </div>
+            `;
+
+            chatList.appendChild(chatItem);
+        });
+    }
+
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Helper function to truncate text
+    function truncateText(text, maxLength) {
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength - 3) + '...';
+    }
+
+    // Function to poll for sidebar updates
+    function pollSidebarConversations() {
+        fetch(`/message/${currentUsername}/poll-sidebar/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.conversations) {
+                    updateSidebarMessages(data.conversations);
+                }
+            })
+            .catch(error => {
+                // Silently fail - don't spam console on auth errors or network issues
+                if (error.message.includes('403') || error.message.includes('401')) {
+                    // User not authenticated, stop polling
+                    console.log('[Sidebar Messages] Authentication error, stopping polls');
+                    if (pollInterval) {
+                        clearInterval(pollInterval);
+                    }
+                }
+            });
+    }
+
+    // Start polling every 3 seconds
+    const pollInterval = setInterval(pollSidebarConversations, 3000);
+
+    // Do an initial poll after 1 second
+    setTimeout(pollSidebarConversations, 1000);
+
+    // Clean up interval when page is closed/navigated away
+    window.addEventListener('beforeunload', function() {
+        clearInterval(pollInterval);
+    });
+
+    console.log('[Sidebar Messages] Live updates initialized, polling every 3 seconds');
+})();

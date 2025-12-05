@@ -26,6 +26,9 @@ urlpatterns = [
     # Get new messages for polling (AJAX)
     path("<str:username>/conversation/<int:conversation_id>/poll/", views.get_new_messages, name='poll_messages'),
 
+    # Poll sidebar conversations for live updates (AJAX)
+    path("<str:username>/poll-sidebar/", views.poll_sidebar_conversations, name='poll_sidebar'),
+
     # Personal notes
     path("<str:username>/notes/", views.personal_notes, name='personal_notes'),
 

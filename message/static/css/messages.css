@@ -1609,3 +1609,163 @@ html[data-theme="dark"] .messages-container-scroll::-webkit-scrollbar-thumb:hove
     margin: 0;
   }
 }
+
+/* File Preview (before sending) */
+.file-preview {
+  background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.06);
+  border-left: 3px solid rgba(var(--accent-color-rgb, 30, 144, 255), 0.5);
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  animation: slideDown 0.2s ease;
+}
+
+.file-preview-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.file-preview-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.1);
+  border-radius: 6px;
+  color: var(--accent-color);
+  font-size: 1.5rem;
+}
+
+.file-preview-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.file-preview-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-preview-size {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.file-preview-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.375rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  opacity: 0.6;
+}
+
+.file-preview-remove:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  opacity: 1;
+}
+
+/* Message Attachments */
+.message-attachment {
+  margin-top: 0.5rem;
+}
+
+.attachment-image {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+  display: block;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.attachment-image:hover {
+  opacity: 0.9;
+}
+
+.attachment-pdf {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--accent-color-rgb, 30, 144, 255), 0.15);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.15s ease;
+  max-width: 400px;
+}
+
+.attachment-pdf:hover {
+  background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.1);
+  border-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.3);
+  transform: translateY(-1px);
+}
+
+.attachment-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(220, 53, 69, 0.1);
+  border-radius: 6px;
+  color: #dc3545;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.attachment-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.attachment-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-type {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.attachment-download {
+  color: var(--text-muted);
+  font-size: 1rem;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.attachment-pdf:hover .attachment-download {
+  opacity: 1;
+}
