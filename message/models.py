@@ -38,6 +38,7 @@ class Conversation(models.Model):
     id = models.AutoField(primary_key=True)
     is_team = models.BooleanField(default=False)
     is_personal_notes = models.BooleanField(default=False)
+    is_orbit_chat = models.BooleanField(default=False)
     title = models.CharField(max_length=255, blank=True)
     team = models.ForeignKey('teams.Team', null=True, blank=True, on_delete=models.CASCADE,
                              related_name='conversations')
@@ -170,6 +171,8 @@ class Conversation(models.Model):
     def __str__(self):
         if self.is_personal_notes:
             return "Personal Notes"
+        if self.is_orbit_chat:
+            return self.title
         if self.is_team:
             return self.title or f"Team Conversation {self.id}"
         participants = list(self.participants.all()[:2])

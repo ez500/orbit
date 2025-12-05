@@ -47,6 +47,8 @@ def conversations_list(request, username):
         is_personal_notes=False
     ).prefetch_related('participants', 'messages').order_by('-updated_at')
 
+    orbit_chat_exists = Conversation.objects.filter(participants=user, is_orbit_chat=True).exists()
+
     # Combine them - team chats first, then personal
     all_conversations = list(team_conversations) + list(personal_conversations)
 
@@ -69,7 +71,7 @@ def conversations_list(request, username):
 
     context = {
         'conversations': conversation_data,
-        'current_user': user,
+        'current_user': user
     }
 
     return render(request, 'message/conversations.html', context)
@@ -474,6 +476,31 @@ def personal_notes(request, username):
             title="Personal Notes"
         )
         Participant.objects.create(user=user, conversation=conversation)
+
+    # Redirect to the conversation thread
+    return redirect('message:conversation_thread', username=username, conversation_id=conversation.id)
+
+@login_required
+def orbit_chat(request, username):
+    """Chat with Orbit"""
+    user = request.user
+
+    # Verify username matches
+    if user.username != username:
+        messages.error(request, "Invalid request.")
+        return redirect('message:conversations_list', username=user.username)
+
+    orbit_conversations_count = Conversation.objects.filter(
+        participants=user,
+        is_orbit_chat=True
+    ).count()
+
+    # Create new orbit conversation
+    conversation = Conversation.objects.create(
+        is_orbit_chat=True,
+        title=f"Orbit Chat {orbit_conversations_count + 1}"
+    )
+    Participant.objects.create(user=user, conversation=conversation)
 
     # Redirect to the conversation thread
     return redirect('message:conversation_thread', username=username, conversation_id=conversation.id)
