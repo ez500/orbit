@@ -14,11 +14,13 @@ def unread_notifications(request):
 
 
 # TODO FIX BUG OF RELOADING INSIGHTS FOR CERTAIN ACTIONS
+# TODO APPLY ORBIT INSIGHT RELEVANT FEATURES TO ALL PAGES
 def recall_orbit_insights(request):
     if not request.user.is_authenticated:
         return {}
 
-    latest_batch_id = InsightSuggestion.objects.aggregate(max_field_value=Max('batch_id'))['max_field_value']
+    latest_batch_time = InsightSuggestion.objects.aggregate(max_field_value=Max('created_at'))['max_field_value']
+    latest_batch_id = InsightSuggestion.objects.filter(user=request.user, created_at=latest_batch_time).first().batch_id
     recall_insights = InsightSuggestion.objects.filter(user=request.user, batch_id=latest_batch_id, executed=False)
 
     context = dict()
