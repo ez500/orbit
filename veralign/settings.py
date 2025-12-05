@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "message",
     "rest_framework",
     "document_storing",
+    "help",
 ]
 
 MIDDLEWARE = [
