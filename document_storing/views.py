@@ -108,8 +108,8 @@ def delete_file(request, file_path):
 
 
 def download_file(request, file_path):
-    path = file_path.replace("%slash%", '/')
-    absolute_file_path = os.path.join(settings.MEDIA_ROOT, "file_storage", path)
+    path = file_path.replace("%slash%", os.sep)
+    absolute_file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(absolute_file_path):
         with open(absolute_file_path, "rb") as fh:
             response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
