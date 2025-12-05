@@ -155,32 +155,32 @@ def _build_prompt(ctx):
         '"send_message" | "send_email" | "general_insight",\n'
         "      // if type == create_task\n"
         '      "title": string,\n'
-        '      "description": string, // Include source and context\n'
+        '      "content": string, // Include source and context\n'
         '      "deadline": "YYYY-MM-DD" | null,\n'
         '      "project_or_team_id": integer | null, // If task is applicable to either team or project \n'
         '      "users"; [integer], // User IDs assigned to task, as allowed by current user\'s permissions\n'
         "      // if type == create_event\n"
-        '      "event_title": string,\n'
-        '      "event_description": string, // Include source and context\n'
+        '      "title": string,\n'
+        '      "content": string, // Include source and context\n'
         '      "start_datetime": "YYYY-MM-DD HH:MM:SS",\n'
         '      "end_datetime": "YYYY-MM-DD HH:MM:SS",\n\n'
         '      "project_or_team_id": integer | null, // If event is applicable to either team or project \n'
         '      "users": [integer], // User IDs involved in event, as allowed by current user\'s permissions\n'
         "      // if type == create_announcement "
         "(Note: Only administrators or owners of companies can create announcements\n"
-        '      "announcement_title": string,\n'
-        '      "announcement_content": string, // Include source and context\n'
+        '      "title": string,\n'
+        '      "content": string, // Include source and context\n'
         '      "company_id": integer,\n'
         '      "tasks": [integer], // Related task IDs\n'
         "      // if type == send_message\n"
         '      "recipient_user_ids": [integer],\n'
-        '      "message_content": string, // Include source and context\n'
+        '      "content": string, // Include source and context\n'
         "      // if type == send_email\n"
         '      "recipient_user_ids": [integer],\n'
-        '      "email_subject": string,\n'
-        '      "email_body": string, // Include source and context\n'
+        '      "subject": string,\n'
+        '      "content": string, // Include source and context\n'
         "      // if type == general_insight\n"
-        '      "insight_content": string // Include source and context\n'
+        '      "content": string // Include source and context\n'
         "    }\n"
         "  ],\n"
         '  "fallback": boolean // true if there is not enough context or there are no suggestions\n'

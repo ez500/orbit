@@ -1,4 +1,5 @@
 import json
+import traceback
 from datetime import date
 
 from django.contrib import messages
@@ -46,7 +47,6 @@ def dashboard(request):
     return render(request, 'dashboard/dashboard.html', context)
 
 
-# TODO LOAD ORBIT PAGE FIRST, THEN FETCH SUGGESTIONS VIA API
 # TODO ADD CONFIRMATION PAGE BEFORE EXECUTING ANY SUGGESTION
 @login_required
 def orbit_insights(request):
@@ -79,7 +79,6 @@ class OrbitInsightsAPIView(APIView):
 
 
 @login_required
-@require_POST
 def execute_suggestion(request, suggestion_id):
     suggestion = get_object_or_404(
         InsightSuggestion, id=suggestion_id, user=request.user
@@ -117,8 +116,7 @@ def execute_suggestion(request, suggestion_id):
                         task.save()
 
             if user_ids:
-                task.users = User.objects.filter(id__in=user_ids)
-                task.save()
+                task.users.set(User.objects.filter(id__in=user_ids))
 
             suggestion.mark_executed()
             messages.success(request, "Task created from insight.")
@@ -155,8 +153,7 @@ def execute_suggestion(request, suggestion_id):
                         event.save()
 
             if user_ids:
-                event.users = User.objects.filter(id__in=user_ids)
-                event.save()
+                event.users.set(User.objects.filter(id__in=user_ids))
 
             suggestion.mark_executed()
             messages.success(request, "Event created from insight.")
@@ -228,6 +225,7 @@ def execute_suggestion(request, suggestion_id):
 
     except Exception:
         messages.error(request, "Failed to execute insight suggestion.")
+        traceback.print_exc()
         return redirect("dashboard:orbit_insights")
 
 

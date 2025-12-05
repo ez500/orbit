@@ -67,7 +67,7 @@ class InsightSuggestion(models.Model):
         ("create_announcement", "Create Announcement"),
         ("send_message", "Send Message"),
         ("send_email", "Send Email"),
-        ("general_insight", "General Insight"),
+        ("general_insight", "Insight"),
     ]
 
     user = models.ForeignKey(
@@ -76,12 +76,21 @@ class InsightSuggestion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     suggestion_type = models.CharField(max_length=50, choices=TYPE_CHOICES)
     raw_data = models.JSONField(encoder=DjangoJSONEncoder, default=dict)
+    saved = models.BooleanField(default=False)
     executed = models.BooleanField(default=False)
+    saved_at = models.DateTimeField(null=True, blank=True)
     executed_at = models.DateTimeField(null=True, blank=True)
     batch_id = models.CharField(max_length=100, null=True, blank=True)
 
+    # TODO SAVED AND EXECUTED SUGGESTIONS VIEW SECTION ON ORBIT INSIGHTS PAGE
+    def mark_saved(self):
+        self.saved = True
+        self.saved_at = timezone.now()
+        self.save()
+
     def mark_executed(self):
         self.executed = True
+        self.saved = False
         self.executed_at = timezone.now()
         self.save()
 

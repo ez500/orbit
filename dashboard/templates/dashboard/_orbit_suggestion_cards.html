@@ -15,22 +15,10 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <h5 class="card-title">
-                                {% if data.type == 'create_task' %}
-                                    Task: {{ data.title|default:'AI Task' }}
-                                {% elif data.type == 'create_event' %}
-                                    Event: {{ data.event_title|default:'AI Event' }}
-                                {% elif data.type == 'create_announcement' %}
-                                    Announcement: {{ data.announcement_title|default:'AI Announcement' }}
-                                {% elif data.type == 'send_message' %}
-                                    Message Suggestion
-                                {% elif data.type == 'send_email' %}
-                                    Email Suggestion
-                                {% else %}
-                                    Insight
-                                {% endif %}
+                                {{ s.get_suggestion_type_display }}{% if data.title %}: {{ data.title }}{% endif %}
                             </h5>
                             <p class="card-text">
-                                {{ data|get_key:"description"|default:data|get_key:"event_description"|default:data|get_key:"announcement_content"|default:data|get_key:"message_content"|default:data|get_key:"email_body"|default:data|get_key:"insight_content" }}
+                                {{ data|get_key:"content" }}
                             </p>
 
                             <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">
