@@ -54,18 +54,18 @@
                         <div class="col-md-3 col-lg-2">
                             <select name="status" class="form-select">
                                 <option value="">Status</option>
-                                <option value="todo {% if status_filter == 'todo' %}selected{% endif %}">To Do</option>
-                                <option value="in_progress {% if status_filter == 'in_progress' %}selected{% endif %}">In Progress</option>
-                                <option value="review {% if status_filter == 'review' %}selected{% endif %}">Pending Review</option>
-                                <option value="completed {% if status_filter == 'completed' %}selected{% endif %}">Completed</option>
+                                <option value="todo" {% if status_filter == 'todo' %}selected{% endif %}>To Do</option>
+                                <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                <option value="review" {% if status_filter == 'review' %}selected{% endif %}>Pending Review</option>
+                                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
                             </select>
                         </div>
                         <div class="col-md-3 col-lg-2">
                             <select name="deadline" class="form-select">
                                 <option value="">Deadline</option>
-                                <option value="overdue {% if deadline_filter == 'overdue' %}selected{% endif %}">Overdue</option>
-                                <option value="today {% if deadline_filter == 'today' %}selected{% endif %}">Today</option>
-                                <option value="upcoming {% if deadline_filter == 'upcoming' %}selected{% endif %}">Upcoming</option>
+                                <option value="overdue" {% if deadline_filter == 'overdue' %}selected{% endif %}>Overdue</option>
+                                <option value="today" {% if deadline_filter == 'today' %}selected{% endif %}>Today</option>
+                                <option value="upcoming" {% if deadline_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
                             </select>
                         </div>
                         <div class="col-md-3 col-lg-2">
@@ -93,13 +93,13 @@
                         <div class="col-md-3 col-lg-2">
                             <select name="sort" class="form-select">
                                 <option value="">Sort</option>
-                                <option value="deadline_asc {% if sort_filter == 'deadline_asc' %}selected{% endif %}">Deadline Asc</option>
-                                <option value="deadline_desc {% if sort_filter == 'deadline_desc' %}selected{% endif %}">Deadline Desc</option>
-                                <option value="created_asc {% if sort_filter == 'created_asc' %}selected{% endif %}">Created Asc</option>
-                                <option value="created_desc {% if sort_filter == 'created_desc' %}selected{% endif %}">Created Desc</option>
-                                <option value="title_asc {% if sort_filter == 'title_asc' %}selected{% endif %}">Title A-Z</option>
-                                <option value="title_desc {% if sort_filter == 'title_desc' %}selected{% endif %}">Title Z-A</option>
-                                <option value="status {% if sort_filter == 'status' %}selected{% endif %}">Status</option>
+                                <option value="deadline_asc" {% if sort_by == 'deadline_asc' %}selected{% endif %}>Deadline Asc</option>
+                                <option value="deadline_desc" {% if sort_by == 'deadline_desc' %}selected{% endif %}>Deadline Desc</option>
+                                <option value="created_asc" {% if sort_by == 'created_asc' %}selected{% endif %}>Created Asc</option>
+                                <option value="created_desc" {% if sort_by == 'created_desc' %}selected{% endif %}>Created Desc</option>
+                                <option value="title_asc" {% if sort_by == 'title_asc' %}selected{% endif %}>Title A\-Z</option>
+                                <option value="title_desc" {% if sort_by == 'title_desc' %}selected{% endif %}>Title Z\-A</option>
+                                <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Status</option>
                             </select>
                         </div>
                         <div class="col-md-3 col-lg-2 d-flex gap-2">
@@ -146,20 +146,6 @@
                                                 No deadline
                                             {% endif %}
                                         </small>
-                                        <div class="avatar-group">
-                                            <!--
-                                            <img
-                                              src="https://ui-avatars.com/api/?name=John+Doe"
-                                              alt="John D."
-                                              class="avatar"
-                                            />
-                                            <img
-                                              src="https://ui-avatars.com/api/?name=Jane+Smith"
-                                              alt="Jane S."
-                                              class="avatar"
-                                            />
-                                            -->
-                                        </div>
                                     </div>
                                 </div>
                             </div>
