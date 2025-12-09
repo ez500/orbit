@@ -1,67 +1,63 @@
-{% extends 'base.html' %}
+{% extends 'base_landing.html' %}
 {% load static %}
 {% load widget_tweaks %}
 
 {% block extra_css %}
-<link href="{% static 'css/form.css' %}" rel="stylesheet">
+<link href="{% static 'css/auth.css' %}" rel="stylesheet">
 {% endblock extra_css %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card-group">
-            <div class="card p-4">
-                <div class="card-body">
-                    <h1>Signup</h1>
-                    <p class="text-muted">Make an account.</p>
+<div class="auth-container">
+    <div class="auth-card auth-card-wide">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <i class="fas fa-circle-notch"></i>
+            </div>
+            <h1 class="auth-title">Get started with Orbit</h1>
+            <p class="auth-subtitle">Create your account and start managing relationships</p>
+        </div>
 
-                    <form action="." method="POST">
-                        {% csrf_token %}
-                        {% for field in form.visible_fields %}
-                            <div class="form-group{% if field.errors %} has-error {% endif %}">
-                                <label>
-                                    {% if field.field.required %}
-                                        <span class="required">{{ field.label }} </span>
-                                    {% else %}
-                                        {{ field.label }}
-                                    {% endif %}
-                                </label>
-                                <div class="input-group">
-                  <span class="input-group-text">
-                    {% if field.name == 'email' %}
-                        <i class="fas fa-at"></i>
-                    {% elif field.name == 'password1' or field.name == 'password2' %}
-                        <i class="fas fa-lock"></i>
-                    {% elif field.name == 'username' %}
-                        <i class="fas fa-user"></i>
-                    {% else %}
-                        <i class="fas fa-face-smile"></i>
-                    {% endif %}
-                  </span>
-                                    {% render_field field class="form-control" placeholder=field.label %}
-                                </div>
-                                <span class="text-muted">{{ field.help_text }}</span>
-                                {% for error in field.errors %}
-                                    <br> <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            </div>
+        <form action="." method="POST" class="auth-form">
+            {% csrf_token %}
+
+            <div class="form-grid">
+                {% for field in form.visible_fields %}
+                    <div class="form-group {% if field.name == 'password1' or field.name == 'password2' %}form-group-full{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            <i class="{% if field.name == 'email' %}fas fa-at{% elif field.name == 'password1' or field.name == 'password2' %}fas fa-lock{% elif field.name == 'username' %}fas fa-user{% else %}fas fa-info-circle{% endif %}"></i>
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {% render_field field class="form-input" placeholder=field.label id=field.id_for_label %}
+                        {% if field.help_text %}
+                            <span class="form-help">{{ field.help_text }}</span>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <span class="form-error">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ error }}
+                            </span>
                         {% endfor %}
-
-                        <button class="btn btn-block btn-success" type="submit">Signup</button>
-                    </form>
-                </div>
-            </div>
-            <div class="card text-white bg-primary py-5 d-md-down-none"
-                 style="width:44%; justify-content: center !important">
-                <div class="card-body text-center" style="flex: none;">
-                    <div>
-                        <!--img src="{% static 'img/django-logo-negative.png' %}" alt="django-logo-negative.png" width="150px"-->
-                        <h2>Login</h2>
-                        <p>Go to login.</p>
-                        <a class="btn btn-primary active mt-3" href="{% url 'accounts:login' %}">Login</a>
                     </div>
-                </div>
+                {% endfor %}
             </div>
+
+            <button class="btn-auth btn-auth-primary" type="submit">
+                <i class="fas fa-rocket"></i>
+                Create Account
+            </button>
+        </form>
+
+        <div class="auth-divider">
+            <span>or</span>
+        </div>
+
+        <div class="auth-switch">
+            <p>Already have an account?</p>
+            <a href="{% url 'accounts:login' %}" class="btn-auth btn-auth-secondary">
+                <i class="fas fa-sign-in-alt"></i>
+                Sign In
+            </a>
         </div>
     </div>
 </div>
