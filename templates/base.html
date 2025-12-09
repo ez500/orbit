@@ -82,7 +82,7 @@
     </style>
 </head>
 <body{% if user.is_authenticated %} data-username="{{ user.username }}"{% endif %}>
-<!-- {# TODO CONSIDER NAVBAR WHEN NOT LOGGED IN #} {# -->
+<!-- TODO CONSIDER NAVBAR WHEN NOT LOGGED IN -->
 <!-- <header>
       x#}  X{#x
       <div class="container">
@@ -124,6 +124,11 @@
             &copy; 2025 VerAlign. AI-based Customer Relationship Management. All
             Rights Reserved. <a href="/admin/">Admin</a>
         </p>
+        {% if title in "Tasks" %}
+            <a class="text-black"  href="{% url "help:task_help" %}">Help</a>
+        {% else  %}
+            <a class="text-black" href="{% url "help:account_help" %}">Help</a>
+        {% endif %}
     </div>
 </footer>
 

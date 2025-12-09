@@ -30,6 +30,8 @@ urlpatterns = [
     path("projects/", include("projects.urls", namespace="projects")),
     path('', include("home.urls")),
     path("message/", include("message.urls", namespace="message")),
+    path("files/", include("document_storing.urls")),
+    path("help/", include("help.urls", namespace="help")),
     #path('', include("home.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

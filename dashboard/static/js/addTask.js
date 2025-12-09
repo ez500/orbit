@@ -1,4 +1,4 @@
-(function() {
+ (function() {
   'use strict';
 
   // Get CSRF token
@@ -204,3 +204,32 @@
     }
   });
 })();
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify(data),
+        }).then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        }).then(() => {
+            alert('Task added successfully!');
+            document.getElementById('addTaskForm').reset();
+            const modalEl = document.getElementById('addTaskModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            window.location.reload();
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Failed to add task. Please try again.');
+        });
+    }
+
+    document.getElementById('addTaskBtn').addEventListener("click", () => {
+        addNewTask();
+    })
+
+    const deleteButton = document.getElementById('deleteTaskBtn');
+    if (deleteButton) {
+        deleteButton.addEventListener("click", event => event.preventDefault());
+    }
+});
+>>>>>>> origin
