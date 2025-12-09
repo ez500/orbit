@@ -40,7 +40,7 @@ class Task(models.Model):
     content = models.CharField(max_length=200, blank=True)
     status = models.CharField(max_length=20, choices=STATUS, default='todo')
     deadline = models.DateField(null=True, blank=True)
-    pub_date = models.DateTimeField(auto_now=True)
+    pub_date = models.DateTimeField(auto_now_add=True)
     team = models.ForeignKey('teams.Team', on_delete=models.CASCADE, null=True, blank=True,
                              related_name='tasks')
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, null=True, blank=True,
@@ -57,7 +57,7 @@ class Event(models.Model):
     content = models.CharField(max_length=200, blank=True)
     start_datetime = models.DateTimeField(null=True, blank=True)
     end_datetime = models.DateTimeField(null=True, blank=True)
-    pub_date = models.DateTimeField(auto_now=True)
+    pub_date = models.DateTimeField(auto_now_add=True)
     team = models.ForeignKey('teams.Team', on_delete=models.CASCADE, null=True, blank=True,
                              related_name='events')
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, null=True, blank=True,
@@ -119,4 +119,4 @@ class InsightSuggestion(models.Model):
 
     def __str__(self):
         return f"{self.id} ({self.user.username} - {self.suggestion_type})"
-    
+

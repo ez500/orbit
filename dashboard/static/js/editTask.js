@@ -1,3 +1,8 @@
+/**
+ * Edit Task Functionality
+ * Handles editing tasks from the task modal
+ */
+
 (function() {
   'use strict';
 
@@ -208,38 +213,92 @@
   }
 
   // Load teams and projects from the main form
-  function loadTeamsAndProjects() {
+  async function loadTeamsAndProjects() {
     const mainTeamSelect = document.getElementById('taskTeam');
     const mainProjectSelect = document.getElementById('taskProject');
     const editTeamSelect = document.getElementById('editTaskTeam');
     const editProjectSelect = document.getElementById('editTaskProject');
+    const taskData = window.currentTaskData || {};
 
-    if (mainTeamSelect && editTeamSelect) {
-      // Copy teams from main form to edit form
+    // If main selects exist on the page, copy their options into the edit form
+    if (mainTeamSelect && mainProjectSelect && editTeamSelect && editProjectSelect) {
+      // Copy teams
       editTeamSelect.innerHTML = '<option value="">None</option>';
       Array.from(mainTeamSelect.options).forEach(opt => {
-        if (opt.value) {
-          const newOpt = opt.cloneNode(true);
-          if (window.currentTaskData.team && parseInt(opt.value) === window.currentTaskData.team) {
-            newOpt.selected = true;
-          }
-          editTeamSelect.appendChild(newOpt);
+        const newOpt = opt.cloneNode(true);
+        if (opt.value && taskData.team && parseInt(opt.value, 10) === taskData.team) {
+          newOpt.selected = true;
         }
+        editTeamSelect.appendChild(newOpt);
       });
-    }
 
-    if (mainProjectSelect && editProjectSelect) {
-      // Copy projects from main form to edit form
+      // Copy projects
       editProjectSelect.innerHTML = '<option value="">None</option>';
       Array.from(mainProjectSelect.options).forEach(opt => {
-        if (opt.value) {
-          const newOpt = opt.cloneNode(true);
-          if (window.currentTaskData.project && parseInt(opt.value) === window.currentTaskData.project) {
-            newOpt.selected = true;
-          }
-          editProjectSelect.appendChild(newOpt);
+        const newOpt = opt.cloneNode(true);
+        if (opt.value && taskData.project && parseInt(opt.value, 10) === taskData.project) {
+          newOpt.selected = true;
+        }
+        editProjectSelect.appendChild(newOpt);
+      });
+
+      return;
+    }
+
+    // Otherwise fetch via API
+    await fetchTeamsAndProjects();
+  }
+
+  // Fetch teams and projects from API
+  async function fetchTeamsAndProjects() {
+    const editTeamSelect = document.getElementById('editTaskTeam');
+    const editProjectSelect = document.getElementById('editTaskProject');
+    const taskData = window.currentTaskData;
+
+    try {
+      // Fetch user's teams and projects
+      const response = await fetch('/dashboard/api/user-teams-projects/', {
+        headers: {
+          'X-CSRFToken': getCSRFToken()
         }
       });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Populate teams
+        if (editTeamSelect && data.teams) {
+          editTeamSelect.innerHTML = '<option value="">None</option>';
+          data.teams.forEach(team => {
+            const option = document.createElement('option');
+            option.value = team.id;
+            option.textContent = team.name;
+            if (taskData.team && team.id === taskData.team) {
+              option.selected = true;
+            }
+            editTeamSelect.appendChild(option);
+          });
+        }
+
+        // Populate projects
+        if (editProjectSelect && data.projects) {
+          editProjectSelect.innerHTML = '<option value="">None</option>';
+          data.projects.forEach(project => {
+            const option = document.createElement('option');
+            option.value = project.id;
+            option.textContent = project.name;
+            if (taskData.project && project.id === taskData.project) {
+              option.selected = true;
+            }
+            editProjectSelect.appendChild(option);
+          });
+        }
+      }
+    } catch (error) {
+      console.error('[EditTask] Error fetching teams/projects:', error);
+      // Fallback: just set None option
+      if (editTeamSelect) editTeamSelect.innerHTML = '<option value="">None</option>';
+      if (editProjectSelect) editProjectSelect.innerHTML = '<option value="">None</option>';
     }
   }
 
@@ -358,6 +417,128 @@
     });
   }
 
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Setup event listeners for save button
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.id === 'saveTaskBtn') {
+        handleSaveTask();
+      }
+    });
+
+    // Team selection change
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.id === 'editTaskTeam') {
+        const teamId = e.target.value;
+        if (teamId) {
+          loadTeamMembers(teamId);
+          // Clear project selection
+          const projectSelect = document.getElementById('editTaskProject');
+          if (projectSelect) projectSelect.value = '';
+        }
+      }
+    });
+
+    // Project selection change
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.id === 'editTaskProject') {
+        const projectId = e.target.value;
+        if (projectId) {
+          loadProjectMembers(projectId);
+          // Clear team selection
+          const teamSelect = document.getElementById('editTaskTeam');
+          if (teamSelect) teamSelect.value = '';
+        }
+      }
+    });
+  });
+
+  // Handle save task
+  async function handleSaveTask() {
+    const editTaskForm = document.getElementById('editTaskForm');
+    if (!editTaskForm) return;
+
+    const taskId = editTaskForm.dataset.taskId;
+    const teamSelect = document.getElementById('editTaskTeam');
+    const projectSelect = document.getElementById('editTaskProject');
+    const usersSelect = document.getElementById('editTaskUsers');
+
+    // Get deadline and convert from local timezone to UTC
+    const deadlineValue = document.getElementById('editTaskDeadline').value;
+    const deadlineUTC = deadlineValue && window.TimezoneUtils ?
+      window.TimezoneUtils.localToUtc(deadlineValue) : deadlineValue;
+
+    const taskData = {
+      title: document.getElementById('editTaskTitle').value.trim(),
+      content: document.getElementById('editTaskContent').value.trim(),
+      deadline: deadlineUTC || null,
+      status: document.getElementById('editTaskStatus').value,
+      team: teamSelect?.value || null,
+      project: projectSelect?.value || null,
+      users: Array.from(usersSelect?.selectedOptions || []).map(opt => parseInt(opt.value))
+    };
+
+    // Validate
+    if (!taskData.title) {
+      showNotification('Please enter a task title', 'danger');
+      return;
+    }
+
+    if (!taskData.users || taskData.users.length === 0) {
+      showNotification('Please select at least one assignee', 'danger');
+      return;
+    }
+
+    // Disable button
+    const saveBtn = document.getElementById('saveTaskBtn');
+    saveBtn.disabled = true;
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+    try {
+      const response = await fetch(`/dashboard/api/tasks/${taskId}/update/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(taskData)
+      });
+
+      if (response.ok) {
+        showNotification('Task updated successfully!', 'success');
+
+        // Close modal properly
+        const modalElement = document.getElementById('viewTaskModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+          modal.hide();
+          // Remove backdrop and restore body
+          setTimeout(() => {
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+          }, 150);
+        }
+
+        // Reload page
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      } else {
+        const error = await response.json();
+        showNotification('Error: ' + (error.error || error.message || 'Unknown error'), 'danger');
+      }
+    } catch (error) {
+      console.error('[EditTask] Error:', error);
+      showNotification('Failed to update task. Please try again.', 'danger');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = originalText;
+    }
+  }
+
   // Show notification
   function showNotification(message, type = 'info') {
     const container = document.querySelector('.container-fluid') || document.querySelector('.container');
@@ -378,4 +559,5 @@
       alert.remove();
     }, 5000);
   }
+
 })();

@@ -29,17 +29,18 @@
 .landing-nav {
     position: sticky;
     top: 0;
-    background: rgba(10, 10, 10, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--landing-border);
+    /* Slightly more transparent so hero gradient shows beneath */
+    background: rgba(10, 10, 10, 0.1);
+    backdrop-filter: blur(20px);
     padding: 1rem 0;
-    z-index: 1000;
+
 }
 
 .nav-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    z-index: 0;
 }
 
 .brand {
@@ -61,16 +62,6 @@
 .brand i {
     color: var(--landing-primary);
     font-size: 1.75rem;
-    animation: rotate 8s linear infinite;
-}
-
-@keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
 }
 
 .nav-actions {
@@ -134,7 +125,10 @@
 
 /* Hero Section */
 .hero-section {
-    padding: 8rem 0 6rem;
+    /* Pull the hero section up under the sticky nav so the gradient shows beneath it */
+    --landing-nav-height: 72px; /* fallback nav height */
+    margin-top: calc(-1 * var(--landing-nav-height));
+    padding: calc(8rem + var(--landing-nav-height)) 0 6rem;
     text-align: center;
     background:
         radial-gradient(circle at 20% 50%, rgba(30, 144, 255, 0.08) 0%, transparent 50%),
@@ -142,7 +136,7 @@
         linear-gradient(180deg, rgba(30, 144, 255, 0.03) 0%, transparent 100%);
     border-bottom: 1px solid var(--landing-border);
     position: relative;
-    overflow: hidden;
+    overflow: visible; 
 }
 
 .hero-section::before {
@@ -205,9 +199,10 @@
     position: relative;
     display: inline-block;
     letter-spacing: -0.02em;
-    transform: skewX(-5deg);
-    padding: 0 0.1em;
-    margin: 0 0.05em;
+    transform: skewX(-3deg);
+    padding: 0 0.2em 0 0.05em;
+    margin: 0 0.15em;
+    overflow: visible;
 }
 
 .hero-subtitle {
@@ -299,38 +294,16 @@
     color: var(--landing-text-muted);
 }
 
-.features-grid {
+/* Features Container - Masonry-style layout */
+.features-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.feature-card {
-    background: var(--landing-card-bg);
-    border: 1px solid var(--landing-border);
-    border-radius: 16px;
-    padding: 2rem;
-    transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-    border-color: var(--landing-primary);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-.feature-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
-    background: rgba(30, 144, 255, 0.1);
-    color: var(--landing-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-}
+/* Feature cards - Enhanced styles defined at end of file */
 
 .feature-title {
     font-size: 1.25rem;
@@ -343,17 +316,11 @@
     line-height: 1.6;
 }
 
-/* CTA Section */
-.cta-section {
-    padding: 6rem 0;
-    text-align: center;
-    background: linear-gradient(180deg, transparent 0%, rgba(30, 144, 255, 0.05) 100%);
-    border-top: 1px solid var(--landing-border);
-}
-
+/* CTA Section - Enhanced styles defined at end of file */
 .cta-content {
     max-width: 700px;
     margin: 0 auto;
+    text-align: center;
 }
 
 .cta-title {
@@ -373,6 +340,7 @@
 .landing-footer {
     background: var(--landing-card-bg);
     border-top: 1px solid var(--landing-border);
+
     padding: 2rem 0;
     margin-top: auto;
 }
@@ -684,5 +652,402 @@ textarea.form-control {
 
     .modal-body {
         padding: 1.5rem;
+    }
+}
+
+/* Enhanced Hero Section Styles */
+.hero-background-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(30, 144, 255, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(138, 43, 226, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.08) 0%, transparent 60%);
+    /* Keep subtle motion but do not rotate the entire layer */
+    animation: gradientShift 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes gradientShift {
+    /* Subtle pulsing without rotation to avoid visual shift */
+    0%, 100% {
+        transform: scale(1) translateY(0);
+        opacity: 0.65;
+    }
+    50% {
+        transform: scale(1.03) translateY(-6px);
+        opacity: 0.8;
+    }
+}
+
+.hero-trust-badges {
+    margin-top: 3rem;
+    animation: fadeInUp 0.6s ease-out 0.4s backwards;
+}
+
+.trust-text {
+    font-size: 0.875rem;
+    color: var(--landing-text-muted);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+}
+
+.trust-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.8125rem;
+    color: var(--landing-text-muted);
+    font-weight: 500;
+}
+
+.trust-icons i {
+    color: var(--landing-primary);
+    margin-right: 0.375rem;
+    font-size: 1rem;
+}
+
+.trust-icons .separator {
+    color: rgba(255, 255, 255, 0.3);
+    margin: 0 0.25rem;
+}
+
+/* Workflow Section */
+.workflow-section {
+    padding: 6rem 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(30, 144, 255, 0.02) 50%, transparent 100%);
+    border-top: 1px solid var(--landing-border);
+    border-bottom: 1px solid var(--landing-border);
+}
+
+.workflow-steps {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 2rem;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.workflow-step {
+    text-align: center;
+    padding: 2.5rem 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--landing-border);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.workflow-step:hover {
+    transform: translateY(-8px);
+    background: rgba(30, 144, 255, 0.05);
+    border-color: rgba(30, 144, 255, 0.3);
+    box-shadow: 0 16px 40px rgba(30, 144, 255, 0.15);
+}
+
+.step-number {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--landing-primary) 0%, #8a2be2 100%);
+    padding: 0.375rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(30, 144, 255, 0.4);
+}
+
+.step-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, rgba(30, 144, 255, 0.15) 0%, rgba(138, 43, 226, 0.15) 100%);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--landing-primary);
+    transition: all 0.3s ease;
+}
+
+.workflow-step:hover .step-icon {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 24px rgba(30, 144, 255, 0.3);
+}
+
+.step-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--landing-text);
+    letter-spacing: -0.01em;
+}
+
+.step-description {
+    font-size: 0.9375rem;
+    color: var(--landing-text-muted);
+    line-height: 1.7;
+}
+
+.workflow-connector {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--landing-primary) 50%, transparent 100%);
+    position: relative;
+    opacity: 0.5;
+}
+
+.workflow-connector::after {
+    content: '→';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--landing-primary);
+    font-size: 1.25rem;
+    background: var(--landing-bg);
+    padding: 0 0.5rem;
+}
+
+/* Enhanced Features Grid */
+.feature-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--landing-border);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--landing-primary) 0%, #8a2be2 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    background: rgba(30, 144, 255, 0.05);
+    border-color: rgba(30, 144, 255, 0.3);
+    box-shadow: 0 16px 40px rgba(30, 144, 255, 0.15);
+}
+
+.feature-card:hover::before {
+    opacity: 1;
+}
+
+.feature-card-highlight {
+    background: linear-gradient(135deg, rgba(30, 144, 255, 0.08) 0%, rgba(138, 43, 226, 0.05) 100%);
+    border-color: rgba(30, 144, 255, 0.2);
+}
+
+.feature-icon-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+.feature-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, rgba(30, 144, 255, 0.15) 0%, rgba(138, 43, 226, 0.15) 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: var(--landing-primary);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 24px rgba(30, 144, 255, 0.3);
+}
+
+.feature-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    color: var(--landing-primary);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-link {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.feature-link i {
+    transition: transform 0.3s ease;
+}
+
+.feature-link:hover i {
+    transform: translateX(4px);
+}
+
+/* Large Featured Card */
+.feature-card-large {
+    grid-column: span 2;
+    grid-row: span 2;
+    background: linear-gradient(135deg, rgba(30, 144, 255, 0.1) 0%, rgba(138, 43, 226, 0.08) 100%);
+    border-color: rgba(30, 144, 255, 0.25);
+    padding: 3rem 2.5rem;
+}
+
+.feature-card-large .feature-icon-large {
+    width: 80px;
+    height: 80px;
+    font-size: 2.25rem;
+    margin-bottom: 2rem;
+}
+
+.feature-card-large .feature-title {
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.feature-card-large .feature-description {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+}
+
+/* Staggered animation on load */
+.feature-card {
+    animation: fadeInUp 0.6s ease-out backwards;
+}
+
+.feature-card:nth-child(1) { animation-delay: 0.1s; }
+.feature-card:nth-child(2) { animation-delay: 0.2s; }
+.feature-card:nth-child(3) { animation-delay: 0.3s; }
+.feature-card:nth-child(4) { animation-delay: 0.4s; }
+.feature-card:nth-child(5) { animation-delay: 0.5s; }
+.feature-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Enhanced CTA Section */
+.cta-section {
+    padding: 6rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-gradient-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(30, 144, 255, 0.08) 0%, rgba(138, 43, 226, 0.08) 100%);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.cta-content {
+    position: relative;
+    z-index: 1;
+}
+
+.cta-note {
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+    color: var(--landing-text-muted);
+    font-weight: 500;
+}
+
+.btn-hero-large {
+    padding: 1.125rem 2.5rem;
+    font-size: 1.125rem;
+}
+
+/* Responsive Features */
+@media (max-width: 992px) {
+    .features-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+
+    .feature-card-large {
+        grid-column: span 2;
+        grid-row: span 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .features-container {
+        grid-template-columns: 1fr;
+    }
+
+    .feature-card-large {
+        grid-column: span 1;
+        grid-row: span 1;
+        padding: 2rem 1.5rem;
+    }
+
+    .feature-card-large .feature-icon-large {
+        width: 64px;
+        height: 64px;
+        font-size: 1.75rem;
+    }
+
+    .feature-card-large .feature-title {
+        font-size: 1.375rem;
+    }
+
+    .feature-card-large .feature-description {
+        font-size: 1rem;
+    }
+}
+
+/* Responsive Workflow */
+@media (max-width: 992px) {
+    .workflow-steps {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+
+    .workflow-connector {
+        display: none;
+    }
+
+    .workflow-step {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-trust-badges {
+        margin-top: 2rem;
+    }
+
+    .trust-icons {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .trust-icons .separator {
+        display: none;
     }
 }

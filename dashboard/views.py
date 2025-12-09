@@ -369,6 +369,27 @@ def get_project_or_team_members(request):
     return JsonResponse(formatted_members)
 
 
+@login_required
+def get_user_teams_projects(request):
+    """Get user's teams and projects for edit task modal"""
+    user = request.user
+
+    # Get user's teams
+    teams = Team.objects.filter(members=user)
+    teams_data = [{'id': team.id, 'name': team.name} for team in teams]
+
+    # Get user's projects
+    projects = Project.objects.filter(
+        Q(collaborators=user) | Q(lead=user)
+    ).distinct()
+    projects_data = [{'id': project.id, 'name': project.name} for project in projects]
+
+    return JsonResponse({
+        'teams': teams_data,
+        'projects': projects_data
+    })
+
+
 class TaskDetailModalView(DetailView):
     model = Task
     template_name = 'dashboard/calendar/_view_task_modal.html'
@@ -514,7 +535,10 @@ def get_widget_data(request, widget_type):
         events = [{
             'title': task.title,
             'start': task.deadline.isoformat() if task.deadline else None,
-            'className': f'status-{task.status}'
+            'className': f'status-{task.status}',
+            'extendedProps': {
+                'taskId': task.id
+            }
         } for task in tasks if task.deadline]
 
         return JsonResponse({'events': events})
@@ -561,7 +585,6 @@ def get_widget_data(request, widget_type):
         return JsonResponse({'error': 'Unknown widget type'}, status=400)
 
 
-@login_required
 def notifications(request):
     notifications_list = Notification.objects.filter(user=request.user).order_by("-created_at")
     return render(

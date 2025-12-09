@@ -2,8 +2,8 @@
 
 <!-- View Mode -->
 <div id="viewMode">
-    <div class="modal-header">
-        <h5 class="modal-title">{{ task.title }}</h5>
+    <div class="modal-header border-2">
+        <h5 class="modal-title mb-auto">{{ task.title }}</h5>
         <span class="badge {{ task.status|status_badge }} ms-2">{{ task.get_status_display }}</span>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     </div>
@@ -50,8 +50,8 @@
             <div class="task-view-section mb-3">
                 <label class="form-label text-muted">Assigned Users</label>
                 <div class="d-flex flex-wrap gap-2">
-                    {% for user in task.users.all %}
-                        <a href="{% url 'accounts:profile_view' user %}" class="btn btn-sm btn-outline-primary">{{ user.username }}</a>
+                    {% for u in task.users.all %}
+                        <a href="{% url 'accounts:profile_view' u %}" class="btn btn-sm btn-outline-primary">{{ u.username }}</a>
                     {% endfor %}
                 </div>
             </div>
@@ -63,7 +63,7 @@
     <div class="modal-footer">
         <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Close</button>
         <button class="btn btn-primary" id="editTaskBtn" onclick="toggleEditMode()">Edit</button>
-        <form action="{% url 'dashboard:task_delete' task.id %}" method="post" onsubmit="return confirm('Are you sure you want to delete this task?');" style="display: inline;">
+        <form action="{% url 'dashboard:task_delete' task.id %}" method="post" onsubmit="return confirm('Are you sure you want to delete this task?');" style="display: inline-block; margin-left: .5rem;">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">Delete</button>
         </form>
@@ -111,11 +111,15 @@
             <div class="task-sidebar-middle">
                 <div>
                     <label for="editTaskTeam" class="form-label">Team</label>
-                    <select class="form-select" id="editTaskTeam"><option value="">None</option></select>
+                    <select class="form-select" id="editTaskTeam">
+                        <option value="">None</option>
+                    </select>
                 </div>
                 <div>
                     <label for="editTaskProject" class="form-label">Project</label>
-                    <select class="form-select" id="editTaskProject"><option value="">None</option></select>
+                    <select class="form-select" id="editTaskProject">
+                        <option value="">None</option>
+                    </select>
                 </div>
             </div>
 
@@ -138,6 +142,10 @@
 <!-- Store task data in a hidden element for JavaScript to read -->
 <div id="taskData" style="display: none;" data-task-info='{
     "id": {{ task.id }},
+    "title": "{{ task.title|escapejs }}",
+    "content": "{{ task.content|escapejs }}",
+    "deadline": "{% if task.deadline %}{{ task.deadline|date:'Y-m-d' }}{% endif %}",
+    "status": "{{ task.status }}",
     "team": {% if task.team %}{{ task.team.id }}{% else %}null{% endif %},
     "project": {% if task.project %}{{ task.project.id }}{% else %}null{% endif %},
     "users": [{% for user in task.users.all %}{{ user.id }}{% if not forloop.last %}, {% endif %}{% endfor %}],

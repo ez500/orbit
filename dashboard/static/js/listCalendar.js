@@ -1,183 +1,173 @@
- (function() {
-  'use strict';
-
-  let calendar = null;
-
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize task list and calendar view
-    console.log('[ListCalendar] Initialized');
+document.addEventListener("DOMContentLoaded", function () {
+    const tasks = JSON.parse(document.getElementById("tasks-data").textContent);
 
     // View toggle functionality
-    const viewToggleButtons = document.querySelectorAll('.view-toggle button');
-    const listView = document.getElementById('listView');
-    const calendarView = document.getElementById('calendarView');
+    const viewToggleButtons = document.querySelectorAll(".view-toggle .btn");
+    const listViews = document.querySelectorAll(".card:not(#calendarView)");
+    const calendarView = document.querySelector("#calendarView");
 
-    viewToggleButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        const view = this.dataset.view;
+    viewToggleButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+            viewToggleButtons.forEach((btn) => btn.classList.remove("active"));
+            this.classList.add("active");
 
-        // Update active button
-        viewToggleButtons.forEach(btn => btn.classList.remove('active'));
-        this.classList.add('active');
-
-        // Toggle views
-        if (view === 'list') {
-          listView.classList.remove('d-none');
-          calendarView.classList.add('d-none');
-        } else if (view === 'calendar') {
-          listView.classList.add('d-none');
-          calendarView.classList.remove('d-none');
-          // Initialize calendar if not already done
-          if (!calendar) {
-            initializeCalendar();
-          }
-        }
-      });
+            if (this.dataset.view === "calendar") {
+                listViews.forEach((listView) => listView.classList.add("d-none"));
+                calendarView.classList.remove("d-none");
+            } else {
+                listViews.forEach((listView) => listView.classList.remove("d-none"));
+                calendarView.classList.add("d-none");
+            }
+        });
     });
 
-    // Initialize FullCalendar
-    function initializeCalendar() {
-      const calendarEl = document.getElementById('calendarView');
-      if (!calendarEl) return;
+    const form = document.getElementById("taskFilterForm");
+    form.querySelectorAll("select").forEach(sel => {
+        sel.addEventListener("change", () => form.submit());
+    })
 
-      // Get tasks data from the template
-      const tasksData = document.getElementById('tasks-data');
-      let tasks = [];
+    // Calendar initialization
+    const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+    let currentDate = new Date();
 
-      if (tasksData) {
-        try {
-          tasks = JSON.parse(tasksData.textContent);
-        } catch (e) {
-          console.error('[ListCalendar] Error parsing tasks data:', e);
+    function renderCalendar() {
+        const firstDay = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            1
+        );
+        const lastDay = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() + 1,
+            0
+        );
+        const startingDay = firstDay.getDay();
+        const totalDays = lastDay.getDate();
+
+        document.getElementById("currentMonth").textContent = `${
+            months[currentDate.getMonth()]
+        } ${currentDate.getFullYear()}`;
+
+        const calendarGrid = document.getElementById("calendarGrid");
+        calendarGrid.innerHTML = "";
+
+        let currentRow = document.createElement("div");
+        currentRow.className = "row g-0";
+
+        // Add empty cells for days before the first day of the month
+        for (let i = 0; i < startingDay; i++) {
+            currentRow.appendChild(createDayCell("", true));
         }
-      }
 
-      // Convert tasks to calendar events
-      const events = tasks.map(task => {
-        let color = '#6c757d'; // default gray
-
-        switch(task.status) {
-          case 'todo':
-            color = '#6c757d';
-            break;
-          case 'in_progress':
-            color = '#007bff';
-            break;
-          case 'review':
-            color = '#ffc107';
-            break;
-          case 'completed':
-            color = '#28a745';
-            break;
-        }
-
-        return {
-          title: task.title,
-          start: task.deadline || new Date().toISOString().split('T')[0],
-          backgroundColor: color,
-          borderColor: color,
-          extendedProps: {
-            id: task.id,
-            status: task.status,
-            content: task.content
-          }
-        };
-      });
-
-      // Clear and recreate calendar container
-      const cardBody = calendarEl.querySelector('.card-body');
-      cardBody.innerHTML = '<div id="fullcalendar"></div>';
-
-      const fullcalendarEl = document.getElementById('fullcalendar');
-
-      // Initialize FullCalendar
-      if (typeof FullCalendar !== 'undefined') {
-        calendar = new FullCalendar.Calendar(fullcalendarEl, {
-          initialView: 'dayGridMonth',
-          headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,listWeek'
-          },
-          events: events,
-          height: 'auto',
-          eventClick: function(info) {
-            const taskId = info.event.extendedProps.id;
-            if (taskId) {
-              loadTaskModal(taskId);
+        // Add cells for each day of the month
+        for (let day = 1; day <= totalDays; day++) {
+            const date = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                day
+            );
+            if ((day + startingDay - 1) % 7 === 0 && day !== 1) {
+                calendarGrid.appendChild(currentRow);
+                currentRow = document.createElement("div");
+                currentRow.className = "row g-0";
             }
-          },
-          eventDidMount: function(info) {
-            // Add tooltip
-            info.el.title = info.event.extendedProps.content || info.event.title;
-          }
-        });
+            currentRow.appendChild(createDayCell(day, false, date));
+        }
 
-        calendar.render();
-      } else {
-        console.error('[ListCalendar] FullCalendar not loaded');
-        cardBody.innerHTML = '<div class="alert alert-warning m-3">Calendar library not loaded. Please refresh the page.</div>';
-      }
+        // Add empty cells for remaining days
+        const remainingCells = 7 - currentRow.children.length;
+        for (let i = 0; i < remainingCells; i++) {
+            currentRow.appendChild(createDayCell("", true));
+        }
+        calendarGrid.appendChild(currentRow);
     }
 
-    // Handle task modal views
-    const viewTaskLinks = document.querySelectorAll('[data-task-id]');
-    viewTaskLinks.forEach(link => {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        const taskId = this.dataset.taskId;
-        if (taskId) {
-          loadTaskModal(taskId);
-        }
-      });
-    });
+    function createDayCell(day, inactive, date) {
+        const cell = document.createElement("div");
+        cell.className = `col border calendar-day${inactive ? " inactive" : ""} position-relative`;
+        if (!inactive) {
+            const dateStr = date.toISOString().split("T")[0];
+            const today = new Date();
+            const isToday = date.toDateString() === today.toDateString();
 
-    // Load task details in modal
-    async function loadTaskModal(taskId) {
-      try {
-        const response = await fetch(`/dashboard/tasks/${taskId}/view/`);
-        if (response.ok) {
-          const html = await response.text();
-          const modalContent = document.getElementById('viewTaskModalContent');
-          if (modalContent) {
-            modalContent.innerHTML = html;
+            const dayTasks = tasks.filter((task) => task.deadline === dateStr);
 
-            // Execute inline scripts (innerHTML doesn't execute them automatically)
-            const scripts = modalContent.querySelectorAll('script');
-            scripts.forEach(script => {
-              const newScript = document.createElement('script');
-              if (script.src) {
-                newScript.src = script.src;
-              } else {
-                newScript.textContent = script.textContent;
-              }
-              document.body.appendChild(newScript);
-              document.body.removeChild(newScript);
+            dayTasks.forEach((task) => {console.log(task)})
+
+            cell.innerHTML = `
+                <div class="p-2">
+                    <div class="appendButtonHere d-flex align-items-center">
+                        <div class="me-auto text-start calendar-date${isToday ? " today" : ""}">${day}</div>    
+                    </div>
+                    ${dayTasks.map(
+                        (task) => {
+                            const mode = task.status === "completed" ? "success"
+                                : task.status === "in_progress" ? "warning" 
+                                    : task.status === "review" ? "info" : "danger";
+                            
+                            return `
+                                <div class="calendar-task badge bg-${mode}-subtle text-${mode} w-100 text-start p-2"
+                                    data-task-id="${task.id}" role="button" aria-label="View Task {{ task.title }}">
+                                    ${task.title}
+                                </div>
+                            `;
+                        }
+                    ).join("")}
+                </div>
+            `;
+
+            cell.addEventListener("mouseenter", () => {
+                if (cell.querySelector(".add-task-btn")) return;
+                const elementToAddButton = cell.querySelector(".appendButtonHere");
+
+                const addTaskButton = document.createElement("button");
+                addTaskButton.type = "button";
+                addTaskButton.className = "btn btn-sm btn-outline-primary add-task-btn";
+                addTaskButton.setAttribute("aria-label", "Add task");
+                addTaskButton.dataset.bsToggle = "modal";
+                addTaskButton.dataset.bsTarget = "#addTaskEventModal";
+                addTaskButton.innerHTML = `<i class="fas fa-plus fa-sm"></i>`;
+                elementToAddButton.appendChild(addTaskButton);
+
+                addTaskButton.addEventListener("click", () => {
+                    document.getElementById("id_deadline").value = dateStr;
+                })
             });
 
-            const modal = new bootstrap.Modal(document.getElementById('viewTaskModal'));
-            modal.show();
-          }
+            cell.addEventListener("mouseleave", () => {
+                const addTaskButton = cell.querySelector(".add-task-btn");
+                if (addTaskButton) {
+                    addTaskButton.remove();
+                }
+            })
         }
-      } catch (error) {
-        console.error('[ListCalendar] Error loading task:', error);
-      }
+        return cell;
     }
 
-    // Handle filter changes
-    const filterInputs = document.querySelectorAll('.filter-input, .filter-select');
-    filterInputs.forEach(input => {
-      input.addEventListener('change', function() {
-        this.form.submit();
-      });
+    // Event listeners for month navigation
+    document.getElementById("prevMonth").addEventListener("click", () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
     });
 
-    // Initialize tooltips if Bootstrap is available
-    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
-      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-      tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-      });
-    }
+    document.getElementById("nextMonth").addEventListener("click", () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+    });
+
+    // Initial render
+    renderCalendar();
   });
-})();

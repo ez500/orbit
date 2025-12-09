@@ -23,11 +23,7 @@
                         <i class="fas fa-calendar-alt"></i> Calendar
                     </button>
                 </div>
-                <button
-                        class="btn btn-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#addTaskEventModal"
-                >
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskEventModal">
                     <i class="fas fa-plus"></i> Add Task or Event
                 </button>
             </div>
@@ -42,14 +38,7 @@
                             <span class="input-group-text border-0" style="background-color: var(--input-bg);">
                                 <i class="fas fa-search text-muted"></i>
                             </span>
-                            <input
-                                    type="text"
-                                    name="search"
-                                    value="{{ search }}"
-                                    class="form-control border-0"
-                                    style="background-color: var(--input-bg);"
-                                    placeholder="Search Tasks"
-                            />
+                            <input type="text" name="search" value="{{ search }}" class="form-control border-0" style="background-color: var(--input-bg);" placeholder="Search Tasks" />
                         </div>
                     </div>
                     <div class="row g-3">
@@ -74,10 +63,7 @@
                             <select name="team" class="form-select">
                                 <option value="">Team</option>
                                 {% for team in teams %}
-                                    <option value="{{ team.id }}"
-                                            {% if team_filter|add:'' == team.id|stringformat:'s' %}selected{% endif %}>
-                                        {{ team.name }}
-                                    </option>
+                                    <option value="{{ team.id }}" {% if team_filter|add:'' == team.id|stringformat:'s' %}selected{% endif %}>{{ team.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -85,10 +71,7 @@
                             <select name="project" class="form-select">
                                 <option value="">Project</option>
                                 {% for project in projects %}
-                                    <option value="{{ project.id }}"
-                                            {% if project_filter|add:'' == project.id|stringformat:'s' %}selected{% endif %}>
-                                        {{ project.name }}
-                                    </option>
+                                    <option value="{{ project.id }}" {% if project_filter|add:'' == project.id|stringformat:'s' %}selected{% endif %}>{{ project.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -105,12 +88,8 @@
                             </select>
                         </div>
                         <div class="col-md-3 col-lg-2 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary flex-grow-1">
-                                Apply
-                            </button>
-                            <a href="{% url 'dashboard:tasks' %}" class="btn btn-outline-secondary flex-grow-1">
-                                Reset
-                            </a>
+                            <button type="submit" class="btn btn-primary flex-grow-1">Apply</button>
+                            <a href="{% url 'dashboard:tasks' %}" class="btn btn-outline-secondary flex-grow-1">Reset</a>
                         </div>
                     </div>
                 </form>
@@ -120,7 +99,6 @@
         <!-- Tasks List -->
         <div id="listView" class="card border-0 shadow-sm">
             <div class="card-body p-0">
-                <!-- Task Item -->
                 {% if empty %}
                     <div class="p-3 border-bottom">
                         <div class="d-flex align-items-center">
@@ -131,23 +109,14 @@
                     </div>
                 {% else %}
                     {% for task in tasks_qs %}
-                        <div class="task-item p-3 border-bottom" data-task-id="{{ task.id }}"
-                             role="button" aria-label="View Task {{ task.title }}">
+                        <div class="task-item p-3 border-bottom" data-task-id="{{ task.id }}" role="button" aria-label="View Task {{ task.title }}">
                             <div class="d-flex align-items-center">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="task1"/>
-                                </div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox"/></div>
                                 <div class="ms-3 flex-grow-1">
                                     <h6 class="mb-1">{{ task.title }}</h6>
                                     <div class="d-flex align-items-center gap-3">
                                         <span class="badge {{ task.status|status_badge }}">{{ task.get_status_display }}</span>
-                                        <small class="text-muted">
-                                            {% if task.deadline %}
-                                                {{ task.deadline }}
-                                            {% else %}
-                                                No deadline
-                                            {% endif %}
-                                        </small>
+                                        <small class="text-muted">{% if task.deadline %}{{ task.deadline }}{% else %}No deadline{% endif %}</small>
                                     </div>
                                 </div>
                             </div>
@@ -164,12 +133,8 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="mb-0" id="currentMonth">October 2025</h5>
                 <div class="btn-group">
-                    <button class="btn btn-outline-secondary" id="prevMonth">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="btn btn-outline-secondary" id="nextMonth">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+                    <button class="btn btn-outline-secondary" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                    <button class="btn btn-outline-secondary" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
             <div class="calendar">
@@ -186,44 +151,129 @@
                     <!-- Calendar days will be inserted here by JavaScript -->
                 </div>
             </div>
-            </div>
-            </div>
+        </div>
+    </div>
 
-            {% load orbit_extras %}
-            {% if create_task_event_insights %}
-                <div class="container-fluid p-0">
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-body">
-                            <h5>Orbit Insights</h5>
-                            {% for insight in create_task_event_insights %}
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <p class="card-title fw-bold mb-0">
-                                        {{ insight.get_suggestion_type_display }}{% if insight.raw_data.title %}: {{ insight.raw_data.title }}{% endif %}
-                                    </p>
-                                    <a href="{% url 'dashboard:execute_suggestion' insight.id %}" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-plus"></i> Create {% if insight.raw_data.type == 'create_task' %}Task{% elif insight.raw_data.type == 'create_event' %}Event{% endif %}
-                                    </a>
-                                </div>
-                                <p class="card-text">
-                                    {{ insight.raw_data|get_key:"content" }}
-                                </p>
-                            {% endfor %}
-                        </div>
+    <!-- Add Task Modal -->
+    <div class="modal fade" id="addTaskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Create New Task</h5>
+                        <p class="mb-0">Fill in the details to create a task</p>
                     </div>
+                    <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                    ></button>
                 </div>
-            {% endif %}
+                <div class="modal-body">
+                    <form id="addTaskForm">
+                        <!-- Title -->
+                        <div class="task-title-section">
+                            <label for="taskTitle" class="form-label">
+                                Task Title <span class="text-danger">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="taskTitle"
+                                placeholder="Enter task title"
+                                required
+                            />
+                        </div>
 
-            <!-- TODO IMPLEMENT EDIT TASK MODAL -->
-            <!-- Add Task Modal -->
-            {% include 'dashboard/calendar/_add_task_event_modal.html' %}
-            {% include 'dashboard/calendar/_view_task_modal_shell.html' %}
+                        <!-- Right Sidebar - Top -->
+                        <div class="task-sidebar-top">
+                            <div>
+                                <label for="taskStatus" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select class="form-select" id="taskStatus" required>
+                                    <option value="todo" selected>To Do</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="review">Pending Review</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="taskDeadline" class="form-label">Due Date</label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="taskDeadline"
+                                />
+                            </div>
+                        </div>
 
-        {% endblock %}
-        {% block extra_js %}
-            <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
-            {{ tasks|json_script:"tasks-data" }}
-            <script src="{% static 'js/listCalendar.js' %}"></script>
-            <script src="{% static 'js/addTask.js' %}"></script>
-            <script src="{% static 'js/editTask.js' %}"></script>
-            <script src="{% static 'js/viewTaskModal.js' %}"></script>
-        {% endblock %}
+                        <!-- Description -->
+                        <div class="task-description-section">
+                            <label for="taskContent" class="form-label">Description</label>
+                            <textarea
+                                class="form-control"
+                                id="taskContent"
+                                placeholder="Add task details and requirements"
+                            ></textarea>
+                        </div>
+
+                        <!-- Right Sidebar - Middle -->
+                        <div class="task-sidebar-middle">
+                            <div>
+                                <label for="taskTeam" class="form-label">Team</label>
+                                <select class="form-select" id="taskTeam">
+                                    <option value="">None</option>
+                                    {% for team in teams %}
+                                        <option value="{{ team.id }}">{{ team.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label for="taskProject" class="form-label">Project</label>
+                                <select class="form-select" id="taskProject">
+                                    <option value="">None</option>
+                                    {% for project in projects %}
+                                        <option value="{{ project.id }}">{{ project.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Assignees -->
+                        <div class="task-assignees-section">
+                            <label for="taskUsers" class="form-label">Assignees</label>
+                            <select class="form-select" id="taskUsers" multiple>
+                                <option value="{{ user.id }}" selected>{{ user.username }} (You)</option>
+                            </select>
+                            <div class="form-text">Hold Ctrl/Cmd to select multiple people</div>
+                        </div>
+
+                        <!-- Empty sidebar bottom for grid balance -->
+                        <div class="task-sidebar-bottom"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="addTaskBtn">
+                        <i class="fas fa-plus"></i> Create Task
+                    </button>
+                </div>
+            </div>
+        </div>
+        </div>
+    <!-- TODO IMPLEMENT EDIT TASK MODAL -->
+    <!-- Add Task Modal -->
+    {% include 'dashboard/calendar/_add_task_event_modal.html' %}
+    {% include 'dashboard/calendar/_view_task_modal_shell.html' %}
+
+{% endblock %}
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
+    {{ tasks|json_script:"tasks-data" }}
+    <script src="{% static 'js/listCalendar.js' %}"></script>
+    <script src="{% static 'js/addTask.js' %}"></script>
+    <script src="{% static 'js/editTask.js' %}"></script>
+    <script src="{% static 'js/viewTaskModal.js' %}"></script>
+{% endblock %}

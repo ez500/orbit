@@ -54,6 +54,9 @@
       const widgetEl = this.createWidgetElement(widgetConfig);
       container.appendChild(widgetEl);
 
+      // Make widget draggable
+      this.makeWidgetDraggable(widgetEl);
+
       // Load widget data
       this.loadWidgetData(widgetConfig.type, widgetEl.id);
 
@@ -254,8 +257,53 @@
           if (calendarEl) {
             const calendar = new FullCalendar.Calendar(calendarEl, {
               initialView: 'dayGridMonth',
-              height: 400,
-              events: data.events || []
+              height: 'auto',
+              headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: ''
+              },
+              events: data.events || [],
+              eventClick: function(info) {
+                info.jsEvent.preventDefault();
+                const taskId = info.event.extendedProps.taskId;
+                if (taskId) {
+                  // Trigger task modal
+                  fetch(`/dashboard/tasks/${taskId}/view/`, {
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                  })
+                  .then(response => {
+                    if (!response.ok) throw new Error('Load failed.');
+                    return response.text();
+                  })
+                  .then(html => {
+                    const modalContent = document.getElementById('viewTaskModalContent');
+                    if (modalContent) {
+                      modalContent.innerHTML = html;
+
+                      // Parse and set task data for edit mode
+                      const taskDataElement = document.getElementById('taskData');
+                      if (taskDataElement) {
+                        const taskInfo = taskDataElement.getAttribute('data-task-info');
+                        if (taskInfo) {
+                          try {
+                            window.currentTaskData = JSON.parse(taskInfo);
+                            console.log('[Calendar] Loaded task data:', window.currentTaskData);
+                          } catch (error) {
+                            console.error('[Calendar] Error parsing task data:', error);
+                          }
+                        }
+                      }
+
+                      const modal = new bootstrap.Modal(document.getElementById('viewTaskModal'));
+                      modal.show();
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Error loading task:', error);
+                  });
+                }
+              }
             });
             calendar.render();
           }
@@ -452,6 +500,88 @@
       if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
       return `${Math.floor(seconds / 86400)} days ago`;
     }
+
+    makeWidgetDraggable(widgetEl) {
+      const card = widgetEl.querySelector('.card');
+      const header = widgetEl.querySelector('.card-header');
+
+      if (!card || !header) return;
+
+      // Make the header draggable - set draggable on header only
+      header.style.cursor = 'move';
+      header.setAttribute('draggable', 'true');
+
+      // Prevent default drag behavior on the widget itself
+      widgetEl.setAttribute('draggable', 'false');
+
+      header.addEventListener('dragstart', (e) => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', widgetEl.id);
+        widgetEl.classList.add('widget-dragging');
+        this.draggedWidget = widgetEl;
+      });
+
+      header.addEventListener('dragend', (e) => {
+        widgetEl.classList.remove('widget-dragging');
+        this.draggedWidget = null;
+
+        // Remove all dragover classes
+        document.querySelectorAll('.widget-dragover').forEach(el => {
+          el.classList.remove('widget-dragover');
+        });
+
+        // Save layout after drag ends
+        this.updateWidgetOrder();
+        this.saveLayout(false);
+      });
+
+      widgetEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        if (this.draggedWidget && this.draggedWidget !== widgetEl) {
+          widgetEl.classList.add('widget-dragover');
+        }
+      });
+
+      widgetEl.addEventListener('dragleave', (e) => {
+        widgetEl.classList.remove('widget-dragover');
+      });
+
+      widgetEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        widgetEl.classList.remove('widget-dragover');
+
+        if (this.draggedWidget && this.draggedWidget !== widgetEl) {
+          const container = document.getElementById('dashboard-widgets');
+          const allWidgets = Array.from(container.children);
+          const draggedIndex = allWidgets.indexOf(this.draggedWidget);
+          const targetIndex = allWidgets.indexOf(widgetEl);
+
+          if (draggedIndex < targetIndex) {
+            widgetEl.parentNode.insertBefore(this.draggedWidget, widgetEl.nextSibling);
+          } else {
+            widgetEl.parentNode.insertBefore(this.draggedWidget, widgetEl);
+          }
+        }
+      });
+    }
+
+    updateWidgetOrder() {
+      const container = document.getElementById('dashboard-widgets');
+      const widgetElements = Array.from(container.children);
+
+      // Get the current order of widgets
+      const newOrder = widgetElements.map(el => {
+        const widgetId = el.id;
+        const widgetType = widgetId.split('-')[1]; // Extract type from id like "widget-tasks-123456"
+        return this.widgets.find(w => w.type === widgetType);
+      }).filter(w => w); // Remove undefined entries
+
+      this.widgets = newOrder;
+    }
   }
 
   // Widget configurations
@@ -474,7 +604,7 @@
       type: 'stats',
       title: 'Statistics',
       icon: 'fas fa-chart-bar',
-      size: 'col-md-6',
+      size: 'col-md-12',
       autoRefresh: true
     },
     team: {
