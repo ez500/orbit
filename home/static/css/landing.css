@@ -23,6 +23,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    z-index: 0;
 }
 
 /* Navigation */
@@ -31,16 +32,15 @@
     top: 0;
     /* Slightly more transparent so hero gradient shows beneath */
     background: rgba(10, 10, 10, 0.1);
-    backdrop-filter: blur(20px);
     padding: 1rem 0;
-
+    z-index: 1000;
 }
 
 .nav-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 0;
+    z-index: 1;
 }
 
 .brand {
@@ -80,6 +80,9 @@
     text-decoration: none;
     transition: all 0.2s ease;
     border: none;
+    position: relative;
+    z-index: 1001;
+    cursor: pointer;
 }
 
 .btn-nav-primary {
@@ -669,7 +672,6 @@ textarea.form-control {
     /* Keep subtle motion but do not rotate the entire layer */
     animation: gradientShift 20s ease-in-out infinite;
     pointer-events: none;
-    z-index: 0;
 }
 
 @keyframes gradientShift {

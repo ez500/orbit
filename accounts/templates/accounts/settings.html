@@ -43,6 +43,7 @@
     class="settings-content"
   >
     {% csrf_token %}
+    <input type="hidden" name="active_tab" value="{{ active_tab|default:'profile' }}" />
     <!-- prettier-ignore -->
     {{ profile_form.instance.get_profile_data|json_script:"profile-data" }}
 
@@ -78,16 +79,7 @@
             type="button"
             role="tab"
           >
-            <i class="fas fa-shield-alt me-2"></i>Privacy
-          </button>
-          <button
-            class="nav-link {% if active_tab == 'notifications' %}active{% endif %}"
-            data-bs-toggle="pill"
-            data-bs-target="#notifications"
-            type="button"
-            role="tab"
-          >
-            <i class="fas fa-bell me-2"></i>Notifications
+            <i class="fas fa-eye me-2"></i>Privacy
           </button>
           <button
             class="nav-link {% if active_tab == 'security' %}active{% endif %}"
@@ -97,6 +89,15 @@
             role="tab"
           >
             <i class="fas fa-lock me-2"></i>Security
+          </button>
+          <button
+            class="nav-link {% if active_tab == 'notifications' %}active{% endif %}"
+            data-bs-toggle="pill"
+            data-bs-target="#notifications"
+            type="button"
+            role="tab"
+          >
+            <i class="fas fa-bell me-2"></i>Notifications
           </button>
         </div>
       </div>
@@ -360,11 +361,88 @@
           <div class="tab-pane fade {% if active_tab == 'privacy' %}show active{% endif %}" id="privacy" role="tabpanel">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title mb-4">Privacy Settings</h5>
-                <div class="mb-4">
-                  <label class="form-label">Profile Visibility</label>
+                <h5 class="card-title mb-4">
+                  <i class="fas fa-eye me-2"></i>Privacy Settings
+                </h5>
+                <p class="text-muted mb-4" style="font-size: 0.9rem;">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Control who can see your profile information and activity
+                </p>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Profile Visibility</label>
                   {{ profile_form.visibility }}
+                  <div class="form-text mt-2">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Choose who can see your profile details, projects, and activity
+                  </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Tab -->
+          <div class="tab-pane fade {% if active_tab == 'security' %}show active{% endif %}" id="security" role="tabpanel">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title mb-4">
+                  <i class="fas fa-lock me-2"></i>Change Password
+                </h5>
+                <p class="text-muted mb-4" style="font-size: 0.9rem;">
+                  <i class="fas fa-shield-alt me-1"></i>
+                  Update your password to keep your account secure. Use a strong password with a mix of characters
+                </p>
+
+                {% if password_form.errors %}
+                  <div class="alert alert-danger mb-3">
+                    <strong><i class="fas fa-exclamation-triangle me-2"></i>Error:</strong>
+                    <ul class="mb-0 mt-2">
+                      {% for field, errors in password_form.errors.items %}
+                        {% for error in errors %}
+                          <li>{{ error }}</li>
+                        {% endfor %}
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'accounts:change_password' %}" id="password-form" class="password-change-form" novalidate>
+                  {% csrf_token %}
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ password_form.old_password.label }}</label>
+                    {{ password_form.old_password }}
+                    {% if password_form.old_password.help_text %}
+                      <div class="form-text mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ password_form.old_password.help_text|safe }}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ password_form.new_password1.label }}</label>
+                    {{ password_form.new_password1 }}
+                    {% if password_form.new_password1.help_text %}
+                      <div class="form-text mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ password_form.new_password1.help_text|safe }}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ password_form.new_password2.label }}</label>
+                    {{ password_form.new_password2 }}
+                    {% if password_form.new_password2.help_text %}
+                      <div class="form-text mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ password_form.new_password2.help_text|safe }}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-lock me-2"></i>Update Password
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
@@ -374,15 +452,13 @@
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title mb-4">Notification Preferences</h5>
-                <div class="form-check form-switch mb-2">
+                <div class="form-check form-switch mb-3">
                   {{ profile_form.notification_email }}
-                  <label class="form-check-label ms-2"
-                    >Email Notifications</label
-                  >
+                  <label class="form-check-label" for="{{ profile_form.notification_email.id_for_label }}">Email Notifications</label>
                 </div>
                 <div class="form-check form-switch mb-2">
                   {{ profile_form.notification_web }}
-                  <label class="form-check-label ms-2">Web Notifications</label>
+                  <label class="form-check-label" for="{{ profile_form.notification_web.id_for_label }}">Web Notifications</label>
                 </div>
               </div>
             </div>
@@ -396,113 +472,6 @@
     </div>
   </form>
 
-  <!-- Security Tab (separate form outside main settings form) -->
-  <div class="row" style="display: none;" id="security-tab-container">
-    <div class="col-lg-3"></div>
-    <div class="col-lg-9">
-      <div class="tab-content">
-        <div class="tab-pane fade {% if active_tab == 'security' %}show active{% endif %}" id="security" role="tabpanel">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title mb-4">
-                  <i class="fas fa-lock me-2"></i>Change Password
-                </h5>
-                <p class="text-muted mb-4">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Update your password to keep your account secure
-                </p>
-
-                {% if password_form.errors %}
-                  <div class="alert alert-danger">
-                    <strong><i class="fas fa-exclamation-triangle me-2"></i>Password Change Failed:</strong>
-                    <ul class="mb-0 mt-2">
-                      {% for field, errors in password_form.errors.items %}
-                        {% for error in errors %}
-                          <li>{{ error }}</li>
-                        {% endfor %}
-                      {% endfor %}
-                    </ul>
-                  </div>
-                {% endif %}
-
-                <form method="post" action="{% url 'accounts:change_password' %}" id="password-form">
-                  {% csrf_token %}
-                  <div class="row">
-                    <div class="col-12 mb-3">
-                      <label class="form-label">{{ password_form.old_password.label }}</label>
-                      {{ password_form.old_password }}
-                      {% if password_form.old_password.help_text %}
-                        <div class="form-text mt-2">
-                          <i class="fas fa-info-circle me-1"></i>
-                          {{ password_form.old_password.help_text }}
-                        </div>
-                      {% endif %}
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">{{ password_form.new_password1.label }}</label>
-                      {{ password_form.new_password1 }}
-                      {% if password_form.new_password1.help_text %}
-                        <div class="form-text mt-2">
-                          <i class="fas fa-info-circle me-1"></i>
-                          {{ password_form.new_password1.help_text }}
-                        </div>
-                      {% endif %}
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">{{ password_form.new_password2.label }}</label>
-                      {{ password_form.new_password2 }}
-                      {% if password_form.new_password2.help_text %}
-                        <div class="form-text mt-2">
-                          <i class="fas fa-info-circle me-1"></i>
-                          {{ password_form.new_password2.help_text }}
-                        </div>
-                      {% endif %}
-                    </div>
-                  </div>
-                  <div class="settings-save-bar mt-4">
-                    <button type="submit" class="btn btn-primary">
-                      <i class="fas fa-key me-2"></i>Change Password
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Handle tab switching to show/hide security tab container
-    document.addEventListener('DOMContentLoaded', function() {
-      const securityTabBtn = document.querySelector('[data-bs-target="#security"]');
-      const securityContainer = document.getElementById('security-tab-container');
-      const mainTabsContainer = document.querySelector('.col-lg-9 .tab-content');
-
-      if (securityTabBtn && securityContainer) {
-        securityTabBtn.addEventListener('click', function() {
-          mainTabsContainer.style.display = 'none';
-          securityContainer.style.display = 'block';
-        });
-
-        // Handle clicking other tabs
-        document.querySelectorAll('[data-bs-toggle="pill"]:not([data-bs-target="#security"])').forEach(btn => {
-          btn.addEventListener('click', function() {
-            securityContainer.style.display = 'none';
-            mainTabsContainer.style.display = 'block';
-          });
-        });
-
-        // Show security tab if active_tab is set to security
-        {% if active_tab == 'security' %}
-          mainTabsContainer.style.display = 'none';
-          securityContainer.style.display = 'block';
-        {% endif %}
-      }
-    });
-  </script>
   <script src="{% static 'js/settings.js' %}"></script>
 </div>
 {% endblock %}

@@ -1509,3 +1509,20 @@ select.form-select {
     gap: 1rem;
   }
 }
+
+/* Prevent browser validation UI on hidden forms */
+#password-form:invalid {
+  box-shadow: none;
+}
+
+#password-form input:invalid {
+  box-shadow: none;
+}
+
+/* Suppress the outline on invalid form controls in hidden tabs */
+.tab-pane:not(.show) input:invalid,
+.tab-pane:not(.show) select:invalid,
+.tab-pane:not(.show) textarea:invalid {
+  box-shadow: none;
+  outline: none;
+}

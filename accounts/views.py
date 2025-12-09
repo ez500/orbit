@@ -202,6 +202,9 @@ def edit_user_profile(request):
 
 @login_required
 def settings(request):
+    # Determine which tab to display
+    active_tab = request.POST.get('active_tab', request.GET.get('tab', 'profile'))
+    
     if request.method == 'POST':
         # Handle both user and profile forms
         user_form = UpdateUserForm(request.POST, instance=request.user)
@@ -212,23 +215,28 @@ def settings(request):
         profile_valid = profile_form.is_valid()
 
         if user_valid and profile_valid:
-            # Save both forms
-            user_form.save()
-            profile_form.save()
-            messages.success(request, 'Your settings have been saved successfully!')
-            return redirect('accounts:user_settings')
+            try:
+                # Save both forms
+                user_form.save()
+                profile_form.save()
+                messages.success(request, 'Your settings have been saved successfully!')
+            except Exception as e:
+                messages.error(request, f'Error saving settings: {str(e)}')
+            # Refresh forms after save to show updated data
+            user_form = UpdateUserForm(instance=request.user)
+            profile_form = UpdateProfileForm(instance=request.user.profile)
         else:
             # Show specific error messages for debugging
             if not user_valid:
+                print(f"User form errors: {user_form.errors}")
                 for field, errors in user_form.errors.items():
                     for error in errors:
-                        messages.error(request, f'User form - {field}: {error}')
+                        messages.error(request, f'User {field}: {error}')
             if not profile_valid:
+                print(f"Profile form errors: {profile_form.errors}")
                 for field, errors in profile_form.errors.items():
                     for error in errors:
-                        messages.error(request, f'Profile form - {field}: {error}')
-            if not user_form.errors and not profile_form.errors:
-                messages.error(request, 'There were errors saving your settings. Please check the form and try again.')
+                        messages.error(request, f'Profile {field}: {error}')
     else:
         user_form = UpdateUserForm(instance=request.user)
         profile_form = UpdateProfileForm(instance=request.user.profile)
@@ -245,6 +253,7 @@ def settings(request):
         'password_form': password_form,
         'accent_choices': accent_choices,
         'theme_choices': theme_choices,
+        'active_tab': active_tab,
         'title': 'Settings'
     })
 

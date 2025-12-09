@@ -69,11 +69,13 @@ class UpdateUserForm(forms.ModelForm):
     username = forms.CharField(
         label='Username',
         max_length=150,
+        required=False,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     email = forms.EmailField(
         label='E-mail',
         max_length=254,
+        required=False,
         help_text='Must be a valid E-mail address.',
         widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
@@ -84,92 +86,104 @@ class UpdateUserForm(forms.ModelForm):
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
+        # If username is empty, it means the user didn't change it, so skip validation
         if not username:
-            return username
+            # Get the original username from the instance
+            return self.instance.username
         if User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError(f'{username} is already taken.')
         return username
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
+        # If email is empty, it means the user didn't change it, so skip validation
         if not email:
-            return email
+            # Get the original email from the instance
+            return self.instance.email
         if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError(f'{email} is already taken.')
         return email
 
 
 class UpdateProfileForm(forms.ModelForm):
-    bio = forms.CharField(label='Bio', max_length=127, required=False)
-    profile_picture = forms.ImageField(label='Profile Picture', required=False)
-    location = forms.CharField(label='Location', max_length=100, required=False)
-    website = forms.URLField(label='Website', required=False)
+    bio = forms.CharField(label='Bio', max_length=127, required=False, widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4}))
+    profile_picture = forms.ImageField(label='Profile Picture', required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    location = forms.CharField(label='Location', max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    website = forms.URLField(label='Website', required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
     theme_color = forms.ChoiceField(
         label='Theme Color',
         choices=Profile.THEME_CHOICES,
         initial='dark',
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
     accent_color = forms.ChoiceField(
         label='Accent Color',
         choices=Profile.ACCENT_CHOICES,
         initial='#1E90FF',
-        required=False
+        required=False,
+        widget=forms.RadioSelect(attrs={'class': 'accent-color-select'})
     )
     visibility = forms.ChoiceField(
         label='Profile Visibility',
         choices=[(tag.name, tag.value) for tag in Profile.Visibility],
-        initial=Profile.Visibility.PUBLIC.name
+        initial=Profile.Visibility.PUBLIC.name,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
     # Accessibility / appearance preferences
-    high_contrast = forms.BooleanField(label='High Contrast', required=False)
+    high_contrast = forms.BooleanField(label='High Contrast', required=False, widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
     font_size = forms.ChoiceField(
         label='Font size',
         choices=Profile.FONT_SIZE_CHOICES,
         initial='medium',
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
     spacing = forms.ChoiceField(
         label='Spacing',
         choices=Profile.SPACING_CHOICES,
         initial='normal',
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
     timezone = forms.ChoiceField(
         label='Timezone',
         choices=TIMEZONE_CHOICES,
         initial='UTC',
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
-    notification_email = forms.BooleanField(label='Email Notifications', required=False, initial=True)
-    notification_web = forms.BooleanField(label='Web Notifications', required=False, initial=True)
+    notification_email = forms.BooleanField(label='Email Notifications', required=False, initial=True, widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
+    notification_web = forms.BooleanField(label='Web Notifications', required=False, initial=True, widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
 
     class Meta:
         model = Profile
         fields = [
-            'bio', 'profile_picture', 'location', 'website', 'visibility',
+            'bio', 'location', 'website', 'visibility',
             'theme_color', 'accent_color', 'high_contrast', 'font_size', 'spacing',
             'timezone', 'notification_email', 'notification_web'
         ]
-        widgets = {
-            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'profile_picture': forms.FileInput(attrs={'class': 'form-control'}),
-            'location': forms.TextInput(attrs={'class': 'form-control'}),
-            'website': forms.TextInput(attrs={'class': 'form-control'}),
-            # 'theme_color': forms.Select(attrs={'class': 'form-select'}),
-            # 'accent_color': forms.RadioSelect(attrs={'class': 'accent-color-select'}),
-            'visibility': forms.Select(attrs={'class': 'form-select'}),
-            'theme_color': forms.Select(attrs={'class': 'form-select'}),
-            'accent_color': forms.RadioSelect(attrs={'class': 'accent-color-select'}),
-            'high_contrast': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'font_size': forms.Select(attrs={'class': 'form-select'}),
-            'spacing': forms.Select(attrs={'class': 'form-select'}),
-            'timezone': forms.Select(attrs={'class': 'form-select'}),
-            'notification_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'notification_web': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            # 'notification_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            # 'notification_web': forms.CheckboxInput(attrs={'class': 'form-check-input'})
-        }
+    
+    def clean_profile_picture(self):
+        """Handle profile picture upload"""
+        profile_picture = self.cleaned_data.get('profile_picture')
+        # If no new picture was uploaded, keep the existing one
+        if not profile_picture:
+            return self.instance.profile_picture
+        return profile_picture
+    
+    def save(self, commit=True):
+        """Override save to handle profile_picture separately"""
+        instance = super().save(commit=False)
+        
+        # Handle profile picture if it was uploaded
+        if 'profile_picture' in self.cleaned_data and self.cleaned_data['profile_picture']:
+            instance.profile_picture = self.cleaned_data['profile_picture']
+        
+        if commit:
+            instance.save()
+        return instance
 
 
 class ChangePasswordForm(DefaultChangePasswordForm):
@@ -177,7 +191,7 @@ class ChangePasswordForm(DefaultChangePasswordForm):
         label="Current Password",
         strip=False,
         widget=forms.PasswordInput(
-            attrs={"autocomplete": "current-password", "autofocus": True}
+            attrs={"autocomplete": "current-password", "class": "form-control"}
         ),
     )
 
@@ -186,3 +200,10 @@ class ChangePasswordForm(DefaultChangePasswordForm):
     class Meta:
         model = User
         fields = ['password1', 'password2']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add form-control class to all fields
+        for field_name in self.fields:
+            if hasattr(self.fields[field_name].widget, 'attrs'):
+                self.fields[field_name].widget.attrs['class'] = 'form-control'
