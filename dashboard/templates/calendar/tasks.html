@@ -4,6 +4,8 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/listCalendar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/taskModal.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -201,86 +203,110 @@
         </div>
     </div>
 
-    <!-- TODO EDIT TASK -->
     <!-- Add Task Modal -->
     <div class="modal fade" id="addTaskModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title">Add New Task</h5>
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Create New Task</h5>
+                        <p class="mb-0">Fill in the details to create a task</p>
+                    </div>
                     <button
                             type="button"
                             class="btn-close"
                             data-bs-dismiss="modal"
+                            aria-label="Close"
                     ></button>
                 </div>
                 <div class="modal-body">
                     <form id="addTaskForm">
-                        <div class="mb-3">
-                            <label for="taskTitle" class="form-label">Task Title</label>
-                            <input type="text" class="form-control" id="taskTitle" required/>
+                        <!-- Title -->
+                        <div class="task-title-section">
+                            <label for="taskTitle" class="form-label">
+                                Task Title <span class="text-danger">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="taskTitle"
+                                placeholder="Enter task title"
+                                required
+                            />
                         </div>
-                        <div class="mb-3">
-                            <label for="taskContent" class="form-label">Description</label>
-                            <textarea
-                                    class="form-control"
-                                    id="taskContent"
-                                    rows="3"
-                            ></textarea>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="taskDeadline" class="form-label">Due Date</label>
-                                <input
-                                        type="date"
-                                        class="form-control"
-                                        id="taskDeadline"
-                                />
-                            </div>
-                            <div class="col-md-6">
-                                <label for="taskStatus" class="form-label">Status</label>
+
+                        <!-- Right Sidebar - Top -->
+                        <div class="task-sidebar-top">
+                            <div>
+                                <label for="taskStatus" class="form-label">Status <span class="text-danger">*</span></label>
                                 <select class="form-select" id="taskStatus" required>
-                                    <option value="todo">To Do</option>
+                                    <option value="todo" selected>To Do</option>
                                     <option value="in_progress">In Progress</option>
                                     <option value="review">Pending Review</option>
                                     <option value="completed">Completed</option>
                                 </select>
                             </div>
+                            <div>
+                                <label for="taskDeadline" class="form-label">Due Date</label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="taskDeadline"
+                                />
+                            </div>
                         </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
+
+                        <!-- Description -->
+                        <div class="task-description-section">
+                            <label for="taskContent" class="form-label">Description</label>
+                            <textarea
+                                class="form-control"
+                                id="taskContent"
+                                placeholder="Add task details and requirements"
+                            ></textarea>
+                        </div>
+
+                        <!-- Right Sidebar - Middle -->
+                        <div class="task-sidebar-middle">
+                            <div>
                                 <label for="taskTeam" class="form-label">Team</label>
                                 <select class="form-select" id="taskTeam">
-                                    <option value="">No Team</option>
+                                    <option value="">None</option>
                                     {% for team in teams %}
                                         <option value="{{ team.id }}">{{ team.name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-md-6">
+                            <div>
                                 <label for="taskProject" class="form-label">Project</label>
                                 <select class="form-select" id="taskProject">
-                                    <option value="">No Project</option>
+                                    <option value="">None</option>
                                     {% for project in projects %}
                                         <option value="{{ project.id }}">{{ project.name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                         </div>
-                        <div class="mb-3">
+
+                        <!-- Assignees -->
+                        <div class="task-assignees-section">
                             <label for="taskUsers" class="form-label">Assignees</label>
                             <select class="form-select" id="taskUsers" multiple>
-                                <option value="{{ user.id }}">{{ user.username }}</option>
+                                <option value="{{ user.id }}" selected>{{ user.username }} (You)</option>
                             </select>
+                            <div class="form-text">Hold Ctrl/Cmd to select multiple people</div>
                         </div>
+
+                        <!-- Empty sidebar bottom for grid balance -->
+                        <div class="task-sidebar-bottom"></div>
                     </form>
                 </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Cancel
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
                     </button>
                     <button type="button" class="btn btn-primary" id="addTaskBtn">
-                        Add Task
+                        <i class="fas fa-plus"></i> Create Task
                     </button>
                 </div>
             </div>
@@ -296,7 +322,9 @@
 
 {% endblock %}
 {% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
     {{ tasks|json_script:"tasks-data" }}
     <script src="{% static 'js/listCalendar.js' %}"></script>
     <script src="{% static 'js/addTask.js' %}"></script>
+    <script src="{% static 'js/editTask.js' %}"></script>
 {% endblock %}

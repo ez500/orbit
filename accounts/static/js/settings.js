@@ -196,8 +196,35 @@
     });
   }
 
+  // Auto-dismiss success messages after 5 seconds
+  function autoDismissMessages() {
+    const messagesContainer = document.getElementById("messages-container");
+    if (messagesContainer) {
+      // Scroll to top to show messages
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      const successAlerts = messagesContainer.querySelectorAll(".alert-success");
+      successAlerts.forEach((alert) => {
+        setTimeout(() => {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }, 5000); // 5 seconds
+      });
+
+      // Error messages stay visible (don't auto-dismiss)
+      // but we still want to scroll to them
+      const errorAlerts = messagesContainer.querySelectorAll(".alert-danger");
+      if (errorAlerts.length > 0) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }
+
   // Call initialize after DOM is loaded and when form values change
   document.addEventListener("DOMContentLoaded", () => {
+    // Auto-dismiss success messages
+    autoDismissMessages();
+
     initializeUI();
 
     // Add click handlers for theme and accent color options

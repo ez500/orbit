@@ -81,7 +81,7 @@
         }
     </style>
 </head>
-<body>
+<body{% if user.is_authenticated %} data-username="{{ user.username }}"{% endif %}>
 <!-- {# TODO CONSIDER NAVBAR WHEN NOT LOGGED IN #} {# -->
 <!-- <header>
       x#}  X{#x
@@ -103,15 +103,17 @@
 <!-- Main Content -->
 <main class="main-content app flex-row align-items-center">
     <div class="container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="card {% if message.tags %}{{ message.tags }}{% endif %}">
-                    <div class="card-body">
-                        {{ message }}
+        {% block messages %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="card {% if message.tags %}{{ message.tags }}{% endif %}">
+                        <div class="card-body">
+                            {{ message }}
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
-        {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
         {% block content %}{% endblock %}
     </div>
 </main>

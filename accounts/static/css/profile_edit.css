@@ -1,0 +1,420 @@
+/* Edit Profile Page Styles */
+
+/* Container */
+.profile-edit-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Page Header */
+.profile-edit-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  margin-bottom: 2rem;
+}
+
+.profile-picture-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--card-border);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.profile-picture-preview:hover {
+  transform: scale(1.05);
+}
+
+.profile-picture-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  border: 2px dashed var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--text-muted);
+  background: rgba(var(--accent-color-rgb, 30, 144, 255), 0.05);
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.profile-header-content {
+  flex: 1;
+}
+
+.profile-header-content h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  color: var(--text-color);
+  letter-spacing: -0.02em;
+}
+
+.profile-header-content p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+/* Section Styling */
+.profile-section {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.15s ease;
+}
+
+.profile-section:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.section-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(var(--accent-color-rgb, 30, 144, 255), 0.1);
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+}
+
+.section-title {
+  flex: 1;
+}
+
+.section-title h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.125rem 0;
+  color: var(--text-color);
+  letter-spacing: -0.01em;
+}
+
+.section-title p {
+  font-size: 0.8125rem;
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.form-grid-full {
+  grid-column: 1 / -1;
+}
+
+/* Form Fields */
+.form-field {
+  margin-bottom: 0;
+}
+
+.form-field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  font-size: 0.875rem;
+  letter-spacing: -0.01em;
+}
+
+.form-field input[type="text"],
+.form-field input[type="email"],
+.form-field input[type="password"],
+.form-field input[type="file"],
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background-color: var(--bg-color);
+  color: var(--input-text);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb, 30, 144, 255), 0.1);
+}
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.form-field textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Help Text */
+.help-text {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-top: 0.375rem;
+  line-height: 1.4;
+}
+
+/* Error Messages */
+.error-message {
+  color: #dc3545;
+  font-size: 0.8125rem;
+  margin-top: 0.375rem;
+  display: block;
+}
+
+.field-errors {
+  background: rgba(220, 53, 69, 0.1);
+  border-left: 3px solid #dc3545;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.field-errors strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #dc3545;
+}
+
+.field-errors ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.field-errors li {
+  color: #dc3545;
+  margin-bottom: 0.25rem;
+}
+
+/* File Input Styling */
+.form-field input[type="file"] {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.form-field input[type="file"]::file-selector-button {
+  padding: 0.5rem 1rem;
+  background: var(--accent-color);
+  color: var(--accent-text);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 0.75rem;
+  transition: filter 0.15s ease;
+}
+
+.form-field input[type="file"]::file-selector-button:hover {
+  filter: brightness(0.9);
+}
+
+/* Action Buttons */
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--card-border);
+  margin-top: 1.5rem;
+}
+
+.btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: var(--accent-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: rgba(var(--accent-color-rgb, 30, 144, 255), 0.85);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--card-border);
+}
+
+.btn-secondary:hover {
+  background: rgba(var(--accent-color-rgb, 30, 144, 255), 0.05);
+  border-color: var(--accent-color);
+}
+
+/* Select Styling */
+.form-field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-edit-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+/* Security Section Specific Styles */
+.security-icon {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Password Fields Container */
+.password-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Django Form Widget Overrides */
+ul.errorlist {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+ul.errorlist li {
+  color: #dc3545;
+  font-size: 0.8125rem;
+  background: rgba(220, 53, 69, 0.1);
+  padding: 0.5rem;
+  border-left: 3px solid #dc3545;
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+}
+
+/* Ensure all Django-generated inputs match our style */
+.profile-edit-container input[type="text"],
+.profile-edit-container input[type="email"],
+.profile-edit-container input[type="password"],
+.profile-edit-container input[type="file"],
+.profile-edit-container textarea,
+.profile-edit-container select {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background-color: var(--bg-color);
+  color: var(--input-text);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  font-family: inherit;
+}
+
+/* Focus states */
+.profile-edit-container input:focus,
+.profile-edit-container textarea:focus,
+.profile-edit-container select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb, 30, 144, 255), 0.1);
+}
+
+/* Checkbox and Radio Styles */
+.profile-edit-container input[type="checkbox"],
+.profile-edit-container input[type="radio"] {
+  width: auto;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  accent-color: var(--accent-color);
+}
+
+/* Add smooth transitions to buttons */
+.btn {
+  text-decoration: none;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Improve file input styling */
+.form-field input[type="file"] {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.form-field input[type="file"]::file-selector-button {
+  padding: 0.5rem 1rem;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.form-field input[type="file"]::file-selector-button:hover {
+  background: rgba(var(--accent-color-rgb, 30, 144, 255), 0.85);
+}

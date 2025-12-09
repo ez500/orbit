@@ -386,7 +386,7 @@ function logout() {
             for (let i = 1; i < pathParts.length; i++) {
                 if (pathParts[i] && pathParts[i] !== 'message' && pathParts[i] !== 'conversation' &&
                     pathParts[i] !== 'dashboard' && pathParts[i] !== 'teams' && pathParts[i] !== 'projects' &&
-                    !pathParts[i].match(/^\d+$/)) {
+                    pathParts[i] !== 'accounts' && !pathParts[i].match(/^\d+$/)) {
                     currentUsername = pathParts[i];
                     break;
                 }

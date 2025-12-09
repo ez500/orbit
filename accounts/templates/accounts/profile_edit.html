@@ -1,108 +1,150 @@
 {% extends "base.html" %}
-{% block content %}
+{% load static %}
 
-    <!-- Header card -->
-    <div class="card" style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile_edit.css' %}"/>
+{% endblock %}
+
+{% block content %}
+<div class="profile-edit-container">
+    <!-- Header Section -->
+    <div class="profile-edit-header">
         {% if user.profile.profile_picture %}
-            <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }} avatar"
-                 style="width:80px; height:80px; object-fit:cover; border-radius:10px; border:1px solid #333;"/>
+            <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }} avatar" class="profile-picture-preview"/>
         {% else %}
-            <div style="width:80px; height:80px; border-radius:10px; border:1px dashed #555; display:grid; place-items:center; font-size:1.5rem; opacity:.7;">
+            <div class="profile-picture-placeholder">
                 {{ user.username|first|upper }}
             </div>
         {% endif %}
-        <div>
-            <div class="card">
-                <div class="row md-4">
-                    <div class="col-md-6">
-                        <h1 style="margin:0;">Edit Profile</h1>
-                        <p style="opacity:.8; margin:.25rem 0 0 0;">Update your account details and profile
-                            information.</p>
-                    </div>
-                </div>
-
-                <!-- Validation summary (if any) -->
-                {% if user_form.non_field_errors or profile_form.non_field_errors %}
-                    <div class="card" style="border-color:#b23; color:#f1b0b7;">
-                        <strong>There were some problems with your submission:</strong>
-                        <ul style="margin:.5rem 0 0 1rem;">
-                            {% for err in user_form.non_field_errors %}
-                                <li>{{ err }}</li>{% endfor %}
-                            {% for err in profile_form.non_field_errors %}
-                                <li>{{ err }}</li>{% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
-
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-
-                    <!-- Two-column responsive grid -->
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
-
-                        <!-- Account card -->
-                        <div class="card">
-                            <h3 style="margin-top:0;">👤 Account</h3>
-                            {% for field in user_form %}
-                                <div style="margin-bottom:.9rem;">
-                                    <label for="{{ field.id_for_label }}"
-                                           style="display:block; font-weight:600; margin-bottom:.35rem;">
-                                        {{ field.label }}
-                                    </label>
-                                    {{ field }}
-                                    {% if field.help_text %}
-                                        <small style="opacity:.7; display:block; margin-top:.25rem;">{{ field.help_text }}</small>
-                                    {% endif %}
-                                    {% for error in field.errors %}
-                                        <div style="color:#ff7675; margin-top:.25rem;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                            {% endfor %}
-                        </div>
-
-                        <!-- Profile card -->
-                        <div class="card">
-                            <h3 style="margin-top:0;">📝 Profile</h3>
-                            {% for field in profile_form %}
-                                <div style="margin-bottom:.9rem;">
-                                    <label for="{{ field.id_for_label }}"
-                                           style="display:block; font-weight:600; margin-bottom:.35rem;">
-                                        {{ field.label }}
-                                    </label>
-                                    {{ field }}
-                                    {% if field.help_text %}
-                                        <small style="opacity:.7; display:block; margin-top:.25rem;">{{ field.help_text }}</small>
-                                    {% endif %}
-                                    {% for error in field.errors %}
-                                        <div style="color:#ff7675; margin-top:.25rem;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                            {% endfor %}
-                        </div>
-
-                    </div>
-
-                    <!-- Actions card -->
-                    <div class="card" style="display:flex; gap:.75rem; flex-wrap:wrap; justify-content:flex-end;">
-                        <button type="submit" class="btn">Save Changes</button>
-                    </div>
-                </form>
-            </div>
-            <div class="card">
-                <h1>Security</h1>
-
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ password_form.as_p }}
-
-
-                    <!-- Actions card -->
-                    <div class="card" style="display:flex; gap:.75rem; flex-wrap:wrap; justify-content:flex-end;">
-                        <button type="submit" class="btn">Change Password</button>
-                    </div>
-                </form>
-            </div>
+        <div class="profile-header-content">
+            <h1>Edit Profile</h1>
+            <p>Update your account details and profile information.</p>
         </div>
     </div>
+
+    <!-- Validation Summary -->
+    {% if user_form.non_field_errors or profile_form.non_field_errors %}
+        <div class="field-errors">
+            <strong>There were some problems with your submission:</strong>
+            <ul>
+                {% for err in user_form.non_field_errors %}
+                    <li>{{ err }}</li>
+                {% endfor %}
+                {% for err in profile_form.non_field_errors %}
+                    <li>{{ err }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Account Information Section -->
+        <div class="profile-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="section-title">
+                    <h2>Account Information</h2>
+                    <p>Manage your account details</p>
+                </div>
+            </div>
+            <div class="form-grid">
+                {% for field in user_form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="help-text">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <span class="error-message">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Profile Information Section -->
+        <div class="profile-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div class="section-title">
+                    <h2>Profile Information</h2>
+                    <p>Customize your profile details</p>
+                </div>
+            </div>
+            <div class="form-grid">
+                {% for field in profile_form %}
+                    <div class="form-field {% if field.name == 'bio' %}form-grid-full{% endif %}">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="help-text">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <span class="error-message">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <a href="{% url 'accounts:profile_view' user.username %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </div>
+    </form>
+
+    <!-- Security Section -->
+    <div class="profile-section">
+        <div class="section-header">
+            <div class="section-icon security-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <div class="section-title">
+                <h2>Security</h2>
+                <p>Change your password</p>
+            </div>
+        </div>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="password-fields">
+                {% for field in password_form %}
+                    <div class="form-field">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="help-text">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <span class="error-message">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 

@@ -1,0 +1,422 @@
+/* Dashboard Widgets Styling - Minimalist Design */
+
+.dashboard-widget {
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  background: var(--card-bg);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.dashboard-widget:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-widget .card-header {
+  background: transparent;
+  color: var(--text-color);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 0.625rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-widget .card-header h6 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.3px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.widget-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.widget-actions .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: transparent;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.widget-actions .btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--text-color);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.widget-remove {
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+  opacity: 0.6;
+}
+
+.widget-remove:hover {
+  color: #dc3545;
+  opacity: 1;
+}
+
+/* Empty Dashboard State */
+.empty-dashboard {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 2px dashed var(--card-border);
+}
+
+.empty-dashboard i {
+  opacity: 0.3;
+}
+
+/* Widget Loading State */
+.widget-loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+.widget-loading .spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Widget Content */
+.widget-stat {
+  padding: 1.25rem 1rem;
+  text-align: center;
+  position: relative;
+}
+
+.widget-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  line-height: 1;
+  margin-bottom: 0.375rem;
+  letter-spacing: -0.02em;
+}
+
+.widget-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.widget-stat-change {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+}
+
+.widget-stat-change.positive {
+  color: #28a745;
+}
+
+.widget-stat-change.positive::before {
+  content: '↑';
+  font-size: 1rem;
+}
+
+.widget-stat-change.negative {
+  color: #dc3545;
+}
+
+.widget-stat-change.negative::before {
+  content: '↓';
+  font-size: 1rem;
+}
+
+/* Task List Widget */
+.task-list {
+  padding: 0;
+  margin: 0;
+}
+
+.task-list-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.15s ease;
+}
+
+.task-list-item:last-child {
+  border-bottom: none;
+}
+
+.task-list-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.task-title {
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.task-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.task-meta i {
+  font-size: 0.7rem;
+}
+
+.task-status {
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.task-status.todo {
+  background: rgba(108, 117, 125, 0.1);
+  color: #6c757d;
+}
+
+.task-status.in_progress {
+  background: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+}
+
+.task-status.review {
+  background: rgba(255, 193, 7, 0.1);
+  color: #f59f00;
+}
+
+.task-status.completed {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
+/* Calendar Widget - Calendar-Focused Design */
+.widget-calendar {
+  padding: 0;
+}
+
+.widget-calendar .card-body {
+  padding: 0.75rem;
+}
+
+/* FullCalendar customization */
+.widget-calendar .fc {
+  font-size: 0.8125rem;
+  background: transparent;
+}
+
+/* Toolbar - Minimal */
+.widget-calendar .fc-toolbar {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem !important;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 6px;
+}
+
+.widget-calendar .fc-toolbar-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.widget-calendar .fc-button {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: var(--text-color);
+}
+
+.widget-calendar .fc-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.widget-calendar .fc-button-active {
+  background: var(--accent-color, #007bff) !important;
+  border-color: var(--accent-color, #007bff) !important;
+  color: white !important;
+}
+
+/* Day headers */
+.widget-calendar .fc-col-header-cell {
+  padding: 0.5rem 0.25rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  background: transparent;
+}
+
+/* Day cells */
+.widget-calendar .fc-daygrid-day {
+  background: transparent;
+}
+
+.widget-calendar .fc-daygrid-day-number {
+  font-size: 0.8125rem;
+  padding: 0.375rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.widget-calendar .fc-daygrid-day-top {
+  justify-content: center;
+}
+
+/* Today highlight */
+.widget-calendar .fc-day-today {
+  background: rgba(0, 123, 255, 0.05) !important;
+}
+
+.widget-calendar .fc-day-today .fc-daygrid-day-number {
+  background: var(--accent-color, #007bff);
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Events */
+.widget-calendar .fc-event {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  margin: 1px 2px;
+  border-radius: 3px;
+  border: none;
+}
+
+.widget-calendar .fc-daygrid-event-dot {
+  display: none;
+}
+
+/* Remove unnecessary borders */
+.widget-calendar .fc-theme-standard td,
+.widget-calendar .fc-theme-standard th {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Make calendar take full height */
+.widget-calendar .fc-view-harness {
+  min-height: 300px;
+}
+
+/* Team Activity Widget */
+.activity-item {
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-title {
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.125rem;
+  font-size: 0.8125rem;
+}
+
+.activity-time {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+/* Chart Widgets */
+.widget-chart {
+  padding: 1rem;
+  min-height: 300px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-widget {
+    margin-bottom: 1rem;
+  }
+
+  .widget-stat-value {
+    font-size: 2rem;
+  }
+}
+
+/* Drag and Drop */
+.widget-dragging {
+  opacity: 0.5;
+}
+
+.widget-dragover {
+  border: 2px dashed var(--accent-color);
+}
+
+/* Refresh Animation */
+.widget-refreshing {
+  position: relative;
+}
+
+.widget-refreshing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+  animation: loading 1s linear infinite;
+}
+
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

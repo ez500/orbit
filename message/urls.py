@@ -52,6 +52,9 @@ urlpatterns = [
     # Delete conversation
     path("<str:username>/conversation/<int:conversation_id>/delete/", views.delete_conversation, name='delete_conversation'),
 
+    # Link preview
+    path("link-preview/", views.fetch_link_preview, name='fetch_link_preview'),
+
     # Test email (legacy)
     path("send_email/", views.send_test_email, name='send_test_email'),
 ]

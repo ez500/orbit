@@ -44,3 +44,18 @@ class Event(models.Model):
     task = models.IntegerField()
     datetime = models.DateTimeField(max_length=200)
     users = ArrayField(models.IntegerField(), blank=True, default=list)
+
+
+class DashboardWidget(models.Model):
+    """Model to store user's dashboard widget configuration"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='dashboard_config')
+    widgets = models.JSONField(default=list, blank=True)  # List of widget configurations
+    layout = models.JSONField(default=dict, blank=True)  # Layout positions and sizes
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Dashboard config for {self.user.username}"
+
+    class Meta:
+        verbose_name = "Dashboard Widget Configuration"
+        verbose_name_plural = "Dashboard Widget Configurations"

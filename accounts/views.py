@@ -193,33 +193,11 @@ class CompanyListView(LoginRequiredMixin, ListView):
         return searched_is_public or requesting_is_staff or is_connection or is_self
 
 
-# TODO DELETE USER ACCOUNT VIEW/CONFIG
+# Redirect to settings page (for backward compatibility)
 @login_required
 def edit_user_profile(request):
-    if request.method == 'POST':
-        user_form = UpdateUserForm(request.POST, instance=request.user)
-        profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
-        password_form = ChangePasswordForm(user=request.user, data=request.POST)
-
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            return redirect('accounts:profile_view', username=request.user.username)
-
-        if password_form.is_valid():
-            password_form.save()
-            return redirect('accounts:profile_view', username=request.user.username)
-    else:
-        user_form = UpdateUserForm(instance=request.user)
-        profile_form = UpdateProfileForm(instance=request.user.profile)
-        password_form = ChangePasswordForm(user=request.user)
-
-    return render(request, 'accounts/profile_edit.html', {
-        'title': 'Edit Profile',
-        'user_form': user_form,
-        'profile_form': profile_form,
-        'password_form': password_form
-    })
+    """Redirect to settings page - profile_edit is now consolidated into settings"""
+    return redirect('accounts:user_settings')
 
 
 @login_required
@@ -229,18 +207,34 @@ def settings(request):
         user_form = UpdateUserForm(request.POST, instance=request.user)
         profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
 
-        if profile_form.is_valid() and user_form.is_valid():
+        # Check validity
+        user_valid = user_form.is_valid()
+        profile_valid = profile_form.is_valid()
+
+        if user_valid and profile_valid:
             # Save both forms
             user_form.save()
             profile_form.save()
-            messages.success(request, 'Settings saved successfully!')
-            return redirect('accounts:settings')
+            messages.success(request, 'Your settings have been saved successfully!')
+            return redirect('accounts:user_settings')
         else:
-            # Show error messages for validation issues
-            messages.error(request, 'Please correct the errors below.')
+            # Show specific error messages for debugging
+            if not user_valid:
+                for field, errors in user_form.errors.items():
+                    for error in errors:
+                        messages.error(request, f'User form - {field}: {error}')
+            if not profile_valid:
+                for field, errors in profile_form.errors.items():
+                    for error in errors:
+                        messages.error(request, f'Profile form - {field}: {error}')
+            if not user_form.errors and not profile_form.errors:
+                messages.error(request, 'There were errors saving your settings. Please check the form and try again.')
     else:
         user_form = UpdateUserForm(instance=request.user)
         profile_form = UpdateProfileForm(instance=request.user.profile)
+
+    # Always include password form for the Security tab
+    password_form = ChangePasswordForm(user=request.user)
 
     accent_choices = Profile.ACCENT_CHOICES
     theme_choices = Profile.THEME_CHOICES
@@ -248,10 +242,41 @@ def settings(request):
     return render(request, 'accounts/settings.html', {
         'user_form': user_form,
         'profile_form': profile_form,
+        'password_form': password_form,
         'accent_choices': accent_choices,
         'theme_choices': theme_choices,
         'title': 'Settings'
     })
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        password_form = ChangePasswordForm(user=request.user, data=request.POST)
+
+        if password_form.is_valid():
+            password_form.save()
+            messages.success(request, 'Your password has been changed successfully! You can now use your new password to sign in.')
+            return redirect('accounts:user_settings')
+        else:
+            messages.error(request, 'Unable to change password. Please check the errors below and try again.')
+            # Return to settings with the error form
+            user_form = UpdateUserForm(instance=request.user)
+            profile_form = UpdateProfileForm(instance=request.user.profile)
+            accent_choices = Profile.ACCENT_CHOICES
+            theme_choices = Profile.THEME_CHOICES
+
+            return render(request, 'accounts/settings.html', {
+                'user_form': user_form,
+                'profile_form': profile_form,
+                'password_form': password_form,
+                'accent_choices': accent_choices,
+                'theme_choices': theme_choices,
+                'title': 'Settings',
+                'active_tab': 'security'  # Open the security tab
+            })
+
+    return redirect('accounts:user_settings')
 
 
 @login_required

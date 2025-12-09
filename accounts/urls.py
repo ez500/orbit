@@ -12,8 +12,9 @@ urlpatterns = [
     path("password-reset/<uidb64>/<token>/", views.UserPasswordResetConfirmView.as_view(),
          name='password_reset_confirm'),
     path("password-reset/done", views.UserPasswordResetDoneView.as_view(), name='password_reset_done'),
-    path("edit/", views.edit_user_profile, name='profile_edit'),
+    path("edit/", views.edit_user_profile, name='profile_edit'),  # Keep for backward compatibility
     path("settings/", views.settings, name="user_settings"),
+    path("settings/change-password/", views.change_password, name="change_password"),
     path("search/", views.search, name="user_search"),
     path("send-connection-request/<str:username>/", views.send_connection_request, name='send_connection_request'),
     path("accept-connection-request/<str:username>/", views.accept_connection_request, name='accept_connection_request'),

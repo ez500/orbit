@@ -58,19 +58,37 @@ class UpdateUserForm(forms.ModelForm):
         label='First Name',
         max_length=30,
         required=False,
-        widget=forms.TextInput(attrs={'autofocus': 'autofocus'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'autofocus': 'autofocus'})
     )
-    last_name = forms.CharField(label='Last Name', max_length=30, required=False)
-    username = forms.CharField(label='Username', max_length=150)
+    last_name = forms.CharField(
+        label='Last Name',
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    username = forms.CharField(
+        label='Username',
+        max_length=150,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     email = forms.EmailField(
         label='E-mail',
         max_length=254,
-        help_text='Must be a valid E-mail address.'
+        help_text='Must be a valid E-mail address.',
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
 
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if not username:
+            return username
+        if User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError(f'{username} is already taken.')
+        return username
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
