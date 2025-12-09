@@ -32,6 +32,9 @@ urlpatterns = [
     # Personal notes
     path("<str:username>/notes/", views.personal_notes, name='personal_notes'),
 
+    # Orbit Chat
+    path("<str:username>/orbit-chat/", views.orbit_chat, name='orbit_chat'),
+
     # Create team conversation
     path("<str:username>/create-team-chat/", views.create_team_conversation, name='create_team_conversation'),
 
@@ -48,6 +51,9 @@ urlpatterns = [
     # Delete and edit messages
     path("<str:username>/conversation/<int:conversation_id>/message/<int:message_id>/delete/", views.delete_message, name='delete_message'),
     path("<str:username>/conversation/<int:conversation_id>/message/<int:message_id>/edit/", views.edit_message, name='edit_message'),
+
+    # Delete conversation
+    path("<str:username>/conversation/<int:conversation_id>/delete/", views.delete_conversation, name='delete_conversation'),
 
     # Test email (legacy)
     path("send_email/", views.send_test_email, name='send_test_email'),
