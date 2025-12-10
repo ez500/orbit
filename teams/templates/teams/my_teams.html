@@ -29,10 +29,17 @@
                 </div>
                 <div class="ms-3">
                   <h5 class="card-title mb-0">{{ team.name }}</h5>
-                  <small class="text-muted">Created by {{ team.owner.user.username }}</small>
+
+                  {% with lead=team.get_lead %}
+                    {% if lead %}
+                      <small class="text-muted">Created by {{ lead.user.username }}</small>
+                    {% else %}
+                      <small class="text-muted">Created by Unknown</small>
+                    {% endif %}
+                  {% endwith %}
                 </div>
               </div>
-              
+
               {% if team.description %}
                 <p class="card-text text-muted mb-3">{{ team.description|truncatechars:100 }}</p>
               {% else %}
@@ -77,4 +84,3 @@
 </div>
 
 {% endblock %}
-

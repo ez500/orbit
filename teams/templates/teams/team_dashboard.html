@@ -1,53 +1,22 @@
 {% extends "base.html" %}
 {% load static %}
+{% load task_extras %}
 {% block content %}
 
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold text-primary mb-0">
-      <i class="fas fa-users me-2"></i>{{ team.name }} Dashboard
-    </h3>
-    <div>
-      <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaskModal">
-        <i class="fas fa-plus"></i> Add Task
-      </button>
-      <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addEventModal">
-        <i class="fas fa-calendar-plus"></i> Add Event
-      </button>
-    </div>
-  </div>
-
-  <div class="row g-4">
-    <div class="col-lg-8">
-      <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
-          <h5 class="fw-semibold text-primary mb-3"><i class="fas fa-calendar-alt"></i> Calendar</h5>
-          <div id="calendar" style="height: 500px;"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-lg-4">
-      <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
-          <h5 class="fw-semibold text-primary mb-3"><i class="fas fa-tasks"></i> Tasks</h5>
-          {% for task in team_tasks %}
-          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-primary mb-0">
+                <i class="fas fa-users me-2"></i>{{ team.name }} Dashboard
+            </h3>
             <div>
-              <strong>{{ task.title }}</strong>
-              {% if task.due_date %}<br><small class="text-muted">Due: {{ task.due_date }}</small>{% endif %}
+                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#addTaskEventModal">
+                    <i class="fas fa-plus"></i> Add Task/Event
+                </button>
             </div>
-            <a href="{% url 'teams:delete_team_task' team.pk task.pk %}" class="btn btn-outline-danger btn-sm">
-              <i class="fas fa-trash"></i>
-            </a>
-          </div>
-          {% empty %}
-          <p class="text-muted">No tasks yet.</p>
-          {% endfor %}
         </div>
-      </div>
 
-      <div class="card shadow-sm border-0">
+      <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
           <h5 class="fw-semibold text-primary mb-3"><i class="fas fa-calendar-day"></i> Events</h5>
           {% for event in team_events %}
@@ -65,54 +34,156 @@
           {% endfor %}
         </div>
       </div>
+
+      <!-- ========================= -->
+      <!--      TEAM DOCUMENTS       -->
+      <!-- ========================= -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-semibold text-primary mb-0">
+              <i class="fas fa-file-alt me-2"></i>Team Documents
+            </h5>
+
+            <div>
+              <a href="{% url 'teams:team_add_document' team.pk %}"
+                 class="btn btn-primary btn-sm me-2">
+                 <i class="fas fa-upload me-1"></i> Upload
+              </a>
+
+              <a href="{% url 'teams:team_create_internal_document' team.pk %}"
+                 class="btn btn-outline-primary btn-sm">
+                 <i class="fas fa-file-alt me-1"></i> Create
+              </a>
+            </div>
+          </div>
+
+          {% if team.documents.all %}
+          <ul class="list-group">
+            {% for doc in team.documents.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+
+              <!-- INTERNAL DOC -->
+              {% if doc.doc_type == "internal" %}
+              <a href="{% url 'teams:team_view_document' team.pk doc.pk %}" class="text-decoration-none">
+                <i class="fas fa-sticky-note me-2 text-warning"></i>
+                {{ doc.name }} <small class="text-muted">(Internal)</small>
+              </a>
+
+              <!-- UPLOADED FILE -->
+              {% elif doc.doc_type == "file" %}
+                {% if doc.file %}
+                <a href="{{ doc.file.url }}" target="_blank" class="text-decoration-none">
+                  <i class="fas fa-file me-2 text-secondary"></i>{{ doc.name }}
+                </a>
+                {% else %}
+                <span class="text-danger">
+                  <i class="fas fa-exclamation-triangle me-2"></i> Missing file
+                </span>
+                {% endif %}
+
+              <!-- EXTERNAL LINK -->
+              {% elif doc.doc_type == "link" %}
+              <a href="{{ doc.external_url }}" target="_blank" class="text-decoration-none">
+                <i class="fas fa-external-link-alt me-2 text-info"></i>{{ doc.name }}
+              </a>
+              {% endif %}
+
+              <div class="d-flex align-items-center">
+                <small class="text-muted me-3">By {{ doc.uploaded_by.username }}</small>
+                <a href="{% url 'teams:team_delete_document' team.pk doc.pk %}"
+                   class="btn btn-outline-danger btn-sm"
+                   onclick="return confirm('Delete document {{ doc.name }}?');">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+            <p class="text-muted">No documents yet.</p>
+          {% endif %}
+
+        </div>
+      </div>
+      <!-- ========================= -->
+      <!--  END TEAM DOCUMENTS       -->
+      <!-- ========================= -->
+
     </div>
   </div>
 </div>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold text-primary mb-3"><i class="fas fa-calendar-alt"></i> Calendar</h5>
+                        <div id="calendar" style="height: 500px;"></div>
+                    </div>
+                </div>
+            </div>
 
-<!-- Add Task Modal -->
-<div class="modal fade" id="addTaskModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="POST">{% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title">Add Team Task</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold text-primary mb-3"><i class="fas fa-tasks"></i> Tasks</h5>
+                        {% for task in team_tasks %}
+                            <div class="task-item p-2" data-task-id="{{ task.id }}"
+                                 role="button" aria-label="View Task {{ task.title }}">
+                                <div class="d-flex justify-content-between align-items-center py-2">
+                                    <div>
+                                        <strong class="gap-3">{{ task.title }}</strong>
+                                        <span class="badge {{ task.status|status_badge }}">{{ task.get_status_display }}</span>
+                                        {% if task.deadline %}<br><small class="text-muted">Due {{ task.deadline }}</small>{% endif %}
+                                    </div>
+                                    <a href="{% url 'teams:delete_team_task' team.pk task.pk %}"
+                                       class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted">No tasks yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="fw-semibold text-primary mb-3"><i class="fas fa-calendar-day"></i> Events</h5>
+          {% for event in team_events %}
+          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div>
+              <strong>{{ event.title }}</strong><br>
+              <small class="text-muted">{{ event.start_date }}{% if event.end_date %} → {{ event.end_date }}{% endif %}</small>
+            </div>
+            <a href="{% url 'teams:delete_team_event' team.pk event.pk %}" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted">No events yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="modal-body">{{ task_form.as_p }}</div>
-        <div class="modal-footer">
-          <button type="submit" name="add_task" class="btn btn-primary">Add</button>
-        </div>
-      </form>
     </div>
-  </div>
-</div>
 
-<!-- Add Event Modal -->
-<div class="modal fade" id="addEventModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="POST">{% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title">Add Team Event</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">{{ event_form.as_p }}</div>
-        <div class="modal-footer">
-          <button type="submit" name="add_event" class="btn btn-primary">Add</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+    <!-- Add Task/Event Modal -->
+    {% include 'dashboard/calendar/_add_task_event_modal.html' %}
+    {% include 'dashboard/calendar/_view_task_modal_shell.html' %}
 
+<!-- TODO FIX CALENDAR FUNCTIONALITY -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/index.global.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const calendarEl = document.getElementById("calendar");
-  if (!calendarEl) return; // safety check
+  if (!calendarEl) return;
 
   const events = [
-    // Team Tasks
     {% for task in team_tasks %}
       {% if task.due_date %}
       {
@@ -124,7 +195,6 @@ document.addEventListener("DOMContentLoaded", function () {
       {% endif %}
     {% endfor %}
 
-    // Team Events
     {% for event in team_events %}
       {
         title: "📅 {{ event.title|escapejs }} (Event)",
@@ -137,21 +207,59 @@ document.addEventListener("DOMContentLoaded", function () {
       }{% if not forloop.last %},{% endif %}
     {% endfor %}
   ];
+    <!-- TODO FIX CALENDAR FUNCTIONALITY -->
+{% endblock %}
 
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "dayGridMonth",
-    height: 500,
-    headerToolbar: {
-      left: "prev,next today",
-      center: "title",
-      right: "dayGridMonth,timeGridWeek,timeGridDay"
-    },
-    events: events,
-  });
+{% block extra_js %}
 
-  calendar.render();
-});
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/index.global.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const calendarEl = document.getElementById("calendar");
+            if (!calendarEl) return; // safety check
 
+            const events = [
+                // Team Tasks
+                {% for task in team_tasks %}
+                    {% if task.due_date %}
+                        {
+                            title: "📝 {{ task.title|escapejs }} (Task)",
+                            start: "{{ task.due_date|date:'Y-m-d' }}",
+                            color: "#007bff",
+                            textColor: "#fff"
+                        },
+                    {% endif %}
+                {% endfor %}
+
+                // Team Events
+                {% for event in team_events %}
+                    {
+                        title: "📅 {{ event.title|escapejs }} (Event)",
+                        start: "{{ event.start_date|date:'Y-m-d' }}",
+                        {% if event.end_date %}
+                            end: "{{ event.end_date|date:'Y-m-d' }}",
+                        {% endif %}
+                        color: "#28a745",
+                        textColor: "#fff"
+                    }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: "dayGridMonth",
+                height: 500,
+                headerToolbar: {
+                    left: "prev,next today",
+                    center: "title",
+                    right: "dayGridMonth,timeGridWeek,timeGridDay"
+                },
+                events: events,
+            });
+
+            calendar.render();
+        });
+    </script>
+
+    <script src="{% static 'js/viewTaskModal.js' %}"></script>
 {% endblock %}
 

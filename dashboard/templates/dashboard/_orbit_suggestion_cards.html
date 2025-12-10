@@ -1,0 +1,43 @@
+{% load orbit_extras %}
+
+{% if fallback %}
+    <div class="alert alert-info">
+        No strong suggestions were found for your current context.
+        You can start a new conversation with the assistant from the messaging area.
+    </div>
+{% endif %}
+
+{% if suggestions %}
+    <div class="row">
+        {% for s in suggestions %}
+            {% with data=s.raw_data %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {{ s.get_suggestion_type_display }}{% if data.title %}: {{ data.title }}{% endif %}
+                            </h5>
+                            <p class="card-text">
+                                {{ data|get_key:"content" }}
+                            </p>
+
+                                {% if data.type == 'create_task' %}
+                                    <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">Create Task</a>
+                                {% elif data.type == 'create_event' %}
+                                    <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">Create Event</a>
+                                {% elif data.type == 'create_announcement' %}
+                                    <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">Create Announcement</a>
+                                {% elif data.type == 'send_message' %}
+                                    <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">Send Message</a>
+                                {% elif data.type == 'send_email' %}
+                                    <a href="{% url 'dashboard:execute_suggestion' s.id %}" class="btn btn-primary btn-sm">Review Email Draft</a>
+                                {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endwith %}
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">No insights available at the moment.</p>
+{% endif %}

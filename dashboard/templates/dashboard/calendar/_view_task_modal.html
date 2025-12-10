@@ -1,7 +1,7 @@
 {% load task_extras %}
 
-<div class="modal-header border-0">
-    <h5 class="modal-title">{{ task.title }}</h5>
+<div class="modal-header border-2">
+    <h5 class="modal-title mb-auto">{{ task.title }}</h5>
     <span class="badge {{ task.status|status_badge }} ms-2">{{ task.get_status_display }}</span>
     <button
             type="button"
@@ -29,13 +29,13 @@
     {% endif %}
 
     {% if task.users %}
-        <div class="card">
+        <div class="card mt-3">
             <div class="card-body">
                 <h5>Assigned Users</h5>
                 {% for user in task.users.all %}
                     <div class="d-flex align-items-center">
-                        <p class="me-auto text-start mb-2">{{ user }}</p>
-                        <a href="{% url 'accounts:profile_view' user %}" class="btn btn-sm btn-secondary ms-2">
+                        <p class="me-auto text-start">{{ user }}</p>
+                        <a href="{% url 'accounts:profile_view' user %}" class="btn btn-sm btn-secondary ms-2 mb-2">
                             View Profile
                         </a>
                     </div>
@@ -43,8 +43,6 @@
             </div>
         </div>
     {% endif %}
-
-    <!-- TODO IMPLEMENT MODAL TO EDIT -->
     <div class="d-flex align-items-center">
         <p class="me-auto text-start mb-0">Created {{ task.pub_date|date:"M. d, Y" }}</p>
         <button class="btn btn-warning">Edit</button>

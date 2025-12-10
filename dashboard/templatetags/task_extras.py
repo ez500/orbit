@@ -9,6 +9,7 @@ _STATUS_TO_COLOR = {
     'todo': 'danger',
 }
 
+
 @register.filter
 def status_badge(status):
     color = _STATUS_TO_COLOR.get(status, 'danger')

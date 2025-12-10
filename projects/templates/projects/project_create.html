@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-5">
+  <div class="card shadow-sm border-0 mx-auto" style="max-width: 600px;">
+    <div class="card-body">
+      <h4 class="mb-4 text-center text-primary"><i class="fas fa-plus-circle me-2"></i>Create New Project</h4>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Project Name -->
+        <div class="mb-3">
+          <label class="form-label">Project Name</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="4"></textarea>
+        </div>
+
+        <!-- Team -->
+        <div class="mb-3">
+          <label class="form-label">Team (optional)</label>
+          {{ form.team }}
+        </div>
+
+        <!-- Managers -->
+        <div class="mb-3">
+          <label class="form-label">Assign Managers (optional)</label>
+          {{ form.managers }}
+        </div>
+
+        <!-- Members -->
+        <div class="mb-3">
+          <label class="form-label">Assign Members (optional)</label>
+          {{ form.members }}
+        </div>
+        <!-- Auto-Add Team Members -->
+        <div class="mb-3 form-check">
+          {{ form.auto_add_team_members }}
+          <label class="form-check-label">
+            Add all team members to project collaborators
+          </label>
+        </div>
+        <!-- Companies -->
+        <div class="mb-3">
+          <label class="form-label">Associated Companies</label>
+          {{ form.companies }}
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <a href="{% url 'projects:project_list' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+# Django templates
+**/templates/**/*.html
+**/templates/**/*.htm
+
+# Python files
+*.py
+
+# Static files
+**/static/**
+**/media/**
+
+# Database
+*.sqlite3
+*.db
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+

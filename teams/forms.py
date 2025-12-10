@@ -1,5 +1,7 @@
 from django import forms
-from .models import Team, TeamTask, TeamEvent
+
+from .models import Team,TeamDocument
+
 
 class JoinTeamForm(forms.Form):
     team_name = forms.CharField(
@@ -16,23 +18,14 @@ class JoinTeamForm(forms.Form):
             raise forms.ValidationError("No team found with that name.")
         return team
 
-class TeamTaskForm(forms.ModelForm):
+class TeamDocumentForm(forms.ModelForm):
     class Meta:
-        model = TeamTask
-        fields = ["title", "description", "due_date"]
+        model = TeamDocument
+        fields = ["name", "doc_type", "file", "content", "external_url"]
         widgets = {
-            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Task title"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Task details..."}),
-            "due_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
-        }
-
-class TeamEventForm(forms.ModelForm):
-    class Meta:
-        model = TeamEvent
-        fields = ["title", "description", "start_date", "end_date"]
-        widgets = {
-            "title": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
-            "start_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
-            "end_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "doc_type": forms.Select(attrs={"class": "form-select"}),
+            "file": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "content": forms.Textarea(attrs={"class": "form-control", "rows": "8"}),
+            "external_url": forms.URLInput(attrs={"class": "form-control"}),
         }

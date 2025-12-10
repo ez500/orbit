@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "message",
     "rest_framework",
+    "document_storing",
+    "help",
 ]
 
 MIDDLEWARE = [
@@ -77,6 +79,9 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "message.context_processors.recent_conversations",
+                "dashboard.context_processors.unread_notifications",
+                "dashboard.context_processors.recall_orbit_insights"
             ],
         },
     },
@@ -133,7 +138,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Email configs
 
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # prints emails to the terminal
+
+DEFAULT_FROM_EMAIL = 'no-reply@veralign.local'
+
+CONTACT_RECIPIENTS = ['bfm@bfm.io', 'eric@chen.com']
 
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.sendgrid.net')
 
@@ -147,6 +156,8 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
 EMAIL_CONNECTION_CLASS = config('EMAIL_CONNECTION_CLASS', default='django.core.mail.backends.smtp.EmailBackend')
 
+RECIPIENT_ADDRESS = ""
+
 
 # Login/logout + redirect URLs
 
@@ -159,7 +170,7 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Media
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MEDIA_URL = '/media/'
 
@@ -180,6 +191,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
     BASE_DIR / "home" / "static",
@@ -189,3 +201,5 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+X_FRAME_OPTIONS = "SAMEORIGIN"

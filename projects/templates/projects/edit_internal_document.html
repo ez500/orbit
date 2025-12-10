@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-4">
+  <h3 class="fw-bold text-primary">Edit Document: {{ doc.name }}</h3>
+  <hr>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Document Title</label>
+      {{ form.name }}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Content</label>
+      {{ form.content }}
+    </div>
+
+    <button type="submit" class="btn btn-success mt-2">
+      <i class="fas fa-save me-2"></i>Save Changes
+    </button>
+
+    <a href="{% url 'projects:view_internal_document' doc.pk %}" 
+       class="btn btn-outline-primary mt-2 ms-2">
+       <i class="fas fa-eye me-2"></i>View Document
+    </a>
+  </form>
+</div>
+
+{% endblock %}

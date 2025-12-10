@@ -9,12 +9,14 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h1 class="h3 mb-0">Dashboard</h1>
-      <p class="text-muted mb-0">Welcome back, {{ request.user.first_name }}</p>
+      <p class="text-muted mb-0">Welcome back, {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}</p>
     </div>
     <div class="d-flex gap-2">
+      <!-- TODO NOTIFICATIONS ON SIDEBAR + UNREAD CIRCLE -->
+      <a href="{% url 'dashboard:notifications' %}" class="btn btn-primary">View Notifications</a>
       <div class="dropdown">
         <button
-          class="btn btn-light dropdown-toggle"
+          class="btn btn-outline-secondary dropdown-toggle"
           type="button"
           id="addWidgetDropdown"
           data-bs-toggle="dropdown"
@@ -73,7 +75,7 @@
           </li>
         </ul>
       </div>
-      <button class="btn btn-dark" onclick="dashboard.saveLayout()">
+      <button class="btn btn-primary" onclick="window.dashboard && window.dashboard.saveLayout()">
         <i class="fas fa-save"></i> Save Layout
       </button>
     </div>
@@ -92,9 +94,8 @@
     <h4>Your Dashboard is Empty</h4>
     <p class="text-muted">Add widgets to customize your dashboard</p>
     <button
-      class="btn btn-dark"
-      data-bs-toggle="dropdown"
-      data-bs-target="#addWidgetDropdown"
+      class="btn btn-primary"
+      onclick="document.getElementById('addWidgetDropdown').click()"
     >
       <i class="fas fa-plus"></i> Add Your First Widget
     </button>
@@ -152,12 +153,13 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/dashboard.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
   // Show empty state if no widgets are present
   function updateEmptyState() {
-    const hasWidgets = document.querySelectorAll(".dashboard-widget").length > 0;
+    const grid = document.getElementById("dashboard-widgets")
+    const hasWidgets = grid.querySelectorAll(".dashboard-widget").length > 0;
     document.getElementById("empty-dashboard").classList.toggle("d-none", hasWidgets);
   }
 
@@ -166,15 +168,36 @@
   updateEmptyState();
 
   // === Project Tasks/Events Widget Integration ===
-  function addWidget(type) {
-    if (type === "projectTasks") {
-      document.getElementById("widget-project-tasks").style.display = "block";
-      renderProjectCalendar();
-    }
-  }
-
-  // Toggle between list and calendar view
+  // Wait for dashboard.js to initialize before wrapping addWidget
   document.addEventListener("DOMContentLoaded", function () {
+    // Hook into the global addWidget function from dashboard.js
+    const originalAddWidget = window.addWidget;
+    window.addWidget = function(type) {
+      if (type === "projectTasks") {
+        document.getElementById("widget-project-tasks").style.display = "block";
+        renderProjectCalendar();
+        updateEmptyState();
+      } else {
+        // Call the original addWidget function from dashboard.js
+        if (originalAddWidget) {
+          originalAddWidget(type);
+        }
+      }
+    };
+
+    // Toggle between list and calendar view
+
+  // TODO TEST THIS IMPLEMENTATION
+  {#// === Project Tasks/Events Widget Integration ===#}
+  {#function addWidget(type) {#}
+  {#  if (type === "projectTasks") {#}
+  {#    document.getElementById("widget-project-tasks").style.display = "block";#}
+  {#    renderProjectCalendar();#}
+  {#  }#}
+  {#}#}
+  {##}
+  {#// Toggle between list and calendar view#}
+  {#document.addEventListener("DOMContentLoaded", function () {#}
     const listBtn = document.getElementById("toggleProjList");
     const calBtn = document.getElementById("toggleProjCalendar");
     const listView = document.getElementById("projectListView");

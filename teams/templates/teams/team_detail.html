@@ -3,15 +3,18 @@
 {% block content %}
 
 <div class="container py-4">
+
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="fw-bold text-primary mb-0">
       <i class="fas fa-users me-2"></i>{{ team.name }} Overview
     </h3>
+
     <div>
       <a href="{% url 'teams:team_dashboard' team.pk %}" class="btn btn-outline-primary btn-sm">
         <i class="fas fa-calendar-alt"></i> Dashboard
       </a>
-      {% if request.user in team.members.all %}
+
+      {% if user_is_member %}
       <form method="POST" action="{% url 'teams:leave_team' team.pk %}" class="d-inline">
         {% csrf_token %}
         <button type="submit" class="btn btn-outline-danger btn-sm">
@@ -24,35 +27,88 @@
 
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
-      <h5 class="fw-semibold text-primary mb-2"><i class="fas fa-info-circle"></i> Description</h5>
+      <h5 class="fw-semibold text-primary mb-2">
+        <i class="fas fa-info-circle"></i> Description
+      </h5>
       <p class="text-muted mb-0">
         {{ team.description|default:"<em>No description provided.</em>"|safe }}
       </p>
     </div>
   </div>
 
+
   <div class="row g-4">
+
+    <!-- MEMBERS LIST -->
     <div class="col-md-6">
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body">
           <h5 class="fw-semibold text-primary mb-3">
-            <i class="fas fa-user-friends"></i> Members ({{ team.members.count }})
+            <i class="fas fa-user-friends"></i> Members ({{ memberships.count }})
           </h5>
-          {% if team.members.all %}
+
+          {% if memberships %}
           <ul class="list-group list-group-flush">
-            {% for member in team.members.all %}
-              <li class="list-group-item d-flex align-items-center">
+
+            {% for m in memberships %}
+            <li class="list-group-item d-flex align-items-center justify-content-between">
+
+              <div class="d-flex align-items-center">
                 <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3"
                      style="width:36px; height:36px;">
                   <i class="fas fa-user"></i>
                 </div>
+
                 <div>
-                  <strong>{{ member.username }}</strong><br>
-                  <small class="text-muted">{{ member.get_full_name }}</small>
+                  <strong>{{ m.user.username }}</strong><br>
+                  <small class="text-muted">
+                    {% if m.role == "Lead" %}
+                      Team Lead
+                    {% elif m.role == "Manager" %}
+                      Manager
+                    {% else %}
+                      Member
+                    {% endif %}
+                  </small>
                 </div>
-              </li>
+              </div>
+
+              <!-- ACTION BUTTONS -->
+              <div>
+
+                {% if m.user != request.user %}
+
+                  {% if acting.role == "Lead" %}
+
+                    {% if m.role == "Member" %}
+                      <a href="{% url 'teams:promote_member' team.pk m.user.pk %}"
+                         class="btn btn-outline-success btn-sm">Promote</a>
+                    {% endif %}
+
+                    {% if m.role == "Manager" %}
+                      <a href="{% url 'teams:demote_member' team.pk m.user.pk %}"
+                         class="btn btn-outline-warning btn-sm">Demote</a>
+                    {% endif %}
+
+                    <a href="{% url 'teams:remove_member' team.pk m.user.pk %}"
+                       class="btn btn-outline-danger btn-sm">Remove</a>
+
+                  {% elif acting.role == "Manager" %}
+
+                    {% if m.role == "Member" %}
+                      <a href="{% url 'teams:remove_member' team.pk m.user.pk %}"
+                         class="btn btn-outline-danger btn-sm">Remove</a>
+                    {% endif %}
+
+                  {% endif %}
+
+                {% endif %}
+
+              </div>
+            </li>
             {% endfor %}
           </ul>
+
           {% else %}
             <p class="text-muted">No members in this team yet.</p>
           {% endif %}
@@ -60,30 +116,39 @@
       </div>
     </div>
 
+
+    <!-- UPCOMING EVENTS -->
     <div class="col-md-6">
       <div class="card shadow-sm border-0 h-100">
         <div class="card-body">
           <h5 class="fw-semibold text-primary mb-3">
             <i class="fas fa-calendar-alt"></i> Upcoming Events
           </h5>
+
           {% if team.events.exists %}
-            <ul class="list-group list-group-flush">
-              {% for event in team.events.all|slice:":5" %}
-                <li class="list-group-item">
-                  <strong>{{ event.title }}</strong><br>
-                  <small class="text-muted">
-                    {{ event.start_date }}{% if event.end_date %} → {{ event.end_date }}{% endif %}
-                  </small>
-                </li>
-              {% endfor %}
-            </ul>
+          <ul class="list-group list-group-flush">
+            {% for event in team.events.all|slice:":5" %}
+            <li class="list-group-item">
+              <strong>{{ event.title }}</strong><br>
+              <small class="text-muted">
+                {{ event.start_datetime|date:"Y-m-d H:i" }}
+                {% if event.end_datetime %}
+                  → {{ event.end_datetime|date:"Y-m-d H:i" }}
+                {% endif %}
+              </small>
+            </li>
+            {% endfor %}
+          </ul>
           {% else %}
-            <p class="text-muted">No upcoming events.</p>
+          <p class="text-muted">No upcoming events.</p>
           {% endif %}
+
         </div>
       </div>
     </div>
+
   </div>
+
 </div>
 
 {% endblock %}

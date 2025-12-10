@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="text-success"><i class="fas fa-user-plus me-2"></i>Add Manager</h3>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-success mt-2">Add Manager</button>
+    <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-secondary mt-2">Back</a>
+  </form>
+</div>
+{% endblock %}
