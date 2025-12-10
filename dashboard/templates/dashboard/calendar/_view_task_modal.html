@@ -28,9 +28,9 @@
         </div>
     {% endif %}
 
-    {% if task.users %}
-        <div class="card mt-3">
-            <div class="card-body">
+    <div class="card mt-3">
+        <div class="card-body">
+            {% if task.users.all %}
                 <h5>Assigned Users</h5>
                 {% for user in task.users.all %}
                     <div class="d-flex align-items-center">
@@ -40,9 +40,12 @@
                         </a>
                     </div>
                 {% endfor %}
-            </div>
+            {% else %}
+                <p>No users assigned to this task.</p>
+            {% endif %}
         </div>
-    {% endif %}
+    </div>
+
     <div class="d-flex align-items-center">
         <p class="me-auto text-start mb-0">Created {{ task.pub_date|date:"M. d, Y" }}</p>
         <button class="btn btn-warning">Edit</button>

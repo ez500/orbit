@@ -259,6 +259,7 @@ def tasks(request):
     q3 = Q(project__in=projects)
 
     tasks_list = Task.objects.filter(q1 | q2 | q3).order_by('-deadline')
+    events_list = Event.objects.filter(q1 | q2 | q3).order_by('start_datetime')
 
     search = request.GET.get('search', '').strip()
     status_filter = request.GET.get('status', '')
@@ -302,8 +303,6 @@ def tasks(request):
     teams = Team.objects.filter(members=user.id)
     projects = Project.objects.filter(collaborators=user.id) | Project.objects.filter(lead=user.id)
 
-    serializer = TaskViewSerializer(tasks_list, many=True)
-
     if request.method == "POST":
         if "add_task" in request.POST:
             task_form = TaskForm(request.POST, user=request.user)
@@ -330,7 +329,7 @@ def tasks(request):
     context = {
         'title': 'Tasks',
         'tasks_qs': tasks_list,
-        'tasks': serializer.data,
+        'events_qs': events_list,
         'teams': teams,
         'projects': projects,
         'search': search,

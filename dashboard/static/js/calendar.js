@@ -1,31 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const tasks = JSON.parse(document.getElementById("tasks-data").textContent);
 
-    // View toggle functionality
-    const viewToggleButtons = document.querySelectorAll(".view-toggle .btn");
-    const listViews = document.querySelectorAll(".card:not(#calendarView)");
-    const calendarView = document.querySelector("#calendarView");
-
-    viewToggleButtons.forEach((button) => {
-        button.addEventListener("click", function () {
-            viewToggleButtons.forEach((btn) => btn.classList.remove("active"));
-            this.classList.add("active");
-
-            if (this.dataset.view === "calendar") {
-                listViews.forEach((listView) => listView.classList.add("d-none"));
-                calendarView.classList.remove("d-none");
-            } else {
-                listViews.forEach((listView) => listView.classList.remove("d-none"));
-                calendarView.classList.add("d-none");
-            }
-        });
-    });
-
-    const form = document.getElementById("taskFilterForm");
-    form.querySelectorAll("select").forEach(sel => {
-        sel.addEventListener("change", () => form.submit());
-    })
-
     // Calendar initialization
     const months = [
         "January",
@@ -141,8 +116,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 addTaskButton.innerHTML = `<i class="fas fa-plus fa-sm"></i>`;
                 elementToAddButton.appendChild(addTaskButton);
 
+                const startTimeStr = date.getHours().toString().padStart(2, '0')
+                    + ":" + date.getMinutes().toString().padStart(2, '0');
+                const endTimeStr = (date.getHours() + 1).toString().padStart(2, '0')
+                    + ":" + date.getMinutes().toString().padStart(2, '0');
+
                 addTaskButton.addEventListener("click", () => {
                     document.getElementById("id_deadline").value = dateStr;
+                    document.getElementById("id_start_datetime").value = `${dateStr}T${startTimeStr}`;
+                    document.getElementById("id_end_datetime").value = `${dateStr}T${endTimeStr}`;
                 })
             });
 
