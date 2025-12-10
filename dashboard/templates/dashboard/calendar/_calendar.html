@@ -31,14 +31,14 @@
                 <!-- Calendar days will be inserted here by JavaScript -->
             </div>
         </div>
-         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="mb-0"></h5>
-            <input type="url" id="calUrl" name="{% static 'basic.ics' %}" placeholder="https://calendar.com" />
-            <div class="btn-group">
+
+        <div class="d-flex justify-content-end mt-4">
+            <input type="url" id="calUrl" name="{% static 'basic.ics' %}" placeholder="https://calendar.com"/>
+            <div class="btn-group ms-2">
                 <button class="btn btn-light" id="urlImport">
                     URL Import
                 </button>
-                <input type="file" id="fileInput" accept=".ics" style="display: none;" />
+                <input type="file" id="fileInput" accept=".ics" style="display: none;"/>
                 <button class="btn btn-light" id="calImport">
                     Import
                 </button>

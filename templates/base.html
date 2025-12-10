@@ -120,13 +120,13 @@
     <div class="container">
         <p>
             &copy; 2025 VerAlign. AI-based Customer Relationship Management. All
-            Rights Reserved. <a href="/admin/">Admin</a>
+            Rights Reserved. <a class="text-white" href="/admin/">Admin</a>
+            {% if title in "Tasks" %}
+                <a class="text-white" href="{% url "help:task_help" %}">Help</a>
+            {% else  %}
+                <a class="text-white" href="{% url "help:account_help" %}">Help</a>
+            {% endif %}
         </p>
-        {% if title in "Tasks" %}
-            <a class="text-black"  href="{% url "help:task_help" %}">Help</a>
-        {% else  %}
-            <a class="text-black" href="{% url "help:account_help" %}">Help</a>
-        {% endif %}
     </div>
 </footer>
 

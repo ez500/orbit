@@ -175,13 +175,11 @@ document.addEventListener("DOMContentLoaded", function () {
             );
         }
 
-        const icsContent = `BEGIN:VCALENDAR
+        return `BEGIN:VCALENDAR
             VERSION:2.0
             PRODID:-//Company//VerAlign//EN
             ${eventStrings.join("\n")}
             END:VCALENDAR`;
-
-        return icsContent;
     }
 
     function downloadIcsFile(eventData) {
@@ -258,10 +256,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     document.getElementById("calExport").addEventListener("click", () => {
-        let evenList = [];
+        let eventList = [];
         for (let i = 0; i < tasks.length; i++) {
             console.log(tasks[i].deadline);
-            evenList.push({
+            eventList.push({
                 title: tasks[i].title,
                 description: tasks[i].content,
                 start: new Date(tasks[i].deadline + "T14:00:00Z"),
@@ -270,7 +268,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
-        downloadIcsFile(evenList);
+        downloadIcsFile(eventList);
     });
 
     document.getElementById("calImport").addEventListener("click", () => {
@@ -331,7 +329,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        let fileContents = null;
+        let fileContents;
         if (icsUrl === "https://calendar.google.com/calendar/ical/en.usa%23holiday%40group.v.calendar.google.com/public/basic.ics") {
             fileContents = await fetchAndParseIcs(test);
         }

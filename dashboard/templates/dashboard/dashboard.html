@@ -185,18 +185,6 @@
     };
 
     // Toggle between list and calendar view
-
-  // TODO TEST THIS IMPLEMENTATION
-  {#// === Project Tasks/Events Widget Integration ===#}
-  {#function addWidget(type) {#}
-  {#  if (type === "projectTasks") {#}
-  {#    document.getElementById("widget-project-tasks").style.display = "block";#}
-  {#    renderProjectCalendar();#}
-  {#  }#}
-  {#}#}
-  {##}
-  {#// Toggle between list and calendar view#}
-  {#document.addEventListener("DOMContentLoaded", function () {#}
     const listBtn = document.getElementById("toggleProjList");
     const calBtn = document.getElementById("toggleProjCalendar");
     const listView = document.getElementById("projectListView");
