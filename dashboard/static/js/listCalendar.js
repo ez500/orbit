@@ -112,12 +112,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         <div class="me-auto text-start calendar-date${isToday ? " today" : ""}">${day}</div>    
                     </div>
                     ${dayTasks.map(
-                (task) => {
-                    const mode = task.status === "completed" ? "success"
-                        : task.status === "in_progress" ? "warning"
-                            : task.status === "review" ? "info" : "danger";
-
-                    return `
+                        (task) => {
+                            const mode = task.status === "completed" ? "success"
+                                : task.status === "in_progress" ? "warning"
+                                    : task.status === "review" ? "info" : "danger";
+        
+                            return `
                                 <div class="calendar-task badge bg-${mode}-subtle text-${mode} w-100 text-start p-2"
                                     data-task-id="${task.id}" role="button" aria-label="View Task {{ task.title }}">
                                     ${task.title}
@@ -182,21 +182,22 @@ document.addEventListener("DOMContentLoaded", function () {
             const { title, description, start, end, location } = eventData[i];
 
             eventStrings.push(`BEGIN:VEVENT
-UID:${Date.now()}@veralign.com
-DTSTAMP:${formatIcsDate(new Date())}
-DTSTART:${formatIcsDate(start)}
-DTEND:${formatIcsDate(end)}
-SUMMARY:${title}
-DESCRIPTION:${description}
-LOCATION:${location}
-END:VEVENT`);
+                UID:${Date.now()}@veralign.com
+                DTSTAMP:${formatIcsDate(new Date())}
+                DTSTART:${formatIcsDate(start)}
+                DTEND:${formatIcsDate(end)}
+                SUMMARY:${title}
+                DESCRIPTION:${description}
+                LOCATION:${location}
+                END:VEVENT`
+            );
         }
 
         const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Company//VerAlign//EN
-${eventStrings.join("\n")}
-END:VCALENDAR`;
+            VERSION:2.0
+            PRODID:-//Company//VerAlign//EN
+            ${eventStrings.join("\n")}
+            END:VCALENDAR`;
 
         return icsContent;
     }

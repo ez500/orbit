@@ -4,9 +4,8 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from company.models import Company
-from .models import Project
-from .models import ProjectDocument
 from teams.models import Team
+from .models import Project, ProjectDocument
 
 
 class ProjectForm(forms.ModelForm):
