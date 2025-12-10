@@ -160,7 +160,7 @@ class UpdateProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = [
-            'bio', 'location', 'website', 'visibility',
+            'bio', 'profile_picture', 'location', 'website', 'visibility',
             'theme_color', 'accent_color', 'high_contrast', 'font_size', 'spacing',
             'timezone', 'notification_email', 'notification_web'
         ]

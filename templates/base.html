@@ -73,11 +73,28 @@
         }
 
         footer {
-            background-color: var(--accent-color);
-            color: var(--accent-text);
+            background-color: transparent;
+            color: var(--text-muted);
             text-align: center;
-            padding: 0.1rem 0;
-            margin-top: auto;
+            padding: 0.5rem 0;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        footer p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: var(--accent-color);
         }
     </style>
 </head>
@@ -121,13 +138,14 @@
 <footer>
     <div class="container">
         <p>
-            &copy; 2025 Orbit. All Rights Reserved. <a href="/admin/">Admin</a>
+            &copy; 2025 Orbit ·
+            <a href="/admin/">Admin</a> ·
+            {% if title in "Tasks" %}
+                <a href="{% url "help:task_help" %}">Help</a>
+            {% else %}
+                <a href="{% url "help:account_help" %}">Help</a>
+            {% endif %}
         </p>
-        {% if title in "Tasks" %}
-            <a class="text-black"  href="{% url "help:task_help" %}">Help</a>
-        {% else  %}
-            <a class="text-black" href="{% url "help:account_help" %}">Help</a>
-        {% endif %}
     </div>
 </footer>
 

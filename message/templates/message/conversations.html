@@ -39,6 +39,32 @@
 
     <!-- Conversations List -->
     <div class="conversations-list" id="conversationsList">
+      <!-- Orbit AI Chat - Featured -->
+      <a href="{% url 'message:orbit_chat' current_user.username %}" class="orbit-chat-item">
+        <div class="orbit-chat-avatar">
+          <div class="orbit-logo-chat">
+            <div class="orbit-circle orbit-circle-outer"></div>
+            <div class="orbit-circle orbit-circle-middle"></div>
+            <div class="orbit-circle orbit-circle-inner"></div>
+          </div>
+          <span class="orbit-status-indicator"></span>
+        </div>
+        <div class="conversation-info">
+          <div class="conversation-header-row">
+            <h6 class="conversation-name">
+              <span class="orbit-ai-badge">AI</span>
+              Orbit Assistant
+            </h6>
+            <span class="conversation-time">
+              <i class="fas fa-sparkles" style="font-size: 0.625rem;"></i>
+            </span>
+          </div>
+          <p class="conversation-preview orbit-preview">
+            <span class="orbit-tagline">Ask me anything, anytime</span>
+          </p>
+        </div>
+      </a>
+
       {% for conv in conversations %}
       <a href="{% url 'message:conversation_thread' current_user.username conv.id %}"
          class="conversation-item"
@@ -98,9 +124,6 @@
         <small class="text-muted">Start messaging your connections or team members</small>
       </div>
       {% endfor %}
-      <a href="{% url 'message:orbit_chat' current_user.username %}" class="btn btn-primary btn-sm">
-        <i class="fas fa-info-circle"></i> Chat with Orbit
-      </a>
     </div>
   </div>
 

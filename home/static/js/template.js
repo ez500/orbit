@@ -1,7 +1,26 @@
 function toggleSidebar() {
     const sidebar = document.querySelector(".sidebar");
     sidebar.classList.toggle("collapsed");
+
+    // Save the collapse state to localStorage
+    const isCollapsed = sidebar.classList.contains("collapsed");
+    localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+
+    console.log('[Sidebar] Collapse state saved:', isCollapsed);
 }
+
+// Restore sidebar collapse state on page load
+(function restoreSidebarState() {
+    const savedState = localStorage.getItem('sidebar_collapsed');
+
+    if (savedState === 'true') {
+        const sidebar = document.querySelector(".sidebar");
+        if (sidebar && !sidebar.classList.contains("collapsed")) {
+            sidebar.classList.add("collapsed");
+            console.log('[Sidebar] Restored collapsed state from localStorage');
+        }
+    }
+})();
 
 function logout() {
     const logoutForm = document.getElementById("logout-form");

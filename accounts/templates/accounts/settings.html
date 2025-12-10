@@ -36,17 +36,7 @@
     {% endif %}
   </div>
 
-  <form
-    id="settings-form"
-    method="post"
-    enctype="multipart/form-data"
-    class="settings-content"
-  >
-    {% csrf_token %}
-    <input type="hidden" name="active_tab" value="{{ active_tab|default:'profile' }}" />
-    <!-- prettier-ignore -->
-    {{ profile_form.instance.get_profile_data|json_script:"profile-data" }}
-
+  <div class="settings-content">
     <div class="row">
       <div class="col-lg-3 settings-nav">
         <div
@@ -103,285 +93,326 @@
       </div>
 
       <div class="col-lg-9">
-        <div class="tab-content">
-          <!-- Profile Tab -->
-          <div class="tab-pane fade {% if not active_tab or active_tab == 'profile' %}show active{% endif %}" id="profile" role="tabpanel">
-            <div class="card">
-              <div class="card-body">
-                <div class="profile-header mb-4 d-flex align-items-center">
-                  <div class="profile-photo-section me-4">
-                    {% if user.profile.profile_picture %}
-                    <img
-                      src="{{ user.profile.profile_picture.url }}"
-                      alt="Profile Picture"
-                      class="rounded-circle profile-photo"
-                    />
-                    {% else %}
-                    <img
-                      src="https://ui-avatars.com/api/?name={{ user.get_full_name|default:user.username }}&background=random"
-                      alt="Default Profile Picture"
-                      class="rounded-circle profile-photo"
-                    />
-                    {% endif %}
-                    <div>
-                      <input
-                        type="file"
-                        name="profile_picture"
-                        id="profile_picture"
-                        class="d-none"
-                        accept="image/*"
+        <!-- Main Settings Form (excludes Security/Password tab) -->
+        <form
+          id="settings-form"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          {% csrf_token %}
+          <input type="hidden" name="active_tab" value="{{ active_tab|default:'profile' }}" />
+          <!-- prettier-ignore -->
+          {{ profile_form.instance.get_profile_data|json_script:"profile-data" }}
+
+          <div class="tab-content">
+            <!-- Profile Tab -->
+            <div class="tab-pane fade {% if not active_tab or active_tab == 'profile' %}show active{% endif %}" id="profile" role="tabpanel">
+              <div class="card">
+                <div class="card-body">
+                  <div class="profile-header mb-4 d-flex align-items-center">
+                    <div class="profile-photo-section me-4">
+                      {% if user.profile.profile_picture %}
+                      <img
+                        src="{{ user.profile.profile_picture.url }}"
+                        alt="Profile Picture"
+                        class="rounded-circle profile-photo"
                       />
-                      <button
-                        type="button"
-                        class="btn btn-outline-primary btn-sm mt-2"
-                        onclick="document.getElementById('profile_picture').click()"
-                      >
-                        Change Photo
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="flex-fill">
-                    <div class="row mb-3">
-                      <div class="col-md-6">
-                        <label class="form-label">First Name</label>
-                        {{ user_form.first_name }}
-                      </div>
-                      <div class="col-md-6">
-                        <label class="form-label">Last Name</label>
-                        {{ user_form.last_name }}
-                      </div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="form-label">Username</label>
-                      {{ user_form.username }}
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Email</label>
-                      {{ user_form.email }}
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Bio</label>
-                      {{ profile_form.bio }}
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Location</label>
-                      {{ profile_form.location }}
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Timezone</label>
-                      {{ profile_form.timezone }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Appearance Tab -->
-          <div class="tab-pane fade {% if active_tab == 'appearance' %}show active{% endif %}" id="appearance" role="tabpanel">
-            <div class="card mb-4">
-              <div class="card-body">
-                <h5 class="card-title mb-4">Theme Preferences</h5>
-
-                <!-- Theme Options -->
-                <div class="appearance-section">
-                  <h3>Select Theme</h3>
-                  <p class="section-description">
-                    <i class="fas fa-adjust me-1"></i>
-                    Choose between light, dark, or system-matched theme for your
-                    viewing comfort
-                  </p>
-                  <div class="theme-grid">
-                    {% for value, label in theme_choices %}
-                    {% with theme_str=profile_form.instance.theme_color|stringformat:'s' %}
-                    <div
-                      class="theme-option{% if theme_str == value %} active{% endif %}"
-                    >
-                      <!-- prettier-ignore -->
-                      <input type="radio" name="theme_color" id="theme_{{ value }}" value="{{ value }}" {% if theme_str == value %}checked{% endif %}>
-                      <label for="theme_{{ value }}">
-                        <i
-                          class="theme-option-icon fas {% if value == 'dark' %}fa-moon{% elif value == 'light' %}fa-sun{% else %}fa-laptop{% endif %}"
-                        ></i>
-                        <span class="theme-option-label">{{ label }}</span>
-                        {% if theme_str == value %}
-                        <i class="fas fa-check-circle theme-check-icon"></i>
-                        {% endif %}
-                      </label>
-                    </div>
-                    {% endwith %}
-                    {% endfor %}
-                  </div>
-                </div>
-
-                <!-- Color Scheme -->
-                <div class="appearance-section">
-                  <h3>Accent Color</h3>
-                  <p class="section-description">
-                    <i class="fas fa-palette me-1"></i>
-                    Choose your preferred accent color to personalize buttons,
-                    links, and highlights
-                  </p>
-                  <div class="color-schemes">
-                    {% for value, label in accent_choices %}
-                    {% with selected=profile_form.instance.accent_color|stringformat:'s' %}
-                    <div class="color-option">
-                      <!-- prettier-ignore -->
-                      <input type="radio" name="accent_color" id="accent_{{ forloop.counter }}" value="{{ value }}" {% if selected == value %}checked{% endif %} />
-                      <label
-                        for="accent_{{ forloop.counter }}"
-                        class="color-swatch"
-                        style="background-color: {{ value }}"
-                        data-bs-toggle="tooltip"
-                        title="{{ label }}"
-                      >
-                        {% if selected == value %}
-                        <i
-                          class="fas fa-check"
-                          style="
-                            color: white;
-                            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-                          "
-                        ></i>
-                        {% endif %}
-                      </label>
-                      <span class="color-name">{{ label }}</span>
-                    </div>
-                    {% endwith %}
-                    {% endfor %}
-                  </div>
-                </div>
-
-                <!-- Accessibility -->
-                <div class="appearance-section">
-                  <h3>Accessibility Settings</h3>
-                  <p class="section-description">
-                    <i class="fas fa-universal-access me-1"></i>
-                    Customize display settings for improved readability and
-                    accessibility
-                  </p>
-                  <div class="accessibility-options">
-                    <div class="accessibility-option">
-                      <label class="form-label">Font Size</label>
-                      {{ profile_form.font_size }}
-                      <div class="form-text mt-2">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Adjust text size for better readability
-                      </div>
-                    </div>
-
-                    <div class="accessibility-option">
-                      <label class="form-label">Text Spacing</label>
-                      {{ profile_form.spacing }}
-                      <div class="form-text mt-2">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Control the space between lines of text
-                      </div>
-                    </div>
-
-                    <div class="accessibility-option">
-                      <div class="form-check form-switch">
-                        {{ profile_form.high_contrast }}
-                        <label class="form-check-label ms-2"
-                          >High Contrast Mode</label
-                        >
-                      </div>
-                      <div class="form-text mt-2">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Increase contrast for better visibility
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Sidebar Customization -->
-                <div class="appearance-section">
-                  <h3>Sidebar Customization</h3>
-                  <p class="section-description">
-                    <i class="fas fa-bars me-1"></i>
-                    Personalize your navigation experience by reordering sidebar
-                    items
-                  </p>
-                  <div class="sidebar-customization-options">
-                    <div class="customization-card">
-                      <div
-                        class="d-flex align-items-center justify-content-between"
-                      >
-                        <div>
-                          <label class="form-label mb-1"
-                            >Edit Sidebar Order</label
-                          >
-                          <div class="form-text">
-                            <i class="fas fa-grip-vertical me-1"></i>
-                            Drag and drop navigation items to reorder them
-                          </div>
-                        </div>
+                      {% else %}
+                      <img
+                        src="https://ui-avatars.com/api/?name={{ user.get_full_name|default:user.username }}&background=random"
+                        alt="Default Profile Picture"
+                        class="rounded-circle profile-photo"
+                      />
+                      {% endif %}
+                      <div>
+                        <input
+                          type="file"
+                          name="profile_picture"
+                          id="profile_picture"
+                          class="d-none"
+                          accept="image/*"
+                        />
                         <button
                           type="button"
-                          id="toggle-sidebar-edit"
-                          class="btn btn-outline-primary"
+                          class="btn btn-outline-primary btn-sm mt-2"
+                          onclick="document.getElementById('profile_picture').click()"
                         >
-                          <i class="fas fa-edit me-2"></i>Enable Edit Mode
+                          Change Photo
                         </button>
                       </div>
-                      <div
-                        id="sidebar-edit-status"
-                        class="alert alert-info mt-3 d-none"
-                      >
-                        <i class="fas fa-arrows-alt me-2"></i>
-                        <strong>Edit Mode Active:</strong> Go to any page and
-                        drag the navigation items in the sidebar to reorder
-                        them.
+                    </div>
+
+                    <div class="flex-fill">
+                      <div class="row mb-3">
+                        <div class="col-md-6">
+                          <label class="form-label">First Name</label>
+                          {{ user_form.first_name }}
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label">Last Name</label>
+                          {{ user_form.last_name }}
+                        </div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        {{ user_form.username }}
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        {{ user_form.email }}
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Bio</label>
+                        {{ profile_form.bio }}
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        {{ profile_form.location }}
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Timezone</label>
+                        {{ profile_form.timezone }}
                       </div>
                     </div>
                   </div>
                 </div>
-
-               
-                <!-- Save/Reset Bar -->
-                <div class="settings-save-bar">
-                  <button
-                    id="reset-theme-btn"
-                    type="button"
-                    class="btn btn-outline-secondary"
-                  >
-                    <i class="fas fa-undo me-2"></i>Reset to Default
-                  </button>
-                  <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i>Save Changes
-                  </button>
-                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Privacy Tab -->
-          <div class="tab-pane fade {% if active_tab == 'privacy' %}show active{% endif %}" id="privacy" role="tabpanel">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title mb-4">
-                  <i class="fas fa-eye me-2"></i>Privacy Settings
-                </h5>
-                <p class="text-muted mb-4" style="font-size: 0.9rem;">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Control who can see your profile information and activity
-                </p>
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">Profile Visibility</label>
-                  {{ profile_form.visibility }}
-                  <div class="form-text mt-2">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Choose who can see your profile details, projects, and activity
+            <!-- Appearance Tab -->
+            <div class="tab-pane fade {% if active_tab == 'appearance' %}show active{% endif %}" id="appearance" role="tabpanel">
+              <div class="card mb-4">
+                <div class="card-body">
+                  <h5 class="card-title mb-4">Theme Preferences</h5>
+
+                  <!-- Theme Options -->
+                  <div class="appearance-section">
+                    <h3>Select Theme</h3>
+                    <p class="section-description">
+                      <i class="fas fa-adjust me-1"></i>
+                      Choose between light, dark, or system-matched theme for your
+                      viewing comfort
+                    </p>
+                    <div class="theme-grid">
+                      {% for value, label in theme_choices %}
+                      {% with theme_str=profile_form.instance.theme_color|stringformat:'s' %}
+                      <div
+                        class="theme-option{% if theme_str == value %} active{% endif %}"
+                      >
+                        <!-- prettier-ignore -->
+                        <input type="radio" name="theme_color" id="theme_{{ value }}" value="{{ value }}" {% if theme_str == value %}checked{% endif %}>
+                        <label for="theme_{{ value }}">
+                          <i
+                            class="theme-option-icon fas {% if value == 'dark' %}fa-moon{% elif value == 'light' %}fa-sun{% else %}fa-laptop{% endif %}"
+                          ></i>
+                          <span class="theme-option-label">{{ label }}</span>
+                          {% if theme_str == value %}
+                          <i class="fas fa-check-circle theme-check-icon"></i>
+                          {% endif %}
+                        </label>
+                      </div>
+                      {% endwith %}
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <!-- Color Scheme -->
+                  <div class="appearance-section">
+                    <h3>Accent Color</h3>
+                    <p class="section-description">
+                      <i class="fas fa-palette me-1"></i>
+                      Choose your preferred accent color to personalize buttons,
+                      links, and highlights
+                    </p>
+                    <div class="color-schemes">
+                      {% for value, label in accent_choices %}
+                      {% with selected=profile_form.instance.accent_color|stringformat:'s' %}
+                      <div class="color-option">
+                        <!-- prettier-ignore -->
+                        <input type="radio" name="accent_color" id="accent_{{ forloop.counter }}" value="{{ value }}" {% if selected == value %}checked{% endif %} />
+                        <label
+                          for="accent_{{ forloop.counter }}"
+                          class="color-swatch"
+                          style="background-color: {{ value }}"
+                          data-bs-toggle="tooltip"
+                          title="{{ label }}"
+                        >
+                          {% if selected == value %}
+                          <i
+                            class="fas fa-check"
+                            style="
+                              color: white;
+                              text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+                            "
+                          ></i>
+                          {% endif %}
+                        </label>
+                        <span class="color-name">{{ label }}</span>
+                      </div>
+                      {% endwith %}
+                      {% endfor %}
+                    </div>
+                  </div>
+
+                  <!-- Accessibility -->
+                  <div class="appearance-section">
+                    <h3>Accessibility Settings</h3>
+                    <p class="section-description">
+                      <i class="fas fa-universal-access me-1"></i>
+                      Customize display settings for improved readability and
+                      accessibility
+                    </p>
+                    <div class="accessibility-options">
+                      <div class="accessibility-option">
+                        <label class="form-label">Font Size</label>
+                        {{ profile_form.font_size }}
+                        <div class="form-text mt-2">
+                          <i class="fas fa-info-circle me-1"></i>
+                          Adjust text size for better readability
+                        </div>
+                      </div>
+
+                      <div class="accessibility-option">
+                        <label class="form-label">Text Spacing</label>
+                        {{ profile_form.spacing }}
+                        <div class="form-text mt-2">
+                          <i class="fas fa-info-circle me-1"></i>
+                          Control the space between lines of text
+                        </div>
+                      </div>
+
+                      <div class="accessibility-option">
+                        <div class="form-check form-switch">
+                          {{ profile_form.high_contrast }}
+                          <label class="form-check-label ms-2"
+                            >High Contrast Mode</label
+                          >
+                        </div>
+                        <div class="form-text mt-2">
+                          <i class="fas fa-info-circle me-1"></i>
+                          Increase contrast for better visibility
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sidebar Customization -->
+                  <div class="appearance-section">
+                    <h3>Sidebar Customization</h3>
+                    <p class="section-description">
+                      <i class="fas fa-bars me-1"></i>
+                      Personalize your navigation experience by reordering sidebar
+                      items
+                    </p>
+                    <div class="sidebar-customization-options">
+                      <div class="customization-card">
+                        <div
+                          class="d-flex align-items-center justify-content-between"
+                        >
+                          <div>
+                            <label class="form-label mb-1"
+                              >Edit Sidebar Order</label
+                            >
+                            <div class="form-text">
+                              <i class="fas fa-grip-vertical me-1"></i>
+                              Drag and drop navigation items to reorder them
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            id="toggle-sidebar-edit"
+                            class="btn btn-outline-primary"
+                          >
+                            <i class="fas fa-edit me-2"></i>Enable Edit Mode
+                          </button>
+                        </div>
+                        <div
+                          id="sidebar-edit-status"
+                          class="alert alert-info mt-3 d-none"
+                        >
+                          <i class="fas fa-arrows-alt me-2"></i>
+                          <strong>Edit Mode Active:</strong> Go to any page and
+                          drag the navigation items in the sidebar to reorder
+                          them.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <!-- Save/Reset Bar -->
+                  <div class="settings-save-bar">
+                    <button
+                      id="reset-theme-btn"
+                      type="button"
+                      class="btn btn-outline-secondary"
+                    >
+                      <i class="fas fa-undo me-2"></i>Reset to Default
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
+
+            <!-- Privacy Tab -->
+            <div class="tab-pane fade {% if active_tab == 'privacy' %}show active{% endif %}" id="privacy" role="tabpanel">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title mb-4">
+                    <i class="fas fa-eye me-2"></i>Privacy Settings
+                  </h5>
+                  <p class="text-muted mb-4" style="font-size: 0.9rem;">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Control who can see your profile information and activity
+                  </p>
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Profile Visibility</label>
+                    {{ profile_form.visibility }}
+                    <div class="form-text mt-2">
+                      <i class="fas fa-info-circle me-1"></i>
+                      Choose who can see your profile details, projects, and activity
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div class="tab-pane fade {% if active_tab == 'notifications' %}show active{% endif %}" id="notifications" role="tabpanel">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title mb-4">Notification Preferences</h5>
+                  <div class="form-check form-switch mb-3">
+                    {{ profile_form.notification_email }}
+                    <label class="form-check-label" for="{{ profile_form.notification_email.id_for_label }}">Email Notifications</label>
+                  </div>
+                  <div class="form-check form-switch mb-2">
+                    {{ profile_form.notification_web }}
+                    <label class="form-check-label" for="{{ profile_form.notification_web.id_for_label }}">Web Notifications</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security Tab - Separate from main form -->
+            <div class="tab-pane fade {% if active_tab == 'security' %}show active{% endif %}" id="security" role="tabpanel">
+              <!-- This tab is outside the main settings form -->
+            </div>
           </div>
 
-          <!-- Security Tab -->
-          <div class="tab-pane fade {% if active_tab == 'security' %}show active{% endif %}" id="security" role="tabpanel">
+          <!-- Save button for non-security tabs -->
+          <div class="settings-save-bar mt-3" id="main-save-bar">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+
+        <!-- Security Tab Content (separate form) -->
+        <div class="tab-content">
+          <div class="tab-pane fade {% if active_tab == 'security' %}show active{% endif %}" id="security-content">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title mb-4">
@@ -446,32 +477,41 @@
               </div>
             </div>
           </div>
-
-          <!-- Notifications Tab -->
-          <div class="tab-pane fade {% if active_tab == 'notifications' %}show active{% endif %}" id="notifications" role="tabpanel">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title mb-4">Notification Preferences</h5>
-                <div class="form-check form-switch mb-3">
-                  {{ profile_form.notification_email }}
-                  <label class="form-check-label" for="{{ profile_form.notification_email.id_for_label }}">Email Notifications</label>
-                </div>
-                <div class="form-check form-switch mb-2">
-                  {{ profile_form.notification_web }}
-                  <label class="form-check-label" for="{{ profile_form.notification_web.id_for_label }}">Web Notifications</label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="settings-save-bar mt-3">
-          <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
       </div>
     </div>
-  </form>
+  </div>
 
   <script src="{% static 'js/settings.js' %}"></script>
+  <script>
+    // Show/hide save buttons based on active tab
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('[data-bs-toggle="pill"]');
+      const mainSaveBar = document.getElementById('main-save-bar');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(event) {
+          const targetId = event.target.getAttribute('data-bs-target');
+          // Hide main save bar if on security tab
+          if (targetId === '#security') {
+            mainSaveBar.style.display = 'none';
+          } else {
+            mainSaveBar.style.display = 'block';
+          }
+        });
+      });
+
+      // Sync security tab visibility
+      const securityTab = document.querySelector('[data-bs-target="#security"]');
+      if (securityTab) {
+        securityTab.addEventListener('shown.bs.tab', function() {
+          document.getElementById('security-content').classList.add('show', 'active');
+        });
+        securityTab.addEventListener('hidden.bs.tab', function() {
+          document.getElementById('security-content').classList.remove('show', 'active');
+        });
+      }
+    });
+  </script>
 </div>
 {% endblock %}

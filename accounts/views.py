@@ -219,6 +219,9 @@ def settings(request):
                 # Save both forms
                 user_form.save()
                 profile_form.save()
+                # Refresh instances from database to ensure we have the latest data
+                request.user.refresh_from_db()
+                request.user.profile.refresh_from_db()
                 messages.success(request, 'Your settings have been saved successfully!')
             except Exception as e:
                 messages.error(request, f'Error saving settings: {str(e)}')
@@ -290,22 +293,50 @@ def change_password(request):
 
 @login_required
 def search(request):
-    user_search_query = request.GET.get('user_search_query', '')
+    user_search_query = request.GET.get('user_search_query', '').strip()
+
+    if not user_search_query:
+        # Return empty results if no query
+        context = {
+            'title': "Search Users",
+            'requesting_user': request.user,
+            'user_search_query': '',
+            'users_found': [],
+            'requested_users': []
+        }
+        return render(request, 'accounts/_search.html', context)
+
+    # Build search query - search by username, first name, last name, and bio
     if request.user.is_staff or request.user.is_superuser:
-        users_found = User.objects.filter(username__icontains=user_search_query)
+        users_found = User.objects.filter(
+            Q(username__icontains=user_search_query) |
+            Q(first_name__icontains=user_search_query) |
+            Q(last_name__icontains=user_search_query) |
+            Q(profile__bio__icontains=user_search_query)
+        ).distinct().select_related('profile')
     else:
-        users_found = User.objects.filter(username__icontains=user_search_query).filter(
+        users_found = User.objects.filter(
+            Q(username__icontains=user_search_query) |
+            Q(first_name__icontains=user_search_query) |
+            Q(last_name__icontains=user_search_query) |
+            Q(profile__bio__icontains=user_search_query)
+        ).filter(
             ~Q(profile__visibility__icontains='HIDDEN') |
             Q(profile__connections=request.user.profile) |
             Q(profile=request.user.profile)
-        )
+        ).distinct().select_related('profile')
 
+    # Get list of users that the current user has already requested
     requested_users = ConnectionRequest.objects.filter(
         from_profile__user=request.user).values_list('to_profile__user__username', flat=True)
 
     context = {
-        'title': "Search Users", 'requesting_user': request.user,
-        'user_search_query': user_search_query, 'users_found': users_found, 'requested_users': requested_users}
+        'title': "Search Users",
+        'requesting_user': request.user,
+        'user_search_query': user_search_query,
+        'users_found': users_found,
+        'requested_users': requested_users
+    }
     return render(request, 'accounts/_search.html', context)
 
 
