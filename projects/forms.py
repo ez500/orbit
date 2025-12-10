@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from company.models import Company
-from .models import Project, Task, Event
+from .models import Project
 from .models import ProjectDocument
 from teams.models import Team
 
@@ -117,26 +117,3 @@ class AddMemberForm(forms.Form):
         required=True,
         label="Select User to Add as Member"
     )
-
-class TaskForm(forms.ModelForm):
-    class Meta:
-        model = Task
-        fields = ["title", "description", "due_date", "completed"]
-        widgets = {
-            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Task title"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
-            "due_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
-            "completed": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-        }
-
-
-class EventForm(forms.ModelForm):
-    class Meta:
-        model = Event
-        fields = ["title", "description", "start_date", "end_date"]
-        widgets = {
-            "title": forms.TextInput(attrs={"class": "form-control", "placeholder": "Event name"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
-            "start_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
-            "end_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
-        }

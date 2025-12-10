@@ -1,4 +1,4 @@
-# projects/views.py
+from django.db.models import Q
 
 from dashboard.forms import TaskForm, EventForm
 from django.contrib import messages
@@ -20,9 +20,7 @@ from .forms import (
     AddManagerForm,
     AddMemberForm,
 )
-from .forms import TaskForm, EventForm
 from .models import Project, ProjectDocument, ProjectMembership
-from .models import Task, Event
 
 
 @login_required
@@ -72,6 +70,8 @@ def project_events_json(request, pk):
             })
 
     return JsonResponse(combined, safe=False)
+
+
 # ------------------------------------------------------------
 # PROJECT LIST
 # ------------------------------------------------------------
@@ -188,7 +188,7 @@ def project_create(request):
 
                     # Map team → project roles
                     if tm.role == "Lead":
-                        proj_role = "Manager"   # team lead becomes project manager
+                        proj_role = "Manager"  # team lead becomes project manager
                     elif tm.role == "Manager":
                         proj_role = "Manager"
                     else:
@@ -216,6 +216,8 @@ def project_create(request):
         form = ProjectForm(user=request.user)
 
     return render(request, "projects/project_create.html", {"form": form})
+
+
 # ------------------------------------------------------------
 # ROLE MANAGEMENT HELPERS
 # ------------------------------------------------------------
@@ -307,7 +309,6 @@ def add_member(request, pk):
             messages.success(request, f"{user.username} added as Member.")
             return redirect("projects:project_detail", pk=pk)
     else:
-        form = AddMemberForm()
         if "add_task" in request.POST:
             task_form = TaskForm(request.POST, user=request.user, project=project)
             if task_form.is_valid():
@@ -344,8 +345,6 @@ def add_member(request, pk):
         "event_form": event_form,
     })
 
-    return render(request, "projects/add_member.html", {"form": form, "project": project})
-
 
 # ------------------------------------------------------------
 # PROMOTE (Member → Manager)
@@ -376,6 +375,7 @@ def promote_member(request, pk, user_id):
 
     messages.success(request, f"{target.username} is now a Manager.")
     return redirect("projects:project_detail", pk=pk)
+
 
 # ------------------------------------------------------------
 # DEMOTE (Manager → Member)
@@ -420,6 +420,7 @@ def demote_manager(request, pk, user_id):
 
     messages.success(request, f"{target.username} has been demoted to Member.")
     return redirect("projects:project_detail", pk=pk)
+
 
 # ------------------------------------------------------------
 # REMOVE USER FROM PROJECT
@@ -487,11 +488,10 @@ def project_dashboard(request, pk):
         "project_events": project.events.order_by("start_datetime"),
         "project_documents": project.documents.order_by("-uploaded_at"),
         "task_form": task_form,
-        "event_form": event_form,
-        "events": events,
-        "task_form": task_form,
-        "event_form": event_form,
+        "event_form": event_form
     })
+
+
 # ------------------------------------------------------------
 # DOCUMENT VIEWS (unchanged)
 # ------------------------------------------------------------
@@ -583,6 +583,7 @@ def delete_project_task(request, project_pk, task_pk):
     task.delete()
     return redirect("projects:project_dashboard", pk=project_pk)
 
+
 @login_required
 def delete_project_event(request, project_pk, event_pk):
     project = get_object_or_404(Project, pk=project_pk)
@@ -596,6 +597,7 @@ def delete_project_event(request, project_pk, event_pk):
     event.delete()
     return redirect("projects:project_dashboard", pk=project_pk)
 
+
 @require_GET
 @login_required
 def project_events_json(request, pk):
@@ -608,24 +610,25 @@ def project_events_json(request, pk):
     for e in project.events.all():
         combined.append({
             "title": f"📅 {e.title}",
-            "start": e.start_date.isoformat(),
-            "end": e.end_date.isoformat() if e.end_date else e.start_date.isoformat(),
-            "description": e.description,
+            "start": e.start_datetime.isoformat(),
+            "end": e.end_datetime.isoformat() if e.end_datetime else e.start_datetime.isoformat(),
+            "description": e.content,
             "color": "#0d6efd",  # blue for events
         })
 
     # --- Tasks ---
     for t in project.tasks.all():
-        if t.due_date:
+        if t.deadline:
             combined.append({
                 "title": f"📝 {t.title}",
-                "start": t.due_date.isoformat(),
-                "end": t.due_date.isoformat(),
-                "description": t.description or "Task due",
-                "color": "#20c997" if not t.completed else "#198754",  # green when done
+                "start": t.deadline.isoformat(),
+                "end": t.deadline.isoformat(),
+                "description": t.content or "Task due",
+                "color": "#198754" if t.status == 'completed' else "#20c997",  # green when done
             })
 
     return JsonResponse(combined, safe=False)
+
 
 @login_required
 def remove_collaborator(request, pk, user_id):
@@ -648,6 +651,7 @@ def remove_collaborator(request, pk, user_id):
         messages.error(request, "Collaborator not found.")
 
     return redirect("projects:project_detail", pk=pk)
+
 
 @login_required
 def remove_task(request, pk, task_id):

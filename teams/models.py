@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
 
 
 class Team(models.Model):
@@ -27,13 +26,13 @@ class TeamMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="memberships")
     ROLE_CHOICES = [
-        ("Lead","Team Lead"),
-        ("Manager","Team Manager"),
-        ("Member","Team Member"),
+        ("Lead", "Team Lead"),
+        ("Manager", "Team Manager"),
+        ("Member", "Team Member"),
 
     ]
 
-    role = models.CharField(max_length=20,choices=ROLE_CHOICES,default="Member")
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="Member")
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -41,6 +40,7 @@ class TeamMembership(models.Model):
 
     def __str__(self):
         return f"{self.user} in {self.team} ({self.role or 'Member'})"
+
 
 class TeamDocument(models.Model):
     TYPE_CHOICES = [
