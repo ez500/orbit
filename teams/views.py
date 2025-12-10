@@ -246,7 +246,7 @@ def team_add_document(request, team_pk):
     team = get_object_or_404(Team, pk=team_pk)
 
     if request.method == "POST":
-        form = TeamDocumentForm(request.POST, request.FILES)
+        form = TeamDocument(request.POST, request.FILES)
         if form.is_valid():
             doc = form.save(commit=False)
             doc.team = team
@@ -255,7 +255,7 @@ def team_add_document(request, team_pk):
             messages.success(request, "Document added successfully.")
             return redirect("teams:team_dashboard", team_pk)
     else:
-        form = TeamDocumentForm()
+        form = TeamDocument()
 
     return render(request, "teams/team_add_document.html", {
         "team": team,

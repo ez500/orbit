@@ -1,7 +1,8 @@
 /* Task Modal Styling - Minimal & Compact */
 
 #addTaskModal .modal-content,
-#viewTaskModal .modal-content {
+#viewTaskModal .modal-content,
+#addTaskEventModal .modal-content {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   overflow: hidden;
@@ -9,14 +10,16 @@
 }
 
 #addTaskModal .modal-header,
-#viewTaskModal .modal-header {
+#viewTaskModal .modal-header,
+#addTaskEventModal .modal-header {
   background: var(--card-bg);
   border-bottom: 1px solid var(--border-color);
   padding: 1rem 1.5rem;
 }
 
 #addTaskModal .modal-title,
-#viewTaskModal .modal-title {
+#viewTaskModal .modal-title,
+#addTaskEventModal .modal-title {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-color);
@@ -29,24 +32,28 @@
 }
 
 #addTaskModal .btn-close,
-#viewTaskModal .btn-close {
+#viewTaskModal .btn-close,
+#addTaskEventModal .btn-close {
   opacity: 0.5;
 }
 
 #addTaskModal .btn-close:hover,
-#viewTaskModal .btn-close:hover {
+#viewTaskModal .btn-close:hover,
+#addTaskEventModal .btn-close:hover {
   opacity: 1;
 }
 
 #addTaskModal .modal-body,
-#viewTaskModal .modal-body {
+#viewTaskModal .modal-body,
+#addTaskEventModal .modal-body {
   padding: 1.5rem;
   background: var(--card-bg);
 }
 
 /* Grid Layout - Horizontal Focus */
 #addTaskModal .modal-body form,
-#viewTaskModal #editTaskForm {
+#viewTaskModal #editTaskForm,
+#addTaskEventModal #calendarTaskForm {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1.25rem 1.5rem;
@@ -57,23 +64,27 @@
 }
 
 #addTaskModal .task-title-section,
-#viewTaskModal .task-title-section {
+#viewTaskModal .task-title-section,
+#addTaskEventModal .task-title-section {
   grid-area: title;
 }
 
 #addTaskModal .task-description-section,
-#viewTaskModal .task-description-section {
+#viewTaskModal .task-description-section,
+#addTaskEventModal .task-description-section {
   grid-area: description;
 }
 
 #addTaskModal .task-assignees-section,
-#viewTaskModal .task-assignees-section {
+#viewTaskModal .task-assignees-section,
+#addTaskEventModal .task-assignees-section {
   grid-area: assignees;
 }
 
 /* Right Sidebar Group */
 #addTaskModal .task-sidebar-top,
-#viewTaskModal .task-sidebar-top {
+#viewTaskModal .task-sidebar-top,
+#addTaskEventModal .task-sidebar-top {
   grid-area: sidebar-top;
   display: flex;
   flex-direction: column;
@@ -81,7 +92,8 @@
 }
 
 #addTaskModal .task-sidebar-middle,
-#viewTaskModal .task-sidebar-middle {
+#viewTaskModal .task-sidebar-middle,
+#addTaskEventModal .task-sidebar-middle {
   grid-area: sidebar-middle;
   display: flex;
   flex-direction: column;
@@ -89,13 +101,15 @@
 }
 
 #addTaskModal .task-sidebar-bottom,
-#viewTaskModal .task-sidebar-bottom {
+#viewTaskModal .task-sidebar-bottom,
+#addTaskEventModal .task-sidebar-bottom {
   grid-area: sidebar-bottom;
 }
 
 /* Section Styling */
 #addTaskModal .modal-body > form > div,
-#viewTaskModal .modal-body > form > div {
+#viewTaskModal .modal-body > form > div,
+#addTaskEventModal .modal-body > form > div {
   background: transparent;
   padding: 0;
   border: none;
@@ -103,13 +117,15 @@
 
 /* Section Headers - Removed */
 #addTaskModal h6.text-uppercase,
-#viewTaskModal h6.text-uppercase {
+#viewTaskModal h6.text-uppercase,
+#addTaskEventModal h6.text-uppercase {
   display: none;
 }
 
 /* Form Labels */
 #addTaskModal .form-label,
-#viewTaskModal .form-label {
+#viewTaskModal .form-label,
+#addTaskEventModal .form-label {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-color);
@@ -119,7 +135,8 @@
 }
 
 #addTaskModal .form-label i,
-#viewTaskModal .form-label i {
+#viewTaskModal .form-label i,
+#addTaskEventModal .form-label i {
   display: none;
 }
 
@@ -127,7 +144,9 @@
 #addTaskModal .form-control,
 #addTaskModal .form-select,
 #viewTaskModal .form-control,
-#viewTaskModal .form-select {
+#viewTaskModal .form-select,
+#addTaskEventModal .form-control,
+#addTaskEventModal .form-select {
   border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 0.625rem 0.875rem;
@@ -140,7 +159,9 @@
 #addTaskModal .form-control:focus,
 #addTaskModal .form-select:focus,
 #viewTaskModal .form-control:focus,
-#viewTaskModal .form-select:focus {
+#viewTaskModal .form-select:focus,
+#addTaskEventModal .form-control:focus,
+#addTaskEventModal .form-select:focus {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px rgba(30, 144, 255, 0.1);
   background: var(--input-bg);
@@ -148,20 +169,23 @@
 }
 
 #addTaskModal .form-control::placeholder,
-#viewTaskModal .form-control::placeholder {
+#viewTaskModal .form-control::placeholder,
+#addTaskEventModal .form-control::placeholder {
   color: var(--text-muted);
   opacity: 0.6;
   font-size: 0.875rem;
 }
 
 #addTaskModal textarea.form-control,
-#viewTaskModal textarea.form-control {
+#viewTaskModal textarea.form-control,
+#addTaskEventModal textarea.form-control {
   resize: vertical;
   min-height: 100px;
 }
 
 #addTaskModal select[multiple],
-#viewTaskModal select[multiple] {
+#viewTaskModal select[multiple],
+#addTaskEventModal select[multiple] {
   min-height: 100px;
   padding: 0.75rem;
   background: var(--input-bg);
@@ -169,7 +193,8 @@
 }
 
 #addTaskModal select[multiple] option,
-#viewTaskModal select[multiple] option {
+#viewTaskModal select[multiple] option,
+#addTaskEventModal select[multiple] option {
   padding: 0.625rem 0.75rem;
   margin-bottom: 0.25rem;
   font-size: 0.875rem;
@@ -179,39 +204,45 @@
 }
 
 #addTaskModal select[multiple] option:checked,
-#viewTaskModal select[multiple] option:checked {
+#viewTaskModal select[multiple] option:checked,
+#addTaskEventModal select[multiple] option:checked {
   background: var(--accent-color);
   color: white;
   font-weight: 500;
 }
 
 #addTaskModal select[multiple] option:hover,
-#viewTaskModal select[multiple] option:hover {
+#viewTaskModal select[multiple] option:hover,
+#addTaskEventModal select[multiple] option:hover {
   background: rgba(30, 144, 255, 0.2);
 }
 
 /* Form Text */
 #addTaskModal .form-text,
-#viewTaskModal .form-text {
+#viewTaskModal .form-text,
+#addTaskEventModal .form-text {
   color: var(--text-muted);
   font-size: 0.75rem;
   margin-top: 0.375rem;
 }
 
 #addTaskModal .form-text i,
-#viewTaskModal .form-text i {
+#viewTaskModal .form-text i,
+#addTaskEventModal .form-text i {
   display: none;
 }
 
 /* Required Asterisk */
 #addTaskModal .text-danger,
-#viewTaskModal .text-danger {
+#viewTaskModal .text-danger,
+#addTaskEventModal .text-danger {
   color: #dc3545;
 }
 
 /* Modal Footer */
 #addTaskModal .modal-footer,
-#viewTaskModal .modal-footer {
+#viewTaskModal .modal-footer,
+#addTaskEventModal .modal-footer {
   background: var(--card-bg);
   border-top: 1px solid var(--border-color);
   padding: 0.875rem 1.5rem;
@@ -219,7 +250,8 @@
 }
 
 #addTaskModal .modal-footer .btn,
-#viewTaskModal .modal-footer .btn {
+#viewTaskModal .modal-footer .btn,
+#addTaskEventModal .modal-footer .btn {
   padding: 0.5rem 1.25rem;
   border-radius: 6px;
   font-weight: 500;
@@ -228,13 +260,15 @@
 }
 
 #addTaskModal .modal-footer .btn i,
-#viewTaskModal .modal-footer .btn i {
+#viewTaskModal .modal-footer .btn i,
+#addTaskEventModal .modal-footer .btn i {
   display: none;
 }
 
 /* Make modal extra wide */
 #addTaskModal .modal-dialog,
-#viewTaskModal .modal-dialog {
+#viewTaskModal .modal-dialog,
+#addTaskEventModal .modal-dialog {
   max-width: 900px;
 }
 
@@ -260,13 +294,15 @@
 /* Responsive */
 @media (max-width: 992px) {
   #addTaskModal .modal-dialog,
-  #viewTaskModal .modal-dialog {
+  #viewTaskModal .modal-dialog,
+  #addTaskEventModal .modal-dialog {
     max-width: 100%;
     margin: 1rem;
   }
 
   #addTaskModal .modal-body form,
-  #viewTaskModal #editTaskForm {
+  #viewTaskModal #editTaskForm,
+  #addTaskEventModal #calendarTaskForm {
     grid-template-columns: 1fr;
     grid-template-areas:
       "title"
@@ -278,17 +314,20 @@
   }
 
   #addTaskModal .modal-body,
-  #viewTaskModal .modal-body {
+  #viewTaskModal .modal-body,
+  #addTaskEventModal .modal-body {
     padding: 1rem;
   }
 
   #addTaskModal .modal-header,
-  #viewTaskModal .modal-header {
+  #viewTaskModal .modal-header,
+  #addTaskEventModal .modal-header {
     padding: 0.875rem 1rem;
   }
 
   #addTaskModal .modal-footer,
-  #viewTaskModal .modal-footer {
+  #viewTaskModal .modal-footer,
+  #addTaskEventModal .modal-footer {
     padding: 0.75rem 1rem;
   }
 }

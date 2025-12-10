@@ -38,6 +38,15 @@
     {% block extra_css %}{% endblock %}
 
     <style>
+        /* Global link styling - remove underlines */
+        a {
+            text-decoration: none !important;
+        }
+
+        a:hover {
+            text-decoration: none !important;
+        }
+
         header {
             background-color: var(--accent-color);
             color: var(--accent-text);

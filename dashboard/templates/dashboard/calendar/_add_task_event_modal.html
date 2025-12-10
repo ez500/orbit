@@ -26,10 +26,59 @@
 
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="taskFormTab" role="tabpanel">
-                        <form method="post">
+                        <form method="post" id="calendarTaskForm">
                             {% csrf_token %}
-                            {{ task_form.as_p }}
-                            <button type="submit" name="add_task" class="btn btn-primary mt-2">Save Task</button>
+                            <!-- Title -->
+                            <div class="task-title-section">
+                                <label for="id_title" class="form-label">Task Title <span class="text-danger">*</span></label>
+                                {{ task_form.title }}
+                            </div>
+
+                            <!-- Right Sidebar - Top -->
+                            <div class="task-sidebar-top">
+                                <div>
+                                    <label for="id_status" class="form-label">Status <span class="text-danger">*</span></label>
+                                    {{ task_form.status }}
+                                </div>
+                                <div>
+                                    <label for="id_deadline" class="form-label">Due Date</label>
+                                    {{ task_form.deadline }}
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="task-description-section">
+                                <label for="id_content" class="form-label">Description</label>
+                                {{ task_form.content }}
+                            </div>
+
+                            <!-- Right Sidebar - Middle -->
+                            <div class="task-sidebar-middle">
+                                <div>
+                                    <label for="id_team" class="form-label">Team</label>
+                                    {{ task_form.team }}
+                                </div>
+                                <div>
+                                    <label for="id_project" class="form-label">Project</label>
+                                    {{ task_form.project }}
+                                </div>
+                            </div>
+
+                            <!-- Assignees -->
+                            <div class="task-assignees-section">
+                                <label for="id_users" class="form-label">Assignees</label>
+                                {{ task_form.users }}
+                                <div class="form-text">Hold Ctrl/Cmd to select multiple people</div>
+                            </div>
+
+                            <!-- Empty sidebar bottom for grid balance -->
+                            <div class="task-sidebar-bottom"></div>
+
+                            <div style="grid-column: 1 / -1; margin-top: 1rem;">
+                                <button type="submit" name="add_task" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Create Task
+                                </button>
+                            </div>
                         </form>
                     </div>
                     <div class="tab-pane fade" id="eventFormTab" role="tabpanel">
