@@ -3,9 +3,9 @@ from django import forms
 from django.contrib.auth.models import User
 from django.db import models
 
-from .models import Project, ProjectDocument, ProjectMembership
 from company.models import Company
 from teams.models import Team
+from .models import Project, ProjectDocument
 
 
 class ProjectForm(forms.ModelForm):

@@ -3,13 +3,10 @@
 {% load task_extras %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/listCalendar.css' %}">
     <link rel="stylesheet" href="{% static 'css/taskModal.css' %}">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-    <meta name="csrf-token" content="{{ csrf_token }}">
     <div class="container-fluid p-0">
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -128,31 +125,11 @@
     </div>
 
     <!-- Calendar View -->
-    <div id="calendarView" class="card border-0 shadow-sm d-none">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="mb-0" id="currentMonth">October 2025</h5>
-                <div class="btn-group">
-                    <button class="btn btn-outline-secondary" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
-                    <button class="btn btn-outline-secondary" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
-            <div class="calendar">
-                <div class="row g-0 calendar-header mb-2">
-                    <div class="col text-center py-2">Sun</div>
-                    <div class="col text-center py-2">Mon</div>
-                    <div class="col text-center py-2">Tue</div>
-                    <div class="col text-center py-2">Wed</div>
-                    <div class="col text-center py-2">Thu</div>
-                    <div class="col text-center py-2">Fri</div>
-                    <div class="col text-center py-2">Sat</div>
-                </div>
-                <div id="calendarGrid">
-                    <!-- Calendar days will be inserted here by JavaScript -->
-                </div>
-            </div>
+    {% with tasks=tasks_qs|tasks_to_serialized_data %}
+        <div id="calendarView" class="d-none">
+            {% include "dashboard/calendar/_calendar.html" %}
         </div>
-    </div>
+    {% endwith %}
 
     <!-- Add Task Modal -->
     <div class="modal fade" id="addTaskModal" tabindex="-1">
@@ -263,17 +240,44 @@
             </div>
         </div>
         </div>
-    <!-- TODO IMPLEMENT EDIT TASK MODAL -->
-    <!-- Add Task Modal -->
+    <!-- Add Task/Event Modal (New) -->
     {% include 'dashboard/calendar/_add_task_event_modal.html' %}
     {% include 'dashboard/calendar/_view_task_modal_shell.html' %}
 
 {% endblock %}
+
 {% block extra_js %}
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
     {{ tasks|json_script:"tasks-data" }}
-    <script src="{% static 'js/listCalendar.js' %}"></script>
+    <script src="{% static 'js/calendar.js' %}"></script>
     <script src="{% static 'js/addTask.js' %}"></script>
     <script src="{% static 'js/editTask.js' %}"></script>
     <script src="{% static 'js/viewTaskModal.js' %}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // View toggle functionality
+            const viewToggleButtons = document.querySelectorAll(".view-toggle .btn");
+            const listViews = document.querySelectorAll(".card:not(#calendarView)");
+            const calendarView = document.querySelector("#calendarView");
+
+            viewToggleButtons.forEach((button) => {
+                button.addEventListener("click", function () {
+                    viewToggleButtons.forEach((btn) => btn.classList.remove("active"));
+                    this.classList.add("active");
+
+                    if (this.dataset.view === "calendar") {
+                        listViews.forEach((listView) => listView.classList.add("d-none"));
+                        calendarView.classList.remove("d-none");
+                    } else {
+                        listViews.forEach((listView) => listView.classList.remove("d-none"));
+                        calendarView.classList.add("d-none");
+                    }
+                });
+            });
+
+            const form = document.getElementById("taskFilterForm");
+            form.querySelectorAll("select").forEach(sel => {
+                sel.addEventListener("change", () => form.submit());
+            })
+        });
+    </script>
 {% endblock %}

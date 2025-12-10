@@ -1,13 +1,18 @@
-# projects/views.py
+from django.db.models import Q
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from dashboard.forms import TaskForm, EventForm
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import models
 from django.http import HttpResponseForbidden
+from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_GET
 
-from .models import Project, ProjectDocument, ProjectMembership
+from company.models import CompanyMembership
+from dashboard.models import Task, Event
+from teams.models import Team
 from .forms import (
     ProjectForm,
     ProjectDocumentForm,
@@ -15,14 +20,7 @@ from .forms import (
     AddManagerForm,
     AddMemberForm,
 )
-from django.db.models import Q
-
-from dashboard.forms import TaskForm, EventForm
-from dashboard.models import Task, Event
-from company.models import CompanyMembership
-from teams.models import Team
-from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from .models import Project, ProjectDocument, ProjectMembership
 
 
 @login_required
@@ -39,6 +37,7 @@ def delete_project(request, pk):
         return redirect("projects:project_list")
 
     return render(request, "projects/confirm_delete.html", {"project": project})
+
 
 # ------------------------------------------------------------
 # EVENTS JSON (for dashboard calendar)
@@ -71,6 +70,8 @@ def project_events_json(request, pk):
             })
 
     return JsonResponse(combined, safe=False)
+
+
 # ------------------------------------------------------------
 # PROJECT LIST
 # ------------------------------------------------------------
@@ -187,7 +188,7 @@ def project_create(request):
 
                     # Map team → project roles
                     if tm.role == "Lead":
-                        proj_role = "Manager"   # team lead becomes project manager
+                        proj_role = "Manager"  # team lead becomes project manager
                     elif tm.role == "Manager":
                         proj_role = "Manager"
                     else:
@@ -215,6 +216,8 @@ def project_create(request):
         form = ProjectForm(user=request.user)
 
     return render(request, "projects/project_create.html", {"form": form})
+
+
 # ------------------------------------------------------------
 # ROLE MANAGEMENT HELPERS
 # ------------------------------------------------------------
@@ -306,7 +309,6 @@ def add_member(request, pk):
             messages.success(request, f"{user.username} added as Member.")
             return redirect("projects:project_detail", pk=pk)
     else:
-        form = AddMemberForm()
         if "add_task" in request.POST:
             task_form = TaskForm(request.POST, user=request.user, project=project)
             if task_form.is_valid():
@@ -343,8 +345,6 @@ def add_member(request, pk):
         "event_form": event_form,
     })
 
-    return render(request, "projects/add_member.html", {"form": form, "project": project})
-
 
 # ------------------------------------------------------------
 # PROMOTE (Member → Manager)
@@ -376,6 +376,7 @@ def promote_member(request, pk, user_id):
     messages.success(request, f"{target.username} is now a Manager.")
     return redirect("projects:project_detail", pk=pk)
 
+
 # ------------------------------------------------------------
 # DEMOTE (Manager → Member)
 # ------------------------------------------------------------
@@ -384,7 +385,7 @@ def demote_manager(request, pk, user_id):
     project = get_object_or_404(Project, pk=pk)
     target = get_object_or_404(User, pk=user_id)
 
-    acting_role = project.get_user_role(request.user)  
+    acting_role = project.get_user_role(request.user)
     target_role = project.get_user_role(target)
 
     # ------------------------------
@@ -420,6 +421,7 @@ def demote_manager(request, pk, user_id):
     messages.success(request, f"{target.username} has been demoted to Member.")
     return redirect("projects:project_detail", pk=pk)
 
+
 # ------------------------------------------------------------
 # REMOVE USER FROM PROJECT
 # ------------------------------------------------------------
@@ -452,6 +454,7 @@ def remove_user(request, pk, user_id):
 
 @login_required
 def project_dashboard(request, pk):
+    """Show a dedicated dashboard for the project."""
     project = get_object_or_404(Project, pk=pk)
 
     user_projects = Project.objects.filter(
@@ -485,8 +488,10 @@ def project_dashboard(request, pk):
         "project_events": project.events.order_by("start_datetime"),
         "project_documents": project.documents.order_by("-uploaded_at"),
         "task_form": task_form,
-        "event_form": event_form,
+        "event_form": event_form
     })
+
+
 # ------------------------------------------------------------
 # DOCUMENT VIEWS (unchanged)
 # ------------------------------------------------------------
@@ -578,6 +583,7 @@ def delete_project_task(request, project_pk, task_pk):
     task.delete()
     return redirect("projects:project_dashboard", pk=project_pk)
 
+
 @login_required
 def delete_project_event(request, project_pk, event_pk):
     project = get_object_or_404(Project, pk=project_pk)
@@ -590,3 +596,90 @@ def delete_project_event(request, project_pk, event_pk):
 
     event.delete()
     return redirect("projects:project_dashboard", pk=project_pk)
+
+
+@require_GET
+@login_required
+def project_events_json(request, pk):
+    """Return combined project events and task deadlines for calendar widget."""
+    project = get_object_or_404(Project, pk=pk)
+
+    combined = []
+
+    # --- Events ---
+    for e in project.events.all():
+        combined.append({
+            "title": f"📅 {e.title}",
+            "start": e.start_datetime.isoformat(),
+            "end": e.end_datetime.isoformat() if e.end_datetime else e.start_datetime.isoformat(),
+            "description": e.content,
+            "color": "#0d6efd",  # blue for events
+        })
+
+    # --- Tasks ---
+    for t in project.tasks.all():
+        if t.deadline:
+            combined.append({
+                "title": f"📝 {t.title}",
+                "start": t.deadline.isoformat(),
+                "end": t.deadline.isoformat(),
+                "description": t.content or "Task due",
+                "color": "#198754" if t.status == 'completed' else "#20c997",  # green when done
+            })
+
+    return JsonResponse(combined, safe=False)
+
+
+@login_required
+def remove_collaborator(request, pk, user_id):
+    """Allow the project lead to remove collaborators from their project."""
+    project = get_object_or_404(Project, pk=pk)
+
+    # Permission check — only the project lead can remove collaborators
+    if project.lead != request.user:
+        messages.error(request, "You do not have permission to remove collaborators.")
+        return redirect("projects:project_detail", pk=pk)
+
+    try:
+        collaborator = User.objects.get(pk=user_id)
+        if collaborator not in project.collaborators.all():
+            messages.warning(request, f"{collaborator.username} is not a collaborator in this project.")
+        else:
+            project.collaborators.remove(collaborator)
+            messages.success(request, f"{collaborator.username} has been removed from the project.")
+    except User.DoesNotExist:
+        messages.error(request, "Collaborator not found.")
+
+    return redirect("projects:project_detail", pk=pk)
+
+
+@login_required
+def remove_task(request, pk, task_id):
+    """Allow project lead to delete a specific task."""
+    project = get_object_or_404(Project, pk=pk)
+    task = get_object_or_404(Task, pk=task_id, project=project)
+
+    # Permission check — only the project lead can delete tasks
+    if project.lead != request.user:
+        messages.error(request, "You do not have permission to delete tasks.")
+        return HttpResponseForbidden("Permission denied")
+
+    task.delete()
+    messages.success(request, f"Task '{task.title}' was deleted successfully.")
+    return redirect("projects:project_dashboard", pk=pk)
+
+
+@login_required
+def remove_event(request, pk, event_id):
+    """Allow project lead to delete a specific event."""
+    project = get_object_or_404(Project, pk=pk)
+    event = get_object_or_404(Event, pk=event_id, project=project)
+
+    # Permission check — only project lead can delete events
+    if project.lead != request.user:
+        messages.error(request, "You do not have permission to delete events.")
+        return HttpResponseForbidden("Permission denied")
+
+    event.delete()
+    messages.success(request, f"Event '{event.title}' was deleted successfully.")
+    return redirect("projects:project_dashboard", pk=pk)

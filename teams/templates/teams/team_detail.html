@@ -77,9 +77,9 @@
               <div>
 
                 {% if m.user != request.user %}
-                  
+
                   {% if acting.role == "Lead" %}
-                    
+
                     {% if m.role == "Member" %}
                       <a href="{% url 'teams:promote_member' team.pk m.user.pk %}"
                          class="btn btn-outline-success btn-sm">Promote</a>
@@ -152,3 +152,4 @@
 </div>
 
 {% endblock %}
+

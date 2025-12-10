@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import MyTeamsView, TeamDetailView, TeamCreateView, join_team, team_dashboard, delete_team_task, delete_team_event, leave_team, remove_member,promote_member,demote_member
+
 from . import views
-from .views import MyTeamsView, TeamDetailView, TeamCreateView, join_team, team_dashboard, delete_team_task, delete_team_event, leave_team, my_teams_api
+from .views import MyTeamsView, TeamDetailView, TeamCreateView, join_team, team_dashboard, delete_team_task, \
+    delete_team_event, leave_team, my_teams_api
+from .views import remove_member, promote_member, demote_member
 
 app_name = "teams"
 
@@ -27,4 +29,3 @@ urlpatterns = [
     # API endpoints
     path("api/my-teams/", my_teams_api, name="my_teams_api"),
 ]
-
