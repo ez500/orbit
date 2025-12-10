@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Team
+from .models import Team,TeamDocument
 
 
 class JoinTeamForm(forms.Form):
@@ -17,3 +17,15 @@ class JoinTeamForm(forms.Form):
         except Team.DoesNotExist:
             raise forms.ValidationError("No team found with that name.")
         return team
+
+class TeamDocumentForm(forms.ModelForm):
+    class Meta:
+        model = TeamDocument
+        fields = ["name", "doc_type", "file", "content", "external_url"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "doc_type": forms.Select(attrs={"class": "form-select"}),
+            "file": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "content": forms.Textarea(attrs={"class": "form-control", "rows": "8"}),
+            "external_url": forms.URLInput(attrs={"class": "form-control"}),
+        }

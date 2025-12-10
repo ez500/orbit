@@ -16,6 +16,105 @@
             </div>
         </div>
 
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+          <h5 class="fw-semibold text-primary mb-3"><i class="fas fa-calendar-day"></i> Events</h5>
+          {% for event in team_events %}
+          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div>
+              <strong>{{ event.title }}</strong><br>
+              <small class="text-muted">{{ event.start_date }}{% if event.end_date %} → {{ event.end_date }}{% endif %}</small>
+            </div>
+            <a href="{% url 'teams:delete_team_event' team.pk event.pk %}" class="btn btn-outline-danger btn-sm">
+              <i class="fas fa-trash"></i>
+            </a>
+          </div>
+          {% empty %}
+          <p class="text-muted">No events yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- ========================= -->
+      <!--      TEAM DOCUMENTS       -->
+      <!-- ========================= -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-semibold text-primary mb-0">
+              <i class="fas fa-file-alt me-2"></i>Team Documents
+            </h5>
+
+            <div>
+              <a href="{% url 'teams:team_add_document' team.pk %}"
+                 class="btn btn-primary btn-sm me-2">
+                 <i class="fas fa-upload me-1"></i> Upload
+              </a>
+
+              <a href="{% url 'teams:team_create_internal_document' team.pk %}"
+                 class="btn btn-outline-primary btn-sm">
+                 <i class="fas fa-file-alt me-1"></i> Create
+              </a>
+            </div>
+          </div>
+
+          {% if team.documents.all %}
+          <ul class="list-group">
+            {% for doc in team.documents.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+
+              <!-- INTERNAL DOC -->
+              {% if doc.doc_type == "internal" %}
+              <a href="{% url 'teams:team_view_document' team.pk doc.pk %}" class="text-decoration-none">
+                <i class="fas fa-sticky-note me-2 text-warning"></i>
+                {{ doc.name }} <small class="text-muted">(Internal)</small>
+              </a>
+
+              <!-- UPLOADED FILE -->
+              {% elif doc.doc_type == "file" %}
+                {% if doc.file %}
+                <a href="{{ doc.file.url }}" target="_blank" class="text-decoration-none">
+                  <i class="fas fa-file me-2 text-secondary"></i>{{ doc.name }}
+                </a>
+                {% else %}
+                <span class="text-danger">
+                  <i class="fas fa-exclamation-triangle me-2"></i> Missing file
+                </span>
+                {% endif %}
+
+              <!-- EXTERNAL LINK -->
+              {% elif doc.doc_type == "link" %}
+              <a href="{{ doc.external_url }}" target="_blank" class="text-decoration-none">
+                <i class="fas fa-external-link-alt me-2 text-info"></i>{{ doc.name }}
+              </a>
+              {% endif %}
+
+              <div class="d-flex align-items-center">
+                <small class="text-muted me-3">By {{ doc.uploaded_by.username }}</small>
+                <a href="{% url 'teams:team_delete_document' team.pk doc.pk %}"
+                   class="btn btn-outline-danger btn-sm"
+                   onclick="return confirm('Delete document {{ doc.name }}?');">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+            <p class="text-muted">No documents yet.</p>
+          {% endif %}
+
+        </div>
+      </div>
+      <!-- ========================= -->
+      <!--  END TEAM DOCUMENTS       -->
+      <!-- ========================= -->
+
+    </div>
+  </div>
+</div>
         <div class="row g-4">
             <div class="col-lg-8">
                 <div class="card shadow-sm border-0 mb-4">
@@ -79,6 +178,37 @@
     {% include 'dashboard/calendar/_add_task_event_modal.html' %}
     {% include 'dashboard/calendar/_view_task_modal_shell.html' %}
 
+<!-- TODO FIX CALENDAR FUNCTIONALITY -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/index.global.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const calendarEl = document.getElementById("calendar");
+  if (!calendarEl) return;
+
+  const events = [
+    {% for task in team_tasks %}
+      {% if task.due_date %}
+      {
+        title: "📝 {{ task.title|escapejs }} (Task)",
+        start: "{{ task.due_date|date:'Y-m-d' }}",
+        color: "#007bff",
+        textColor: "#fff"
+      },
+      {% endif %}
+    {% endfor %}
+
+    {% for event in team_events %}
+      {
+        title: "📅 {{ event.title|escapejs }} (Event)",
+        start: "{{ event.start_date|date:'Y-m-d' }}",
+        {% if event.end_date %}
+        end: "{{ event.end_date|date:'Y-m-d' }}",
+        {% endif %}
+        color: "#28a745",
+        textColor: "#fff"
+      }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
     <!-- TODO FIX CALENDAR FUNCTIONALITY -->
 {% endblock %}
 

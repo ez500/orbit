@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-4">
+  <h3 class="fw-bold text-primary">Create Internal Document</h3>
+  <hr>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Document Title</label>
+      {{ form.name }}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Content</label>
+      {{ form.content }}
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">
+      <i class="fas fa-save me-2"></i>Create Document
+    </button>
+  </form>
+</div>
+
+{% endblock %}

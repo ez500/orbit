@@ -15,6 +15,7 @@
       <i class="fas fa-arrow-left"></i> Back to Projects
     </a>
   </div>
+
   {% if request.user == project.lead %}
   <form action="{% url 'projects:delete_project' project.pk %}" method="post" class="mt-3">
     {% csrf_token %}
@@ -58,57 +59,112 @@
         {% endfor %}
       </ul>
       {% endif %}
-
-      <!-- Collaborators -->
-      {% if project.collaborators.exists %}
-      <h6 class="fw-semibold text-muted mb-1">
-        <i class="fas fa-users me-2 text-success"></i>Collaborators
-      </h6>
-      <ul class="list-group list-group-flush">
-        {% for user in project.collaborators.all %}
-          <li class="list-group-item">
-            <i class="fas fa-user me-2 text-secondary"></i>{{ user.username }}
-          </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="text-muted">No collaborators added yet.</p>
-      {% endif %}
     </div>
   </div>
 
-  <h5 class="text-primary fw-semibold mt-4">
-    <i class="fas fa-users me-2"></i>Collaborators
-  </h5>
-  <ul class="list-group mb-3">
-    {% for user in project.collaborators.all %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        {{ user.username }}
-        {% if request.user == project.lead %}
-          <a href="{% url 'projects:remove_collaborator' project.pk user.pk %}"
-             class="btn btn-outline-danger btn-sm"
-             onclick="return confirm('Remove {{ user.username }} from this project?');">
-             <i class="fas fa-user-minus"></i> Remove
-          </a>
-        {% endif %}
-      </li>
-    {% empty %}
-      <p class="text-muted mb-2">No collaborators yet.</p>
-    {% endfor %}
-  </ul>
 
-  <!-- Actions -->
-  {% if project.lead == request.user %}
-  <div class="d-flex gap-2">
-    <a href="{% url 'projects:add_collaborator' project.pk %}" class="btn btn-outline-primary">
-      <i class="fas fa-user-plus"></i> Add Collaborator
+  <!-- ROLE SECTIONS -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+
+      <!-- Lead -->
+      <h5 class="text-primary fw-semibold"><i class="fas fa-crown me-2"></i>Lead</h5>
+      <ul class="list-group mb-4">
+        <li class="list-group-item">{{ project.lead.username }}</li>
+      </ul>
+
+
+      <!-- Managers -->
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="text-success fw-semibold"><i class="fas fa-user-tie me-2"></i>Managers</h5>
+
+        {% if acting_role in "Lead" %}
+        <a href="{% url 'projects:add_manager' project.pk %}" class="btn btn-outline-success btn-sm">
+          <i class="fas fa-user-plus"></i> Add Manager
+        </a>
+        {% endif %}
+      </div>
+
+      <ul class="list-group mb-4">
+        {% for mem in memberships %}
+          {% if mem.role == "Manager" %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ mem.user.username }}</span>
+
+            <div>
+              {% if acting_role == "Lead" %}
+    <!-- Lead only: Demote Manager -->
+    <a href="{% url 'projects:demote_manager' project.pk mem.user.pk %}"
+       class="btn btn-outline-warning btn-sm me-2">
+      <i class="fas fa-arrow-down"></i> Demote
     </a>
-    <a href="{% url 'projects:project_dashboard' project.pk %}" class="btn btn-outline-success">
-      <i class="fas fa-chart-line"></i> View Dashboard
+
+    <!-- Lead only: Remove Manager -->
+    <a href="{% url 'projects:remove_user' project.pk mem.user.pk %}"
+       class="btn btn-outline-danger btn-sm">
+      <i class="fas fa-user-minus"></i>
     </a>
+{% endif %}
+            </div>
+
+          </li>
+          {% endif %}
+        {% empty %}
+          <p class="text-muted">No managers yet.</p>
+        {% endfor %}
+      </ul>
+
+
+      <!-- Members -->
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="text-primary fw-semibold"><i class="fas fa-users me-2"></i>Members</h5>
+
+        {% if acting_role in "Lead Manager" %}
+        <a href="{% url 'projects:add_member' project.pk %}" class="btn btn-outline-primary btn-sm">
+          <i class="fas fa-user-plus"></i> Add Member
+        </a>
+        {% endif %}
+      </div>
+
+      <ul class="list-group mb-4">
+        {% for mem in memberships %}
+          {% if mem.role == "Member" %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ mem.user.username }}
+
+            <div>
+              {% if acting_role in "Lead Manager" %}
+                
+                <!-- Promote -->
+                <a href="{% url 'projects:promote_member' project.pk mem.user.pk %}"
+                   class="btn btn-outline-success btn-sm me-2">
+                  <i class="fas fa-arrow-up"></i> Promote
+                </a>
+
+                <!-- Remove -->
+                <a href="{% url 'projects:remove_user' project.pk mem.user.pk %}"
+                   class="btn btn-outline-danger btn-sm"
+                   onclick="return confirm('Remove {{ mem.user.username }}?');">
+                  <i class="fas fa-user-minus"></i>
+                </a>
+
+              {% endif %}
+            </div>
+
+          </li>
+          {% endif %}
+        {% empty %}
+          <p class="text-muted">No members yet.</p>
+        {% endfor %}
+      </ul>
+
+      <!-- Dashboard -->
+      <a href="{% url 'projects:project_dashboard' project.pk %}" class="btn btn-outline-success">
+        <i class="fas fa-chart-line"></i> View Dashboard
+      </a>
+
+    </div>
   </div>
-  {% endif %}
 
 </div>
 {% endblock %}
-

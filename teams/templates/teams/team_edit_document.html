@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-4">
+  <h3>Edit Document: {{ document.name }}</h3>
+
+  <form method="POST">
+    {% csrf_token %}
+    <textarea name="content" class="form-control" rows="15">{{ document.content }}</textarea>
+    <button class="btn btn-primary mt-3">Save</button>
+  </form>
+</div>
+
+{% endblock %}

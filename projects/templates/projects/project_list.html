@@ -26,6 +26,9 @@
               <p class="card-text">{{ project.description|truncatechars:100 }}</p>
             </div>
             <div class="card-footer bg-white border-0 d-flex justify-content-between">
+<a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-primary">
+    View Project
+</a>
               <a href="{% url 'projects:project_dashboard' project.pk %}" class="btn btn-outline-primary btn-sm">
                 <i class="fas fa-tachometer-alt"></i> Dashboard
               </a>

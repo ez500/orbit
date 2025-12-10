@@ -1,9 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView
+from django.contrib.auth.models import User
 
 from dashboard.models import Task, Event
 from dashboard.forms import TaskForm, EventForm
-from .models import Team, TeamMembership
+from .models import Team, TeamMembership,TeamDocument
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import render
@@ -33,6 +34,20 @@ class TeamDetailView(LoginRequiredMixin, DetailView):
     template_name = "teams/team_detail.html"
     context_object_name = "team"
     extra_context = {'title': 'My Teams'}
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        team = self.get_object()
+
+        context["memberships"] = team.memberships.select_related("user")
+
+        try:
+            context["acting"] = TeamMembership.objects.get(user=self.request.user, team=team)
+        except TeamMembership.DoesNotExist:
+            context["acting"] = None
+
+        context["user_is_member"] = self.request.user in team.members.all()
+
+        return context
 
 
 # TODO: EDIT TEAM
@@ -48,7 +63,7 @@ class TeamCreateView(LoginRequiredMixin, CreateView):
         TeamMembership.objects.create(
             user=self.request.user,
             team=self.object,
-            role="Owner"
+            role="Lead"
         )
         return response
 
@@ -159,6 +174,158 @@ def leave_team(request, pk):
     return redirect("teams:my_teams")
 
 @login_required
+def remove_member(request, team_pk, user_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    target = get_object_or_404(User, pk=user_pk)
+
+    acting = TeamMembership.objects.get(user=request.user, team=team)
+    target_mem = TeamMembership.objects.get(user=target, team=team)
+
+    if acting.role not in ["Lead", "Manager"]:
+        messages.error(request, "You do not have permission to remove members.")
+        return redirect("teams:detail", pk=team_pk)
+
+    if acting.role == "Manager" and acting.user == target:
+        messages.error(request, "Managers cannot remove themselves.")
+        return redirect("teams:detail", pk=team_pk)
+
+    if target_mem.role == "Lead":
+        messages.error(request, "You cannot remove the Team Lead.")
+        return redirect("teams:detail", pk=team_pk)
+
+    target_mem.delete()
+    messages.success(request, f"{target.username} has been removed from the team.")
+    return redirect("teams:detail", pk=team_pk)
+
+
+@login_required
+def promote_member(request, team_pk, user_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    target = get_object_or_404(User, pk=user_pk)
+
+    acting = TeamMembership.objects.get(user=request.user, team=team)
+    target_mem = TeamMembership.objects.get(user=target, team=team)
+
+    if acting.role != "Lead":
+        messages.error(request, "Only the Team Lead can promote members.")
+        return redirect("teams:detail", pk=team_pk)
+
+    if target_mem.role != "Member":
+        messages.error(request, "Only members can be promoted.")
+        return redirect("teams:detail", pk=team_pk)
+
+    target_mem.role = "Manager"
+    target_mem.save()
+    messages.success(request, f"{target.username} promoted to Manager.")
+    return redirect("teams:detail", pk=team_pk)
+
+
+@login_required
+def demote_member(request, team_pk, user_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    target = get_object_or_404(User, pk=user_pk)
+
+    acting = TeamMembership.objects.get(user=request.user, team=team)
+    target_mem = TeamMembership.objects.get(user=target, team=team)
+
+    if acting.role != "Lead":
+        messages.error(request, "Only the Team Lead can demote managers.")
+        return redirect("teams:detail", pk=team_pk)
+
+    if target_mem.role != "Manager":
+        messages.error(request, "Only managers can be demoted.")
+        return redirect("teams:detail", pk=team_pk)
+
+    target_mem.role = "Member"
+    target_mem.save()
+    messages.success(request, f"{target.username} demoted to Member.")
+    return redirect("teams:detail", pk=team_pk)
+
+@login_required
+def team_add_document(request, team_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+
+    if request.method == "POST":
+        form = TeamDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            doc = form.save(commit=False)
+            doc.team = team
+            doc.uploaded_by = request.user
+            doc.save()
+            messages.success(request, "Document added successfully.")
+            return redirect("teams:team_dashboard", team_pk)
+    else:
+        form = TeamDocumentForm()
+
+    return render(request, "teams/team_add_document.html", {
+        "team": team,
+        "form": form
+    })
+
+
+@login_required
+def team_view_document(request, team_pk, doc_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    document = get_object_or_404(TeamDocument, pk=doc_pk, team=team)
+    return render(request, "teams/team_view_document.html", {
+        "team": team,
+        "document": document
+    })
+
+
+@login_required
+def team_delete_document(request, team_pk, doc_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    document = get_object_or_404(TeamDocument, pk=doc_pk, team=team)
+
+    if request.user not in team.members.all():
+        return HttpResponseForbidden("Not allowed")
+
+    document.delete()
+    messages.success(request, "Document deleted.")
+    return redirect("teams:team_dashboard", team_pk)
+
+
+@login_required
+def team_edit_internal_document(request, team_pk, doc_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+    document = get_object_or_404(TeamDocument, pk=doc_pk, team=team)
+
+    if document.doc_type != "internal":
+        messages.error(request, "Only internal documents can be edited.")
+        return redirect("teams:team_view_document", team_pk, doc_pk)
+
+    if request.method == "POST":
+        document.content = request.POST.get("content")
+        document.save()
+        messages.success(request, "Document updated.")
+        return redirect("teams:team_view_document", team_pk, doc_pk)
+
+    return render(request, "teams/team_edit_document.html", {
+        "team": team,
+        "document": document
+    })
+
+@login_required
+def team_create_internal_document(request, team_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        content = request.POST.get("content")
+
+        doc = TeamDocument.objects.create(
+            team=team,
+            name=name,
+            doc_type="internal",
+            content=content,
+            uploaded_by=request.user
+        )
+        return redirect("teams:team_view_document", team_pk=team.pk, doc_pk=doc.pk)
+
+    return render(request, "teams/team_create_internal_document.html", {
+        "team": team
+    })
 def my_teams_api(request):
     """API endpoint to get user's teams as JSON"""
     teams = Team.objects.filter(members=request.user).order_by("name")
