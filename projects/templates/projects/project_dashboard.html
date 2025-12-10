@@ -142,17 +142,28 @@
                         </div>
 
                         {% if project_documents %}
-                            <ul class="list-group">
-                                {% for doc in project_documents %}
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <a href="{{ doc.file.url }}">{{ doc.title }}</a>
-                                        <span class="text-muted small">{{ doc.uploaded_at|date:"Y-m-d" }}</span>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="text-muted">No documents yet.</p>
-                        {% endif %}
+    <ul class="list-group">
+        {% for doc in project_documents %}
+            <li class="list-group-item d-flex justify-content-between">
+
+                {% if doc.doc_type == "file" and doc.file %}
+                    <a href="{{ doc.file.url }}">{{ doc.name }}</a>
+                {% else %}
+                    <a href="{% url 'projects:view_internal_document' doc.id %}">
+                        {{ doc.name }} (internal)
+                    </a>
+                {% endif %}
+
+                <span class="text-muted small">
+                    {{ doc.uploaded_at|date:"Y-m-d" }}
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-muted">No documents yet.</p>
+{% endif %}
+
                     </div>
                 </div>
             </div>
