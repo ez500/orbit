@@ -149,11 +149,23 @@
       </div>
     </div>
   </div>
+
+  <!-- Task View Modal -->
+  <div class="modal fade" id="viewTaskModal" tabindex="-1" aria-labelledby="viewTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content" id="viewTaskModalContent">
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="{% static 'js/timezoneUtils.js' %}"></script>
+<script src="{% static 'js/editTask.js' %}"></script>
+<script src="{% static 'js/viewTaskModal.js' %}"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
 <script>
   // Show empty state if no widgets are present
   function updateEmptyState() {

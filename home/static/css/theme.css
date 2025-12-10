@@ -11,10 +11,10 @@
   --bg-secondary: #f8f9fa;
   --bg-tertiary: #f1f3f5;
 
-  /* Text Colors */
+  /* Text Colors - Improved Contrast */
   --text-color: #000000;
-  --text-secondary: #6c757d;
-  --text-muted: #8898aa;
+  --text-secondary: #495057;
+  --text-muted: #6c757d;
 
   /* Border Colors */
   --border-color: #dee2e6;
@@ -60,15 +60,17 @@ html[data-theme="light"] {
   --hover-bg: #e9ecef;
 }
 
-/* Dark Theme */
+/* Dark Theme - Improved Contrast */
 html[data-theme="dark"] {
-  --bg-color: #1a1a1a;
+  --bg-color: #121212;
   --text-color: #ffffff;
-  --border-color: #404040;
-  --sidebar-bg: #2d2d2d;
-  --card-bg: #2d2d2d;
-  --input-bg: #333333;
-  --hover-bg: #404040;
+  --text-secondary: #b3b3b3;
+  --text-muted: #999999;
+  --border-color: #3d3d3d;
+  --sidebar-bg: #1e1e1e;
+  --card-bg: #1e1e1e;
+  --input-bg: #2a2a2a;
+  --hover-bg: #2d2d2d;
 }
 
 /* System Theme */
@@ -86,39 +88,111 @@ html[data-theme="dark"] {
 
 @media (prefers-color-scheme: dark) {
   html[data-theme="system"] {
-    --bg-color: #1a1a1a;
+    --bg-color: #121212;
     --text-color: #ffffff;
-    --border-color: #404040;
-    --sidebar-bg: #2d2d2d;
-    --card-bg: #2d2d2d;
-    --input-bg: #333333;
-    --hover-bg: #404040;
+    --text-secondary: #b3b3b3;
+    --text-muted: #999999;
+    --border-color: #3d3d3d;
+    --sidebar-bg: #1e1e1e;
+    --card-bg: #1e1e1e;
+    --input-bg: #2a2a2a;
+    --hover-bg: #2d2d2d;
   }
 }
 
 /* High Contrast - Dark Mode */
 html.high-contrast {
   --bg-color: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #141414;
   --text-color: #ffffff;
+  --text-secondary: #e0e0e0;
+  --text-muted: #c0c0c0;
   --border-color: #ffffff;
+  --border-hover: #ffffff;
   --sidebar-bg: #000000;
-  --card-bg: #1a1a1a;
+  --card-bg: #0a0a0a;
   --input-bg: #000000;
-  --hover-bg: #333333;
+  --hover-bg: #1a1a1a;
+  --card-border: #ffffff;
+  --accent-color: #ffff00;  /* High contrast yellow */
+  --accent-rgb: 255, 255, 0;
+}
+
+html.high-contrast a {
+  color: #ffff00;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+html.high-contrast .btn-primary {
+  background-color: #ffff00;
+  border-color: #ffff00;
+  color: #000000;
+  font-weight: 700;
+}
+
+html.high-contrast .btn-primary:hover {
+  background-color: #ffffff;
+  border-color: #ffffff;
+  color: #000000;
+}
+
+html.high-contrast .card,
+html.high-contrast .modal-content {
+  border: 2px solid #ffffff;
+}
+
+html.high-contrast .form-control,
+html.high-contrast .form-select,
+html.high-contrast .form-check-input {
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  background-color: #000000;
+}
+
+html.high-contrast .form-control:focus,
+html.high-contrast .form-select:focus {
+  border-color: #ffff00;
+  box-shadow: 0 0 0 3px rgba(255, 255, 0, 0.3);
 }
 
 /* High Contrast - Light Mode */
 html[data-theme="light"].high-contrast {
   --bg-color: #ffffff;
+  --bg-secondary: #fafafa;
+  --bg-tertiary: #f5f5f5;
   --text-color: #000000;
-  --text-secondary: #000000;
-  --text-muted: #000000;
+  --text-secondary: #1a1a1a;
+  --text-muted: #333333;
   --border-color: #000000;
+  --border-hover: #000000;
   --sidebar-bg: #ffffff;
   --card-bg: #ffffff;
   --input-bg: #ffffff;
   --hover-bg: #f0f0f0;
   --card-border: #000000;
+  --accent-color: #0000cc;  /* High contrast blue */
+  --accent-rgb: 0, 0, 204;
+}
+
+html[data-theme="light"].high-contrast a {
+  color: #0000cc;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+html[data-theme="light"].high-contrast .btn-primary {
+  background-color: #0000cc;
+  border-color: #0000cc;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+html[data-theme="light"].high-contrast .btn-primary:hover {
+  background-color: #000099;
+  border-color: #000099;
+  color: #ffffff;
 }
 
 html[data-theme="light"].high-contrast .card,
@@ -127,10 +201,17 @@ html[data-theme="light"].high-contrast .modal-content {
 }
 
 html[data-theme="light"].high-contrast .form-control,
-html[data-theme="light"].high-contrast .form-select {
+html[data-theme="light"].high-contrast .form-select,
+html[data-theme="light"].high-contrast .form-check-input {
   border: 2px solid #000000;
   color: #000000;
   background-color: #ffffff;
+}
+
+html[data-theme="light"].high-contrast .form-control:focus,
+html[data-theme="light"].high-contrast .form-select:focus {
+  border-color: #0000cc;
+  box-shadow: 0 0 0 3px rgba(0, 0, 204, 0.3);
 }
 
 html[data-theme="light"].high-contrast .btn {
@@ -181,6 +262,87 @@ html[data-theme="light"].high-contrast p,
 html[data-theme="light"].high-contrast span,
 html[data-theme="light"].high-contrast div {
   color: #000000;
+}
+
+/* High Contrast - Force Accent Color Override */
+html[data-theme="light"].high-contrast .btn-primary,
+html[data-theme="light"].high-contrast button.btn-primary,
+html[data-theme="light"].high-contrast .btn-primary:hover,
+html[data-theme="light"].high-contrast .btn-primary:focus,
+html[data-theme="light"].high-contrast .btn-primary:active {
+  background-color: #0000cc !important;
+  border-color: #0000cc !important;
+  color: #ffffff !important;
+  --bs-btn-bg: #0000cc !important;
+  --bs-btn-border-color: #0000cc !important;
+  --bs-btn-color: #ffffff !important;
+  --bs-btn-hover-bg: #000099 !important;
+  --bs-btn-hover-border-color: #000099 !important;
+  --bs-btn-active-bg: #000099 !important;
+  --bs-btn-active-border-color: #000099 !important;
+}
+
+/* Override any inline styles or color swatches */
+html[data-theme="light"].high-contrast .color-option,
+html[data-theme="light"].high-contrast .color-swatch,
+html[data-theme="light"].high-contrast [class*="color-"],
+html[data-theme="light"].high-contrast .accent-color {
+  border: 2px solid #000000 !important;
+}
+
+/* Force accent color in all contexts */
+html[data-theme="light"].high-contrast .bg-primary,
+html[data-theme="light"].high-contrast .badge-primary,
+html[data-theme="light"].high-contrast .text-primary {
+  background-color: #0000cc !important;
+  color: #ffffff !important;
+  border-color: #0000cc !important;
+}
+
+/* Override progress bars, toggles, and interactive elements */
+html[data-theme="light"].high-contrast .form-check-input:checked,
+html[data-theme="light"].high-contrast .form-switch .form-check-input:checked {
+  background-color: #0000cc !important;
+  border-color: #0000cc !important;
+}
+
+html[data-theme="light"].high-contrast .progress-bar {
+  background-color: #0000cc !important;
+}
+
+/* Dark mode high contrast overrides */
+html.high-contrast .btn-primary,
+html.high-contrast button.btn-primary,
+html.high-contrast .btn-primary:hover,
+html.high-contrast .btn-primary:focus,
+html.high-contrast .btn-primary:active {
+  background-color: #ffff00 !important;
+  border-color: #ffff00 !important;
+  color: #000000 !important;
+  --bs-btn-bg: #ffff00 !important;
+  --bs-btn-border-color: #ffff00 !important;
+  --bs-btn-color: #000000 !important;
+  --bs-btn-hover-bg: #ffffff !important;
+  --bs-btn-hover-border-color: #ffffff !important;
+  --bs-btn-active-bg: #ffffff !important;
+  --bs-btn-active-border-color: #ffffff !important;
+}
+
+html.high-contrast .bg-primary,
+html.high-contrast .badge-primary {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+  border-color: #ffff00 !important;
+}
+
+html.high-contrast .form-check-input:checked,
+html.high-contrast .form-switch .form-check-input:checked {
+  background-color: #ffff00 !important;
+  border-color: #ffff00 !important;
+}
+
+html.high-contrast .progress-bar {
+  background-color: #ffff00 !important;
 }
 
 /* Apply Theme to Elements */

@@ -7,6 +7,9 @@ from django.http import JsonResponse
 from django.db.models import Q, Prefetch
 from django.contrib import messages
 from zoneinfo import ZoneInfo
+import requests
+from bs4 import BeautifulSoup
+import re
 
 from .models import Conversation, Message, Participant, can_users_message
 from .serializer import ConversationSerializer, MessageSerializer
@@ -989,5 +992,121 @@ def delete_conversation(request, username, conversation_id):
 
     except Conversation.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Conversation not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+def fetch_link_preview(request):
+    """Fetch metadata for a URL to generate link preview"""
+    url = request.GET.get('url')
+
+    if not url:
+        return JsonResponse({'success': False, 'error': 'URL parameter is required'}, status=400)
+
+    # Validate URL
+    url_pattern = re.compile(
+        r'^https?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+        r'(?::\d+)?'  # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+    if not url_pattern.match(url):
+        return JsonResponse({'success': False, 'error': 'Invalid URL'}, status=400)
+
+    try:
+        # Check if it's a YouTube URL and use oEmbed API
+        if 'youtube.com' in url or 'youtu.be' in url:
+            oembed_url = f'https://www.youtube.com/oembed?url={url}&format=json'
+            response = requests.get(oembed_url, timeout=5)
+            response.raise_for_status()
+            data = response.json()
+
+            return JsonResponse({
+                'success': True,
+                'preview': {
+                    'url': url,
+                    'title': data.get('title', 'YouTube Video'),
+                    'description': f"By {data.get('author_name', 'Unknown')}",
+                    'image': data.get('thumbnail_url'),
+                    'domain': 'youtube.com'
+                }
+            })
+
+        # Check if it's a Twitter/X URL and use oEmbed API
+        if 'twitter.com' in url or 'x.com' in url:
+            oembed_url = f'https://publish.twitter.com/oembed?url={url}'
+            try:
+                response = requests.get(oembed_url, timeout=5)
+                response.raise_for_status()
+                data = response.json()
+
+                return JsonResponse({
+                    'success': True,
+                    'preview': {
+                        'url': data.get('url', url),
+                        'title': 'Tweet' if 'twitter.com' in url else 'Post',
+                        'description': data.get('author_name', ''),
+                        'image': None,
+                        'domain': 'twitter.com' if 'twitter.com' in url else 'x.com'
+                    }
+                })
+            except:
+                pass  # Fall through to regular scraping
+        # Fetch the page with a timeout
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=5, allow_redirects=True)
+        response.raise_for_status()
+
+        # Parse HTML
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        # Extract Open Graph tags (preferred)
+        og_title = soup.find('meta', property='og:title')
+        og_description = soup.find('meta', property='og:description')
+        og_image = soup.find('meta', property='og:image')
+        og_url = soup.find('meta', property='og:url')
+
+        # Fall back to standard HTML tags
+        title = og_title['content'] if og_title and og_title.get('content') else None
+        if not title:
+            title_tag = soup.find('title')
+            title = title_tag.string if title_tag else None
+
+        description = og_description['content'] if og_description and og_description.get('content') else None
+        if not description:
+            desc_tag = soup.find('meta', attrs={'name': 'description'})
+            description = desc_tag['content'] if desc_tag and desc_tag.get('content') else None
+
+        image = og_image['content'] if og_image and og_image.get('content') else None
+        canonical_url = og_url['content'] if og_url and og_url.get('content') else url
+
+        # Make relative image URLs absolute
+        if image and not image.startswith(('http://', 'https://')):
+            from urllib.parse import urljoin
+            image = urljoin(url, image)
+
+        # Truncate long descriptions
+        if description and len(description) > 200:
+            description = description[:197] + '...'
+
+        return JsonResponse({
+            'success': True,
+            'preview': {
+                'url': canonical_url,
+                'title': title or 'No title',
+                'description': description or '',
+                'image': image,
+                'domain': re.sub(r'https?://(www\.)?', '', canonical_url).split('/')[0]
+            }
+        })
+
+    except requests.exceptions.Timeout:
+        return JsonResponse({'success': False, 'error': 'Request timeout'}, status=408)
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({'success': False, 'error': f'Failed to fetch URL: {str(e)}'}, status=500)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

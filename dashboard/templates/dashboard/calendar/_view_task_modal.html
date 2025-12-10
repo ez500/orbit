@@ -1,58 +1,163 @@
 {% load task_extras %}
 
-<div class="modal-header border-2">
-    <h5 class="modal-title mb-auto">{{ task.title }}</h5>
-    <span class="badge {{ task.status|status_badge }} ms-2">{{ task.get_status_display }}</span>
-    <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-    ></button>
-</div>
-<div class="modal-body">
-    <p>{{ task.content }}</p>
-    <p><strong>Deadline: </strong>{{ task.deadline }}</p>
-    {% if task.team %}
-        <div class="d-flex align-items-center">
-            <p class="me-auto text-start mb-3"><strong>Team: </strong>{{ task.team }}</p>
-            <a href="{% url 'teams:detail' task.team.pk %}" class="btn btn-sm btn-secondary ms-2">
-                View Team
-            </a>
-        </div>
-    {% elif task.project %}
-        <div class="d-flex align-items-center">
-            <p class="me-auto text-start mb-3"><strong>Project: </strong>{{ task.project }}</p>
-            <a href="{% url 'projects:project_detail' task.project.pk %}" class="btn btn-sm btn-secondary ms-2">
-                View Project
-            </a>
-        </div>
-    {% endif %}
-
-    <div class="card mt-3">
-        <div class="card-body">
-            {% if task.users.all %}
-                <h5>Assigned Users</h5>
-                {% for user in task.users.all %}
-                    <div class="d-flex align-items-center">
-                        <p class="me-auto text-start">{{ user }}</p>
-                        <a href="{% url 'accounts:profile_view' user %}" class="btn btn-sm btn-secondary ms-2 mb-2">
-                            View Profile
-                        </a>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>No users assigned to this task.</p>
-            {% endif %}
-        </div>
+<!-- View Mode -->
+<div id="viewMode">
+    <div class="modal-header border-2">
+        <h5 class="modal-title mb-auto">{{ task.title }}</h5>
+        <span class="badge {{ task.status|status_badge }} ms-2">{{ task.get_status_display }}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     </div>
 
-    <div class="d-flex align-items-center">
-        <p class="me-auto text-start mb-0">Created {{ task.pub_date|date:"M. d, Y" }}</p>
-        <button class="btn btn-warning">Edit</button>
-        <form action="{% url 'dashboard:task_delete' task.id %}" method="post"
-              onsubmit="return confirm('Are you sure you want to delete this task?');">
+    <div class="modal-body">
+        <div class="task-view-section mb-3">
+            <label class="form-label text-muted">Description</label>
+            <p>{{ task.content|default:"No description provided" }}</p>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label text-muted">Deadline</label>
+                <p>{{ task.deadline|default:"No deadline" }}</p>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-muted">Status</label>
+                <p><span class="badge {{ task.status|status_badge }}">{{ task.get_status_display }}</span></p>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            {% if task.team %}
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Team</label>
+                    <div class="d-flex align-items-center">
+                        <p class="mb-0 me-2">{{ task.team }}</p>
+                        <a href="{% url 'teams:detail' task.team.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+                    </div>
+                </div>
+            {% endif %}
+            {% if task.project %}
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Project</label>
+                    <div class="d-flex align-items-center">
+                        <p class="mb-0 me-2">{{ task.project }}</p>
+                        <a href="{% url 'projects:project_detail' task.project.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if task.users.exists %}
+            <div class="task-view-section mb-3">
+                <label class="form-label text-muted">Assigned Users</label>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for u in task.users.all %}
+                        <a href="{% url 'accounts:profile_view' u %}" class="btn btn-sm btn-outline-primary">{{ u.username }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <p>No users assigned to this task.</p>
+        {% endif %}
+
+        <div class="text-muted small mt-4">Created {{ task.pub_date|date:"M. d, Y" }}</div>
+    </div>
+
+    <div class="modal-footer">
+        <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-primary" id="editTaskBtn" onclick="toggleEditMode()">Edit</button>
+        <form action="{% url 'dashboard:task_delete' task.id %}" method="post" onsubmit="return confirm('Are you sure you want to delete this task?');" style="display: inline-block; margin-left: .5rem;">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger ms-2">Delete</button>
+            <button type="submit" class="btn btn-danger">Delete</button>
         </form>
     </div>
 </div>
+
+<!-- Edit Mode -->
+<div id="editMode" style="display: none;">
+    <div class="modal-header">
+        <h5 class="modal-title">Edit Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <form id="editTaskForm" data-task-id="{{ task.id }}">
+            <!-- Title -->
+            <div class="task-title-section">
+                <label for="editTaskTitle" class="form-label">Task Title <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="editTaskTitle" value="{{ task.title }}" required />
+            </div>
+
+            <!-- Right Sidebar - Top -->
+            <div class="task-sidebar-top">
+                <div>
+                    <label for="editTaskStatus" class="form-label">Status <span class="text-danger">*</span></label>
+                    <select class="form-select" id="editTaskStatus" required>
+                        <option value="todo" {% if task.status == 'todo' %}selected{% endif %}>To Do</option>
+                        <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="review" {% if task.status == 'review' %}selected{% endif %}>Pending Review</option>
+                        <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editTaskDeadline" class="form-label">Due Date</label>
+                    <input type="date" class="form-control" id="editTaskDeadline" value="{% if task.deadline %}{{ task.deadline|date:'Y-m-d' }}{% endif %}" />
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="task-description-section">
+                <label for="editTaskContent" class="form-label">Description</label>
+                <textarea class="form-control" id="editTaskContent">{{ task.content }}</textarea>
+            </div>
+
+            <!-- Right Sidebar - Middle -->
+            <div class="task-sidebar-middle">
+                <div>
+                    <label for="editTaskTeam" class="form-label">Team</label>
+                    <select class="form-select" id="editTaskTeam">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editTaskProject" class="form-label">Project</label>
+                    <select class="form-select" id="editTaskProject">
+                        <option value="">None</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Assignees -->
+            <div class="task-assignees-section">
+                <label for="editTaskUsers" class="form-label">Assignees</label>
+                <select class="form-select" id="editTaskUsers" multiple></select>
+                <div class="form-text">Hold Ctrl/Cmd to select multiple people</div>
+            </div>
+
+            <div class="task-sidebar-bottom"></div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-outline-secondary" type="button" onclick="toggleEditMode()">Cancel</button>
+        <button class="btn btn-primary" id="saveTaskBtn">Save Changes</button>
+    </div>
+</div>
+
+<!-- Store task data in a hidden element for JavaScript to read -->
+<div id="taskData" style="display: none;" data-task-info='{
+    "id": {{ task.id }},
+    "title": "{{ task.title|escapejs }}",
+    "content": "{{ task.content|escapejs }}",
+    "deadline": "{% if task.deadline %}{{ task.deadline|date:'Y-m-d' }}{% endif %}",
+    "status": "{{ task.status }}",
+    "team": {% if task.team %}{{ task.team.id }}{% else %}null{% endif %},
+    "project": {% if task.project %}{{ task.project.id }}{% else %}null{% endif %},
+    "users": [{% for user in task.users.all %}{{ user.id }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+    "userDetails": [
+        {% for user in task.users.all %}
+        {
+            "id": {{ user.id }},
+            "username": "{{ user.username|escapejs }}",
+            "fullName": "{{ user.get_full_name|escapejs }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]
+}'></div>

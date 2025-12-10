@@ -1,40 +1,285 @@
-{% extends 'base.html' %}
+{% extends 'base_landing.html' %}
 
 {% block content %}
-<div class="card">
-    <div class="card-body">
-        <h1>Welcome to VerAlign - Your AI-based CRM Tool</h1>
-        <p>Streamline your customer relationships with AI-powered insights and automation.</p>
-
-        <div style="margin-top: 2rem;">
-            <h2>Key Features</h2>
-            <ul style="margin: 1rem 0; padding-left: 2rem;">
-                <li>AI-powered customer insights</li>
-                <li>Automated lead scoring</li>
-                <li>Contact management</li>
-                <li>Sales pipeline tracking</li>
-                <li>Analytics and reporting</li>
-            </ul>
-        </div>
-
-        <div style="margin-top: 2rem;">
-            <a href="{% url 'dashboard:dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
-            <a href="{% url 'home:contact' %}" class="btn btn-primary">Contact Us</a>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-background-animation"></div>
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-sparkles"></i>
+                <span>AI-Powered Team Collaboration</span>
+            </div>
+            <h1 class="hero-title">
+                Where teams <span class="title-accent">orbit</span> around what matters most
+            </h1>
+            <p class="hero-subtitle">
+                The intelligent platform that keeps your team aligned, your customers engaged,
+                and your relationships flourishing. Experience human-level precision in team collaboration.
+            </p>
+            <div class="hero-actions">
+                <a href="{% url 'accounts:register' %}" class="btn-hero btn-hero-primary">
+                    <i class="fas fa-rocket"></i>
+                    <span>Get Started Free</span>
+                </a>
+                <a href="{% url 'accounts:login' %}" class="btn-hero btn-hero-secondary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Sign In</span>
+                </a>
+            </div>
+            <div class="hero-trust-badges">
+                <p class="trust-text">Trusted by innovative teams worldwide</p>
+            </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="card">
-    <div class="card-body">
-        <h3>Getting Started</h3>
-        <p>Welcome to your new Django-powered CRM system. This basic template provides:</p>
-        <ul style="margin: 1rem 0; padding-left: 2rem;">
-            <li>Django project structure</li>
-            <li>Basic templates with responsive design</li>
-            <li>URL routing configuration</li>
-            <li>Admin interface access</li>
-            <li>Ready for customization and extension</li>
-        </ul>
+<!-- Workflow Section -->
+<section class="workflow-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">How Orbit Works</h2>
+            <p class="section-subtitle">
+                A streamlined approach to team coordination
+            </p>
+        </div>
+        <div class="workflow-steps">
+            <div class="workflow-step">
+                <div class="step-number">
+                    <span>01</span>
+                </div>
+                <div class="step-icon">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <h3 class="step-title">Connect</h3>
+                <p class="step-description">
+                    Create your workspace and invite team members. Import existing
+                    data or begin with a clean slate.
+                </p>
+            </div>
+            <div class="workflow-connector"></div>
+            <div class="workflow-step">
+                <div class="step-number">
+                    <span>02</span>
+                </div>
+                <div class="step-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="step-title">Organize</h3>
+                <p class="step-description">
+                    Structure projects, assign tasks, and track progress
+                    with integrated tools.
+                </p>
+            </div>
+            <div class="workflow-connector"></div>
+            <div class="workflow-step">
+                <div class="step-number">
+                    <span>03</span>
+                </div>
+                <div class="step-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h3 class="step-title">Collaborate</h3>
+                <p class="step-description">
+                    Communicate in real-time, share updates, and maintain
+                    alignment across your organization.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Core Capabilities</h2>
+            <p class="section-subtitle">
+                Essential tools for modern team management
+            </p>
+        </div>
+
+        <div class="features-container">
+            <!-- Featured Card - Spans 2 columns -->
+            <div class="feature-card feature-card-large">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon feature-icon-large">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+                <h3 class="feature-title">Intelligent Insights</h3>
+                <p class="feature-description">
+                    Analyze team patterns and project metrics. Receive data-driven
+                    recommendations to optimize workflows and resource allocation.
+                </p>
+            </div>
+
+            <!-- Regular Cards -->
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <h3 class="feature-title">Team Workspace</h3>
+                <p class="feature-description">
+                    Centralized communication with integrated messaging
+                    and real-time updates.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                </div>
+                <h3 class="feature-title">Project Tracking</h3>
+                <p class="feature-description">
+                    Monitor tasks, set deadlines, and track
+                    progress across projects.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <h3 class="feature-title">Analytics Dashboard</h3>
+                <p class="feature-description">
+                    Visualize team performance with customizable
+                    charts and reports.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                </div>
+                <h3 class="feature-title">Organization Tools</h3>
+                <p class="feature-description">
+                    Manage multiple teams and maintain clear
+                    organizational structure.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                </div>
+                <h3 class="feature-title">Data Security</h3>
+                <p class="feature-description">
+                    Secure storage with encryption and
+                    regular backups.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-gradient-bg"></div>
+    <div class="container">
+        <div class="cta-content">
+            <h2 class="cta-title">Ready to elevate your team?</h2>
+            <p class="cta-subtitle">
+                Join innovative teams using Orbit to transform how they manage
+                relationships and drive growth. Start free today.
+            </p>
+            <div class="hero-actions">
+                <a href="{% url 'accounts:register' %}" class="btn-hero btn-hero-primary btn-hero-large">
+                    <i class="fas fa-rocket"></i>
+                    <span>Get Started Free</span>
+                </a>
+                <a href="#" class="btn-hero btn-hero-secondary btn-hero-large" data-bs-toggle="modal" data-bs-target="#contactModal">
+                    <i class="fas fa-envelope"></i>
+                    <span>Contact Sales</span>
+                </a>
+            </div>
+            <p class="cta-note">No credit card required • Free forever plan available</p>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contactModalLabel">
+                    <i class="fas fa-envelope me-2"></i>
+                    Get in Touch
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-5 contact-info">
+                        <div class="contact-header mb-4">
+                            <h6>Contact Information</h6>
+                            <p class="text-decoration mb-2">We'd love to hear from you. Reach out anytime!</p>
+                        </div>
+                        <div class="contact-person mb-4">
+                            <h6 class="mb-2">Eugene Zhang</h6>
+                            <div class="contact-detail">
+                                <i class="fas fa-phone"></i>
+                                <span>+1 (765) 543-0760</span>
+                            </div>
+                            <div class="contact-detail">
+                                <i class="fas fa-envelope"></i>
+                                <span>bfm@bfm.io</span>
+                            </div>
+                        </div>
+
+                        <div class="contact-person">
+                            <h6 class="mb-2">Eric Chen</h6>
+                            <div class="contact-detail">
+                                <i class="fas fa-phone"></i>
+                                <span>+1 (222) 345-6789</span>
+                            </div>
+                            <div class="contact-detail">
+                                <i class="fas fa-envelope"></i>
+                                <span>eric@chen.com</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7">
+                        <form id="contactForm" method="post" action="{% url 'home:contact' %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="subject" name="subject" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Message</label>
+                                <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Send Message
+                            </button>
+                        </form>
+                        <div id="form-message" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

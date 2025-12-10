@@ -1,0 +1,294 @@
+/* Task Modal Styling - Minimal & Compact */
+
+#addTaskModal .modal-content,
+#viewTaskModal .modal-content {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--card-bg);
+}
+
+#addTaskModal .modal-header,
+#viewTaskModal .modal-header {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 1.5rem;
+}
+
+#addTaskModal .modal-title,
+#viewTaskModal .modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0;
+  opacity: 1;
+}
+
+#addTaskModal .modal-header p {
+  display: none;
+}
+
+#addTaskModal .btn-close,
+#viewTaskModal .btn-close {
+  opacity: 0.5;
+}
+
+#addTaskModal .btn-close:hover,
+#viewTaskModal .btn-close:hover {
+  opacity: 1;
+}
+
+#addTaskModal .modal-body,
+#viewTaskModal .modal-body {
+  padding: 1.5rem;
+  background: var(--card-bg);
+}
+
+/* Grid Layout - Horizontal Focus */
+#addTaskModal .modal-body form,
+#viewTaskModal #editTaskForm {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem 1.5rem;
+  grid-template-areas:
+    "title sidebar-top"
+    "description sidebar-middle"
+    "assignees sidebar-bottom";
+}
+
+#addTaskModal .task-title-section,
+#viewTaskModal .task-title-section {
+  grid-area: title;
+}
+
+#addTaskModal .task-description-section,
+#viewTaskModal .task-description-section {
+  grid-area: description;
+}
+
+#addTaskModal .task-assignees-section,
+#viewTaskModal .task-assignees-section {
+  grid-area: assignees;
+}
+
+/* Right Sidebar Group */
+#addTaskModal .task-sidebar-top,
+#viewTaskModal .task-sidebar-top {
+  grid-area: sidebar-top;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#addTaskModal .task-sidebar-middle,
+#viewTaskModal .task-sidebar-middle {
+  grid-area: sidebar-middle;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#addTaskModal .task-sidebar-bottom,
+#viewTaskModal .task-sidebar-bottom {
+  grid-area: sidebar-bottom;
+}
+
+/* Section Styling */
+#addTaskModal .modal-body > form > div,
+#viewTaskModal .modal-body > form > div {
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+/* Section Headers - Removed */
+#addTaskModal h6.text-uppercase,
+#viewTaskModal h6.text-uppercase {
+  display: none;
+}
+
+/* Form Labels */
+#addTaskModal .form-label,
+#viewTaskModal .form-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+  display: block;
+  opacity: 0.9;
+}
+
+#addTaskModal .form-label i,
+#viewTaskModal .form-label i {
+  display: none;
+}
+
+/* Form Controls */
+#addTaskModal .form-control,
+#addTaskModal .form-select,
+#viewTaskModal .form-control,
+#viewTaskModal .form-select {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9375rem;
+  transition: all 0.15s ease;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+#addTaskModal .form-control:focus,
+#addTaskModal .form-select:focus,
+#viewTaskModal .form-control:focus,
+#viewTaskModal .form-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(30, 144, 255, 0.1);
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+#addTaskModal .form-control::placeholder,
+#viewTaskModal .form-control::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+  font-size: 0.875rem;
+}
+
+#addTaskModal textarea.form-control,
+#viewTaskModal textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+#addTaskModal select[multiple],
+#viewTaskModal select[multiple] {
+  min-height: 100px;
+  padding: 0.75rem;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+}
+
+#addTaskModal select[multiple] option,
+#viewTaskModal select[multiple] option {
+  padding: 0.625rem 0.75rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  background: var(--hover-bg);
+  border-radius: 4px;
+  color: var(--text-color);
+}
+
+#addTaskModal select[multiple] option:checked,
+#viewTaskModal select[multiple] option:checked {
+  background: var(--accent-color);
+  color: white;
+  font-weight: 500;
+}
+
+#addTaskModal select[multiple] option:hover,
+#viewTaskModal select[multiple] option:hover {
+  background: rgba(30, 144, 255, 0.2);
+}
+
+/* Form Text */
+#addTaskModal .form-text,
+#viewTaskModal .form-text {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin-top: 0.375rem;
+}
+
+#addTaskModal .form-text i,
+#viewTaskModal .form-text i {
+  display: none;
+}
+
+/* Required Asterisk */
+#addTaskModal .text-danger,
+#viewTaskModal .text-danger {
+  color: #dc3545;
+}
+
+/* Modal Footer */
+#addTaskModal .modal-footer,
+#viewTaskModal .modal-footer {
+  background: var(--card-bg);
+  border-top: 1px solid var(--border-color);
+  padding: 0.875rem 1.5rem;
+  gap: 0.5rem;
+}
+
+#addTaskModal .modal-footer .btn,
+#viewTaskModal .modal-footer .btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+}
+
+#addTaskModal .modal-footer .btn i,
+#viewTaskModal .modal-footer .btn i {
+  display: none;
+}
+
+/* Make modal extra wide */
+#addTaskModal .modal-dialog,
+#viewTaskModal .modal-dialog {
+  max-width: 900px;
+}
+
+/* View Mode Specific Styling */
+#viewTaskModal #viewMode p {
+  color: var(--text-color);
+  font-size: 0.9375rem;
+  margin-bottom: 0;
+}
+
+#viewTaskModal #viewMode .text-muted {
+  color: var(--text-muted) !important;
+  opacity: 0.8;
+}
+
+#viewTaskModal #viewMode .task-view-section {
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  #addTaskModal .modal-dialog,
+  #viewTaskModal .modal-dialog {
+    max-width: 100%;
+    margin: 1rem;
+  }
+
+  #addTaskModal .modal-body form,
+  #viewTaskModal #editTaskForm {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "title"
+      "sidebar-top"
+      "description"
+      "sidebar-middle"
+      "assignees"
+      "sidebar-bottom";
+  }
+
+  #addTaskModal .modal-body,
+  #viewTaskModal .modal-body {
+    padding: 1rem;
+  }
+
+  #addTaskModal .modal-header,
+  #viewTaskModal .modal-header {
+    padding: 0.875rem 1rem;
+  }
+
+  #addTaskModal .modal-footer,
+  #viewTaskModal .modal-footer {
+    padding: 0.75rem 1rem;
+  }
+}

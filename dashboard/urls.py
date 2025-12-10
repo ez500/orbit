@@ -17,7 +17,11 @@ urlpatterns = [
     ),
     path("notifications/", views.notifications, name="notifications"),
     path("api/project-team-members/", views.get_project_or_team_members, name='get_team_members'),
+    path("api/user-teams-projects/", views.get_user_teams_projects, name='get_user_teams_projects'),
     path("api/tasks/", views.TaskCreateAPIView.as_view(), name='create_task'),
+    path("api/tasks/<int:task_id>/update/", views.TaskUpdateAPIView.as_view(), name='update_task'),
     path("api/tasks/<int:task_id>/", views.task_delete, name='task_delete'),
+    path("api/widgets/", views.get_dashboard_widgets, name='dashboard_widgets'),
+    path("api/widget-data/<str:widget_type>/", views.get_widget_data, name='widget_data'),
     path("api/orbit-insights", views.OrbitInsightsAPIView.as_view(), name='orbit_insights_api'),
 ]

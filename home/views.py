@@ -7,9 +7,13 @@ from .forms import ContactForm
 
 # Create your views here.
 def home(request):
-    """Home page view"""
-    context = {'title': 'Home'}
+    """Home page view - redirects authenticated users to dashboard"""
+    # If user is authenticated, redirect to dashboard
+    if request.user.is_authenticated:
+        from django.shortcuts import redirect
+        return redirect('dashboard:dashboard')
 
+    context = {'title': 'Orbit - Intelligent CRM Platform'}
     return render(request, 'home/home.html', context)
 
 

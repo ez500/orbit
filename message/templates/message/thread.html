@@ -53,7 +53,6 @@
             <img src="https://ui-avatars.com/api/?name={{ conv.other_participant.get_full_name|default:conv.other_participant.username|urlencode }}&background=random"
                  alt="{{ conv.other_participant.get_full_name|default:conv.other_participant.username }}">
             {% endif %}
-            <span class="status-indicator {{ conv.other_participant.profile.get_online_status }}"></span>
           {% else %}
             <div class="team-avatar">
               <i class="fas fa-users"></i>
@@ -127,19 +126,6 @@
               {{ conversation.title }}
             {% endif %}
           </h5>
-          {% if other_participant %}
-          <small class="text-muted">
-            {% with status=other_participant.profile.get_online_status %}
-              {% if status == 'online' %}
-                <span class="text-success"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Online</span>
-              {% elif status == 'away' %}
-                <span class="text-warning"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Away</span>
-              {% else %}
-                <span class="text-secondary"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> Offline</span>
-              {% endif %}
-            {% endwith %}
-          </small>
-          {% endif %}
         </div>
       </div>
       <div class="thread-actions">
@@ -553,6 +539,18 @@
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
+  // Load link previews for existing messages on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const messageWrappers = document.querySelectorAll('.message-wrapper');
+    messageWrappers.forEach(messageWrapper => {
+      const messageContent = messageWrapper.querySelector('.message-content');
+      if (messageContent) {
+        const textContent = messageContent.textContent;
+        addLinkPreviewsToMessage(messageWrapper, textContent);
+      }
+    });
+  });
+
   // Initialize reply variables
   let currentReplyToId = null;
   const replyIndicator = document.getElementById('replyIndicator');
@@ -724,6 +722,113 @@
     return div.innerHTML;
   }
 
+  // Function to extract URLs from text
+  function extractUrls(text) {
+    const urlPattern = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
+    const urls = [];
+    let match;
+
+    while ((match = urlPattern.exec(text)) !== null) {
+      let url = match[0];
+      // Add https:// to www. URLs
+      if (url.startsWith('www.')) {
+        url = 'https://' + url;
+      }
+      urls.push(url);
+    }
+
+    return urls;
+  }
+
+  // Function to linkify URLs in text
+  function linkifyUrls(text) {
+    // URL regex pattern - matches http://, https://, and www. URLs
+    const urlPattern = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/gi;
+
+    return text.replace(urlPattern, function(url) {
+      let href = url;
+      // Add https:// to www. URLs
+      if (url.startsWith('www.')) {
+        href = 'https://' + url;
+      }
+
+      // Truncate display URL if too long
+      let displayUrl = url;
+      if (url.length > 50) {
+        displayUrl = url.substring(0, 47) + '...';
+      }
+
+      return `<a href="${href}" class="message-link" target="_blank" rel="noopener noreferrer">${displayUrl}</a>`;
+    });
+  }
+
+  // Function to fetch link preview
+  async function fetchLinkPreview(url) {
+    try {
+      const response = await fetch(`/message/link-preview/?url=${encodeURIComponent(url)}`);
+      const data = await response.json();
+
+      if (data.success) {
+        return data.preview;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching link preview:', error);
+      return null;
+    }
+  }
+
+  // Function to create link preview HTML
+  function createLinkPreviewHTML(preview) {
+    const imageHTML = preview.image ?
+      `<div class="link-preview-image" style="background-image: url('${preview.image}');"></div>` :
+      '';
+
+    return `
+      <div class="link-preview">
+        ${imageHTML}
+        <div class="link-preview-content">
+          <div class="link-preview-title">${escapeHtml(preview.title)}</div>
+          ${preview.description ? `<div class="link-preview-description">${escapeHtml(preview.description)}</div>` : ''}
+          <div class="link-preview-domain">
+            <i class="fas fa-link"></i> ${escapeHtml(preview.domain)}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Function to add link previews to a message
+  async function addLinkPreviewsToMessage(messageWrapper, messageContent) {
+    const urls = extractUrls(messageContent);
+
+    // Only show preview for the first URL in the message
+    if (urls.length > 0) {
+      const preview = await fetchLinkPreview(urls[0]);
+
+      if (preview) {
+        const previewHTML = createLinkPreviewHTML(preview);
+        const messageBubble = messageWrapper.querySelector('.message-bubble');
+
+        if (messageBubble) {
+          // Check if preview already exists
+          if (!messageBubble.querySelector('.link-preview')) {
+            messageBubble.insertAdjacentHTML('beforeend', previewHTML);
+
+            // Make preview clickable
+            const linkPreviewElement = messageBubble.querySelector('.link-preview');
+            if (linkPreviewElement) {
+              linkPreviewElement.style.cursor = 'pointer';
+              linkPreviewElement.addEventListener('click', () => {
+                window.open(preview.url, '_blank', 'noopener,noreferrer');
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Function to highlight mentions in message content
   function highlightMentions(text) {
     // Replace @username with highlighted span
@@ -733,7 +838,8 @@
   // Function to escape and highlight mentions (for message content)
   function escapeAndHighlight(text) {
     const escaped = escapeHtml(text);
-    return highlightMentions(escaped);
+    const withMentions = highlightMentions(escaped);
+    return linkifyUrls(withMentions);
   }
 
   // Show temporary error message
@@ -888,6 +994,12 @@
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
               }
             } else {
+              // Remove empty state if it exists (for first message)
+              const emptyState = messagesContainer.querySelector('.empty-thread-state');
+              if (emptyState) {
+                emptyState.remove();
+              }
+
               // Create new message element for received message using createMessageHTML
               const messageHTML = createMessageHTML(message, false);
               const tempDiv = document.createElement('div');
@@ -897,6 +1009,11 @@
               // Append to messages container
               if (messagesContainer) {
                 messagesContainer.appendChild(messageWrapper);
+
+                // Add link previews if the message contains URLs
+                if (message.content) {
+                  addLinkPreviewsToMessage(messageWrapper, message.content);
+                }
 
                 // Scroll to bottom smoothly
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -2053,6 +2170,12 @@
     .then(response => response.json())
     .then(data => {
       if (data.success) {
+        // Remove empty state if it exists
+        const emptyState = messagesContainer.querySelector('.empty-thread-state');
+        if (emptyState) {
+          emptyState.remove();
+        }
+
         // Create new message element using the createMessageHTML function
         const messageHTML = createMessageHTML(data.message, true);
         const tempDiv = document.createElement('div');
@@ -2061,6 +2184,11 @@
 
         // Append to messages container
         messagesContainer.appendChild(messageWrapper);
+
+        // Add link previews if the message contains URLs
+        if (data.message.content) {
+          addLinkPreviewsToMessage(messageWrapper, data.message.content);
+        }
 
         // Update lastMessageId to prevent re-fetching this message
         if (typeof lastMessageId !== 'undefined') {

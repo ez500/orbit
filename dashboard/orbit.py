@@ -5,7 +5,12 @@ from operator import truediv
 
 from decouple import config
 from django.contrib.auth.models import User
-from google import genai
+try:
+    from google import genai
+    GEMINI_AVAILABLE = True
+except Exception:
+    genai = None
+    GEMINI_AVAILABLE = False
 
 from company.models import Company, Announcement
 from dashboard.models import Task, InsightSuggestion
@@ -16,8 +21,13 @@ from teams.models import Team
 # TODO MESSAGE/EMAIL INTEGRATION
 
 GEMINI_MODEL = "gemini-2.5-flash"
-GEMINI_API_KEY = config("GEMINI_API_KEY", default="AIzaSyCxNumlNs-xAtdbys5j0a2f9OXa2q8Ayrs")
-client = genai.Client(api_key=GEMINI_API_KEY)
+GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
+client = None
+if GEMINI_AVAILABLE and GEMINI_API_KEY:
+    try:
+        client = genai.Client(api_key=GEMINI_API_KEY)
+    except Exception:
+        client = None
 
 
 def _gather_user_context(user):
@@ -238,6 +248,15 @@ def generate_orbit_insights(user, persist=True):
     prompt = _build_prompt(ctx)
 
     try:
+        if not client:
+            # Gemini client not available; return fallback
+            return {
+                "suggestions": [],
+                "fallback": True,
+                "batch_id": None,
+                "created": []
+            }
+
         response = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=prompt
@@ -297,6 +316,8 @@ def generate_orbit_reply(prompt):
     )
 
     try:
+        if not client:
+            return "🤖 Orbit AI is not currently configured. Please contact your administrator to set up the GEMINI_API_KEY environment variable to enable AI-powered insights and chat."
         response = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=prompt
@@ -304,10 +325,14 @@ def generate_orbit_reply(prompt):
         return (response.text or "").strip()
     except Exception as e:
         print("Orbit chat error:", e)
-        return "Sorry I cannot generate a response at this time."
+        return "Sorry, I cannot generate a response at this time. There was an error connecting to the AI service."
 
 
 def test():
+    if not client:
+        print("Gemini client not available")
+        return
+
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents="Write an email to a customer updating them on our updated shipment."

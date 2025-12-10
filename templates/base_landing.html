@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>{% block title %}{{ title }} - Orbit{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+            crossorigin="anonymous"
+    />
+
+    <!-- Font Awesome for icons -->
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+            rel="stylesheet"
+    />
+
+    <!-- Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}"/>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="landing-page">
+    <!-- Landing Page Navigation -->
+    <nav class="landing-nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="{% url 'home:home' %}" class="brand">
+                    <i class="fas fa-circle-notch"></i>
+                    <span>Orbit</span>
+                </a>
+                <div class="nav-actions">
+                    <a href="#" class="btn-nav btn-nav-ghost" data-bs-toggle="modal" data-bs-target="#contactModal">
+                        <i class="fas fa-envelope"></i>
+                        <span>Contact</span>
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="btn-nav btn-nav-secondary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Sign In</span>
+                    </a>
+                    <a href="{% url 'accounts:register' %}" class="btn-nav btn-nav-primary">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Get Started</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="landing-main">
+        {% block messages %}
+            {% if messages %}
+                <div class="container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endblock %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="brand">
+                        <i class="fas fa-circle-notch"></i>
+                        <span>Orbit</span>
+                    </div>
+                    <p>&copy; 2025 Orbit. All rights reserved.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="{% url 'home:contact' %}">Contact Us</a>
+                    <a href="/admin/">Admin</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+            crossorigin="anonymous"
+    ></script>
+    <script src="{% static 'js/theme-init.js' %}"></script>
+
+    <!-- Contact Form Handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const contactForm = document.getElementById('contactForm');
+            const formMessage = document.getElementById('form-message');
+
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(contactForm);
+                    const messageDiv = formMessage;
+
+                    fetch(contactForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        messageDiv.className = 'success';
+                        messageDiv.textContent = data.message || 'Message sent successfully!';
+                        contactForm.reset();
+
+                        setTimeout(() => {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('contactModal'));
+                            if (modal) modal.hide();
+                            messageDiv.style.display = 'none';
+                        }, 2000);
+                    })
+                    .catch(error => {
+                        messageDiv.className = 'error';
+                        messageDiv.textContent = 'Failed to send message. Please try again.';
+                    });
+                });
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

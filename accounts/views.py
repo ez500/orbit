@@ -193,54 +193,59 @@ class CompanyListView(LoginRequiredMixin, ListView):
         return searched_is_public or requesting_is_staff or is_connection or is_self
 
 
-# TODO DELETE USER ACCOUNT VIEW/CONFIG
+# Redirect to settings page (for backward compatibility)
 @login_required
 def edit_user_profile(request):
-    if request.method == 'POST':
-        user_form = UpdateUserForm(request.POST, instance=request.user)
-        profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
-        password_form = ChangePasswordForm(user=request.user, data=request.POST)
-
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            return redirect('accounts:profile_view', username=request.user.username)
-
-        if password_form.is_valid():
-            password_form.save()
-            return redirect('accounts:profile_view', username=request.user.username)
-    else:
-        user_form = UpdateUserForm(instance=request.user)
-        profile_form = UpdateProfileForm(instance=request.user.profile)
-        password_form = ChangePasswordForm(user=request.user)
-
-    return render(request, 'accounts/profile_edit.html', {
-        'title': 'Edit Profile',
-        'user_form': user_form,
-        'profile_form': profile_form,
-        'password_form': password_form
-    })
+    """Redirect to settings page - profile_edit is now consolidated into settings"""
+    return redirect('accounts:user_settings')
 
 
 @login_required
 def settings(request):
+    # Determine which tab to display
+    active_tab = request.POST.get('active_tab', request.GET.get('tab', 'profile'))
+    
     if request.method == 'POST':
         # Handle both user and profile forms
         user_form = UpdateUserForm(request.POST, instance=request.user)
         profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
 
-        if profile_form.is_valid() and user_form.is_valid():
-            # Save both forms
-            user_form.save()
-            profile_form.save()
-            messages.success(request, 'Settings saved successfully!')
-            return redirect('accounts:settings')
+        # Check validity
+        user_valid = user_form.is_valid()
+        profile_valid = profile_form.is_valid()
+
+        if user_valid and profile_valid:
+            try:
+                # Save both forms
+                user_form.save()
+                profile_form.save()
+                # Refresh instances from database to ensure we have the latest data
+                request.user.refresh_from_db()
+                request.user.profile.refresh_from_db()
+                messages.success(request, 'Your settings have been saved successfully!')
+            except Exception as e:
+                messages.error(request, f'Error saving settings: {str(e)}')
+            # Refresh forms after save to show updated data
+            user_form = UpdateUserForm(instance=request.user)
+            profile_form = UpdateProfileForm(instance=request.user.profile)
         else:
-            # Show error messages for validation issues
-            messages.error(request, 'Please correct the errors below.')
+            # Show specific error messages for debugging
+            if not user_valid:
+                print(f"User form errors: {user_form.errors}")
+                for field, errors in user_form.errors.items():
+                    for error in errors:
+                        messages.error(request, f'User {field}: {error}')
+            if not profile_valid:
+                print(f"Profile form errors: {profile_form.errors}")
+                for field, errors in profile_form.errors.items():
+                    for error in errors:
+                        messages.error(request, f'Profile {field}: {error}')
     else:
         user_form = UpdateUserForm(instance=request.user)
         profile_form = UpdateProfileForm(instance=request.user.profile)
+
+    # Always include password form for the Security tab
+    password_form = ChangePasswordForm(user=request.user)
 
     accent_choices = Profile.ACCENT_CHOICES
     theme_choices = Profile.THEME_CHOICES
@@ -248,30 +253,90 @@ def settings(request):
     return render(request, 'accounts/settings.html', {
         'user_form': user_form,
         'profile_form': profile_form,
+        'password_form': password_form,
         'accent_choices': accent_choices,
         'theme_choices': theme_choices,
+        'active_tab': active_tab,
         'title': 'Settings'
     })
 
 
 @login_required
+def change_password(request):
+    if request.method == 'POST':
+        password_form = ChangePasswordForm(user=request.user, data=request.POST)
+
+        if password_form.is_valid():
+            password_form.save()
+            messages.success(request, 'Your password has been changed successfully! You can now use your new password to sign in.')
+            return redirect('accounts:user_settings')
+        else:
+            messages.error(request, 'Unable to change password. Please check the errors below and try again.')
+            # Return to settings with the error form
+            user_form = UpdateUserForm(instance=request.user)
+            profile_form = UpdateProfileForm(instance=request.user.profile)
+            accent_choices = Profile.ACCENT_CHOICES
+            theme_choices = Profile.THEME_CHOICES
+
+            return render(request, 'accounts/settings.html', {
+                'user_form': user_form,
+                'profile_form': profile_form,
+                'password_form': password_form,
+                'accent_choices': accent_choices,
+                'theme_choices': theme_choices,
+                'title': 'Settings',
+                'active_tab': 'security'  # Open the security tab
+            })
+
+    return redirect('accounts:user_settings')
+
+
+@login_required
 def search(request):
-    user_search_query = request.GET.get('user_search_query', '')
+    user_search_query = request.GET.get('user_search_query', '').strip()
+
+    if not user_search_query:
+        # Return empty results if no query
+        context = {
+            'title': "Search Users",
+            'requesting_user': request.user,
+            'user_search_query': '',
+            'users_found': [],
+            'requested_users': []
+        }
+        return render(request, 'accounts/_search.html', context)
+
+    # Build search query - search by username, first name, last name, and bio
     if request.user.is_staff or request.user.is_superuser:
-        users_found = User.objects.filter(username__icontains=user_search_query)
+        users_found = User.objects.filter(
+            Q(username__icontains=user_search_query) |
+            Q(first_name__icontains=user_search_query) |
+            Q(last_name__icontains=user_search_query) |
+            Q(profile__bio__icontains=user_search_query)
+        ).distinct().select_related('profile')
     else:
-        users_found = User.objects.filter(username__icontains=user_search_query).filter(
+        users_found = User.objects.filter(
+            Q(username__icontains=user_search_query) |
+            Q(first_name__icontains=user_search_query) |
+            Q(last_name__icontains=user_search_query) |
+            Q(profile__bio__icontains=user_search_query)
+        ).filter(
             ~Q(profile__visibility__icontains='HIDDEN') |
             Q(profile__connections=request.user.profile) |
             Q(profile=request.user.profile)
-        )
+        ).distinct().select_related('profile')
 
+    # Get list of users that the current user has already requested
     requested_users = ConnectionRequest.objects.filter(
         from_profile__user=request.user).values_list('to_profile__user__username', flat=True)
 
     context = {
-        'title': "Search Users", 'requesting_user': request.user,
-        'user_search_query': user_search_query, 'users_found': users_found, 'requested_users': requested_users}
+        'title': "Search Users",
+        'requesting_user': request.user,
+        'user_search_query': user_search_query,
+        'users_found': users_found,
+        'requested_users': requested_users
+    }
     return render(request, 'accounts/_search.html', context)
 
 

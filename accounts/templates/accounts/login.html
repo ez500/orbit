@@ -1,62 +1,84 @@
-{% extends 'base.html' %}
+{% extends 'base_landing.html' %}
 {% load static %}
 
 {% block extra_css %}
-<link href="{% static 'css/form.css' %}" rel="stylesheet">
+<link href="{% static 'css/auth.css' %}" rel="stylesheet">
 {% endblock extra_css %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card-group">
-            <div class="card p-4">
-                <div class="card-body">
-                    <h1>Login</h1>
-
-                    {% if form.errors %}
-                        {% for error in form.non_field_errors %}
-                            <p class="alert alert-danger" role="alert"><span style="font-weight:bold">{{ error }}</span>
-                            </p>
-                        {% endfor %}
-                    {% endif %}
-
-                    <form action="." method="POST">
-                        {% csrf_token %}
-                        <div class="input-group mb-3">
-                            <span class="input-group-text">
-                                <i class="fas fa-user"></i>
-                            </span>
-                            <input class="form-control" name="username" type="text" placeholder="Username" autofocus>
-                        </div>
-                        <div class="input-group mb-4">
-                            <span class="input-group-text">
-                                <i class="fas fa-lock"></i>
-                            </span>
-                            <input class="form-control" name="password" type="password" placeholder="Password">
-                        </div>
-                        <div class="row">
-                            <div class="col-4">
-                                <button class="btn btn-primary px-4" type="submit">Login</button>
-                            </div>
-                            <div class="col-8 text-right">
-                                <a class="btn btn-link px-0" href="{% url 'accounts:password_reset' %}">Reset Password</a>
-                            </div>
-                        </div>
-                    </form>
-
-                </div>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <i class="fas fa-circle-notch"></i>
             </div>
-            <div class="card text-white bg-primary py-5 d-md-down-none"
-                 style="width:44%; justify-content: center !important">
-                <div class="card-body text-center" style="flex: none;">
-                    <div>
-                        <!--img src="{% static 'img/django-logo-negative.png' %}" alt="django-logo-negative.png" width="150px"-->
-                        <h2>Register</h2>
-                        <p>Make an account here.</p>
-                        <a class="btn btn-primary active mt-3" href="{% url 'accounts:register' %}">Register</a>
-                    </div>
-                </div>
+            <h1 class="auth-title">Welcome back</h1>
+            <p class="auth-subtitle">Sign in to your Orbit account</p>
+        </div>
+
+        {% if form.errors %}
+            <div class="auth-alert auth-alert-error">
+                {% for error in form.non_field_errors %}
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ error }}</span>
+                {% endfor %}
             </div>
+        {% endif %}
+
+        <form action="." method="POST" class="auth-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="username" class="form-label">
+                    <i class="fas fa-user"></i>
+                    Username
+                </label>
+                <input
+                    class="form-input"
+                    name="username"
+                    id="username"
+                    type="text"
+                    placeholder="Enter your username"
+                    autofocus
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">
+                    <i class="fas fa-lock"></i>
+                    Password
+                </label>
+                <input
+                    class="form-input"
+                    name="password"
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    required>
+            </div>
+
+            <div class="form-footer">
+                <a href="{% url 'accounts:password_reset' %}" class="forgot-link">
+                    Forgot password?
+                </a>
+            </div>
+
+            <button class="btn-auth btn-auth-primary" type="submit">
+                <i class="fas fa-sign-in-alt"></i>
+                Sign In
+            </button>
+        </form>
+
+        <div class="auth-divider">
+            <span>or</span>
+        </div>
+
+        <div class="auth-switch">
+            <p>Don't have an account?</p>
+            <a href="{% url 'accounts:register' %}" class="btn-auth btn-auth-secondary">
+                <i class="fas fa-user-plus"></i>
+                Create Account
+            </a>
         </div>
     </div>
 </div>

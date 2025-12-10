@@ -1,801 +1,668 @@
-class DashboardManager {
-  constructor() {
-    this.widgets = [];
-    this.draggedItem = null;
+(function() {
+  'use strict';
 
-    this.widgetTemplates = {
-      tasks: {
-        title: "Recent Tasks",
-        template: `
-          <div class="col-md-6 col-xl-4 mb-4 dashboard-widget" draggable="true">
-            <div class="card">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">Recent Tasks</h6>
-                <button class="btn btn-link text-muted p-0" onclick="dashboard.removeWidget('tasks')">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-              <div class="card-body">
-                <div class="task-list">
-                  <div class="task-item d-flex align-items-center mb-3">
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox">
-                    </div>
-                    <div class="ms-3">
-                      <p class="mb-0">Update dashboard layout</p>
-                      <small class="text-muted">Due today</small>
-                    </div>
-                  </div>
-                  <div class="task-item d-flex align-items-center">
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox">
-                    </div>
-                    <div class="ms-3">
-                      <p class="mb-0">Review pull requests</p>
-                      <small class="text-muted">Due tomorrow</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-      },
-      large: {
-        wrapper: (id, content) => `
-                    <div class="dashboard-widget col-12" data-widget-id="${id}" draggable="true">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div class="d-flex align-items-center">
-                                        <h6 class="card-title mb-0">${content.title}</h6>
-                                        <span class="badge bg-light text-dark ms-2">Full Width</span>
-                                    </div>
-                                    <div class="widget-actions">
-                                        <button class="btn btn-link text-muted p-0" onclick="window.dashboard.removeWidget('${id}', event)">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="widget-content">
-                                    ${content.body}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `,
-      },
-    };
+  class Dashboard {
+    constructor() {
+      this.widgets = [];
+      this.updateIntervals = {};
+      this.init();
+    }
 
-    // Widget definitions with content generators
-    this.widgetTypes = {
-      // Large Widgets
-      projectTimeline: {
-        title: "Project Timeline",
-        size: "large",
-        template: `
-          <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="card-title mb-0">Project Timeline</h6>
-                <div class="dropdown">
-                  <button class="btn btn-link btn-sm p-0 text-muted" data-bs-toggle="dropdown">
-                    <i class="fas fa-ellipsis-v"></i>
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" onclick="dashboard.removeWidget(event, 'projectTimeline')">Remove Widget</a></li>
-                  </ul>
-                </div>
-              </div>
-              <div class="timeline-container" style="height: 400px; overflow-y: auto;">
-                <div class="timeline">
-                  <div class="timeline-item">
-                    <div class="timeline-point bg-success"></div>
-                    <div class="timeline-content">
-                      <h6 class="mb-1">Project Kickoff</h6>
-                      <p class="mb-0 text-muted">Initial planning and team assignment completed</p>
-                      <small class="text-muted">October 1, 2025</small>
-                    </div>
-                  </div>
-                  <div class="timeline-item">
-                    <div class="timeline-point bg-primary"></div>
-                    <div class="timeline-content">
-                      <h6 class="mb-1">Design Phase</h6>
-                      <p class="mb-0 text-muted">UI/UX design and prototyping</p>
-                      <small class="text-muted">October 5 - October 15</small>
-                    </div>
-                  </div>
-                  <div class="timeline-item">
-                    <div class="timeline-point bg-warning"></div>
-                    <div class="timeline-content">
-                      <h6 class="mb-1">Development Sprint 1</h6>
-                      <p class="mb-0 text-muted">Core functionality implementation</p>
-                      <small class="text-muted">October 15 - October 30</small>
-                    </div>
-                  </div>
-                  <div class="timeline-item">
-                    <div class="timeline-point bg-info"></div>
-                    <div class="timeline-content">
-                      <h6 class="mb-1">Testing Phase</h6>
-                      <p class="mb-0 text-muted">Quality assurance and bug fixes</p>
-                      <small class="text-muted">November 1 - November 10</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-      },
-      teamBoard: {
-        title: "Team Board",
-        size: "large",
-        template: `
-          <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="card-title mb-0">Team Board</h6>
-                <div class="dropdown">
-                  <button class="btn btn-link btn-sm p-0 text-muted" data-bs-toggle="dropdown">
-                    <i class="fas fa-ellipsis-v"></i>
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" onclick="dashboard.removeWidget(event, 'teamBoard')">Remove Widget</a></li>
-                  </ul>
-                </div>
-              </div>
-              <div class="team-board">
-                <div class="row g-3">
-                  <div class="col-md-3">
-                    <div class="board-column p-2 rounded">
-                      <h6 class="column-title mb-3">To Do</h6>
-                      <div class="task-card p-2 rounded mb-2 shadow-sm">
-                        <h6 class="mb-1">Update API Documentation</h6>
-                        <small class="text-muted d-block mb-2">High Priority</small>
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span class="badge bg-danger">Backend</span>
-                          <img src="https://ui-avatars.com/api/?name=John+Doe" alt="John D." class="rounded-circle" width="24" height="24">
-                        </div>
-                      </div>
-                      <div class="task-card p-2 rounded mb-2 shadow-sm">
-                        <h6 class="mb-1">Design System Updates</h6>
-                        <small class="text-muted d-block mb-2">Medium Priority</small>
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span class="badge bg-primary">Design</span>
-                          <img src="https://ui-avatars.com/api/?name=Jane+Smith" alt="Jane S." class="rounded-circle" width="24" height="24">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="board-column p-2 rounded">
-                      <h6 class="column-title mb-3">In Progress</h6>
-                      <div class="task-card p-2 rounded mb-2 shadow-sm">
-                        <h6 class="mb-1">User Authentication</h6>
-                        <small class="text-muted d-block mb-2">High Priority</small>
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span class="badge bg-danger">Backend</span>
-                          <img src="https://ui-avatars.com/api/?name=Mike+Johnson" alt="Mike J." class="rounded-circle" width="24" height="24">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="board-column p-2 rounded">
-                      <h6 class="column-title mb-3">Review</h6>
-                      <div class="task-card p-2 rounded mb-2 shadow-sm">
-                        <h6 class="mb-1">Homepage Redesign</h6>
-                        <small class="text-muted d-block mb-2">Medium Priority</small>
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span class="badge bg-primary">Design</span>
-                          <img src="https://ui-avatars.com/api/?name=Sarah+Wilson" alt="Sarah W." class="rounded-circle" width="24" height="24">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="board-column p-2 rounded">
-                      <h6 class="column-title mb-3">Done</h6>
-                      <div class="task-card p-2 rounded mb-2 shadow-sm">
-                        <h6 class="mb-1">Initial Setup</h6>
-                        <small class="text-muted d-block mb-2">Completed</small>
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span class="badge bg-success">Infrastructure</span>
-                          <img src="https://ui-avatars.com/api/?name=Team+Lead" alt="Team Lead" class="rounded-circle" width="24" height="24">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-      },
-      analytics: {
-        title: "Detailed Analytics",
-        size: "large",
-        template: `
-          <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="card-title mb-0">Detailed Analytics</h6>
-                <div class="dropdown">
-                  <button class="btn btn-link btn-sm p-0 text-muted" data-bs-toggle="dropdown">
-                    <i class="fas fa-ellipsis-v"></i>
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" onclick="dashboard.removeWidget(event, 'analytics')">Remove Widget</a></li>
-                  </ul>
-                </div>
-              </div>
-              <div class="analytics-container">
-                <div class="row g-3">
-                  <div class="col-md-8">
-                    <div class="chart-container" style="height: 300px; background: var(--hover-bg); border-radius: 8px;">
-                      <!-- Placeholder for chart -->
-                      <div class="d-flex align-items-center justify-content-center h-100">
-                        <p class="text-muted mb-0">Project Progress Chart</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="metrics-grid">
-                      <div class="metric-card p-3 rounded mb-2">
-                        <h3 class="mb-1">85%</h3>
-                        <small class="text-muted">Task Completion Rate</small>
-                      </div>
-                      <div class="metric-card p-3 rounded mb-2">
-                        <h3 class="mb-1">12</h3>
-                        <small class="text-muted">Active Sprints</small>
-                      </div>
-                      <div class="metric-card p-3 rounded">
-                        <h3 class="mb-1">94%</h3>
-                        <small class="text-muted">Team Efficiency</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-      },
-      tasks: {
-        title: "Recent Tasks",
-        template: `
-          <div class="col-md-6 col-xl-4 mb-4 dashboard-widget" draggable="true">
-            <div class="card">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">Recent Tasks</h6>
-                <button class="btn btn-link text-muted p-0" onclick="dashboard.removeWidget('tasks')">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-              <div class="card-body">
-                <div class="tasks-list">
-                  <div class="task-item d-flex align-items-center mb-2">
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox">
-                    </div>
-                    <div class="ms-2">
-                      <p class="mb-0 text-truncate">Update dashboard analytics</p>
-                      <small class="text-muted">Due today</small>
-                    </div>
-                  </div>
-                  <div class="task-item d-flex align-items-center mb-2">
-                    <div class="form-check">
-                      <input class="form-check-input" type="checkbox">
-                    </div>
-                    <div class="ms-2">
-                      <p class="mb-0 text-truncate">Design new onboarding flow</p>
-                      <small class="text-muted">Due tomorrow</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-      },
-      calendarSmall: {
-        title: "Calendar",
-        template: `
-          <div class="col-md-6 col-xl-4 mb-4 dashboard-widget" data-widget-id="calendarSmall" draggable="true">
-            <div class="card">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">Calendar</h6>
-                <div class="d-flex align-items-center gap-2">
-                  <button class="btn btn-link text-muted p-0" onclick="window.dashboard.addWidget('calendarLarge'); window.dashboard.removeWidget('calendarSmall')">
-                    <i class="fas fa-expand"></i>
-                  </button>
-                  <button class="btn btn-link text-muted p-0" onclick="window.dashboard.removeWidget('calendarSmall')">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h5 class="mb-0">October 2025</h5>
-                  <div>
-                    <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-left"></i></button>
-                    <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-right"></i></button>
-                  </div>
-                </div>
-                <div class="calendar-grid">
-                  <table class="table table-sm calendar-table">
-                    <thead>
-                      <tr>
-                        <th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td>
-                      </tr>
-                      <tr>
-                        <td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td>
-                      </tr>
-                      <tr>
-                        <td>15</td><td class="text-primary fw-bold">16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-      },
-      calendarLarge: {
-        title: "Calendar",
-        size: "large",
-        template: `
-          <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <h6 class="card-title mb-0">Calendar</h6>
-                <div class="d-flex align-items-center gap-2">
-                  <button class="btn btn-link text-muted p-0" onclick="window.dashboard.addWidget('calendarSmall'); window.dashboard.removeWidget('calendarLarge')">
-                    <i class="fas fa-compress"></i>
-                  </button>
-                  <button class="btn btn-link text-muted p-0" onclick="window.dashboard.removeWidget('calendarLarge')">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-8">
-                  <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="mb-0">October 2025</h4>
-                    <div>
-                      <button class="btn btn-outline-secondary"><i class="fas fa-chevron-left"></i></button>
-                      <button class="btn btn-outline-secondary ms-2"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                  </div>
-                  <div class="calendar-grid large">
-                    <table class="table calendar-table">
-                      <thead>
-                        <tr>
-                          <th>Sunday</th>
-                          <th>Monday</th>
-                          <th>Tuesday</th>
-                          <th>Wednesday</th>
-                          <th>Thursday</th>
-                          <th>Friday</th>
-                          <th>Saturday</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">1</div>
-                              <div class="events">
-                                <div class="event bg-primary">Project Start</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">2</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">3</div>
-                              <div class="events">
-                                <div class="event bg-success">Team Meeting</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">4</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">5</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">6</div>
-                              <div class="events">
-                                <div class="event bg-info">Design Review</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">7</div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">8</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">9</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">10</div>
-                              <div class="events">
-                                <div class="event bg-warning">Deadline</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">11</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">12</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">13</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">14</div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">15</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date fw-bold text-primary">16</div>
-                              <div class="events">
-                                <div class="event bg-primary">Review</div>
-                                <div class="event bg-success">Meeting</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">17</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">18</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">19</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">20</div>
-                            </div>
-                          </td>
-                          <td>
-                            <div class="calendar-cell">
-                              <div class="date">21</div>
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="upcoming-events">
-                    <h5 class="mb-3">Upcoming Events</h5>
-                    <div class="event-list">
-                      <div class="event-item p-2 rounded mb-2">
-                        <div class="d-flex align-items-center">
-                          <div class="event-dot bg-primary me-2"></div>
-                          <div>
-                            <h6 class="mb-0">Project Review</h6>
-                            <small class="text-muted">Today at 2:00 PM</small>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="event-item p-2 rounded mb-2">
-                        <div class="d-flex align-items-center">
-                          <div class="event-dot bg-success me-2"></div>
-                          <div>
-                            <h6 class="mb-0">Team Meeting</h6>
-                            <small class="text-muted">Today at 4:00 PM</small>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="event-item p-2 rounded">
-                        <div class="d-flex align-items-center">
-                          <div class="event-dot bg-warning me-2"></div>
-                          <div>
-                            <h6 class="mb-0">Project Deadline</h6>
-                            <small class="text-muted">Oct 20, 2025</small>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-      },
-      stats: {
-        title: "Statistics",
-        template: `
-          <div class="col-md-6 col-xl-4 mb-4 dashboard-widget" draggable="true">
-            <div class="card">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">Statistics</h6>
-                <button class="btn btn-link text-muted p-0" onclick="dashboard.removeWidget('stats')">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-              <div class="card-body">
-                <div class="row g-2">
-                  <div class="col-6">
-                    <div class="stat-card p-3 rounded">
-                      <h3 class="mb-0">12</h3>
-                      <small class="text-muted">Tasks Due</small>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="stat-card p-3 rounded">
-                      <h3 class="mb-0">5</h3>
-                      <small class="text-muted">Completed</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-      },
-      team: {
-        title: "Team Activity",
-        template: `
-          <div class="col-md-6 col-xl-4 mb-4 dashboard-widget" draggable="true">
-            <div class="card">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">Team Activity</h6>
-                <button class="btn btn-link text-muted p-0" onclick="dashboard.removeWidget('team')">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-              <div class="card-body">
-                <div class="activity-feed">
-                  <div class="activity-item d-flex mb-2">
-                    <div class="activity-icon me-2">
-                      <img src="https://ui-avatars.com/api/?name=John+Doe" alt="John D." class="rounded-circle" width="32" height="32">
-                    </div>
-                    <div>
-                      <p class="mb-0"><strong>John Doe</strong> completed a task</p>
-                      <small class="text-muted">2 hours ago</small>
-                    </div>
-                  </div>
-                  <div class="activity-item d-flex mb-2">
-                    <div class="activity-icon me-2">
-                      <img src="https://ui-avatars.com/api/?name=Jane+Smith" alt="Jane S." class="rounded-circle" width="32" height="32">
-                    </div>
-                    <div>
-                      <p class="mb-0"><strong>Jane Smith</strong> added a new task</p>
-                      <small class="text-muted">4 hours ago</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-      },
-    };
+    init() {
+      this.loadWidgets();
+      this.setupEventListeners();
+      console.log('[Dashboard] Initialized');
+    }
 
-    this.init();
-  }
+    setupEventListeners() {
+      // Auto-save on window unload
+      window.addEventListener('beforeunload', () => {
+        this.saveLayout(false);
+      });
+    }
 
-  init() {
-    // Load saved layout or start empty
-    this.widgets = JSON.parse(localStorage.getItem("dashboardWidgets")) || [];
-    this.renderDashboard();
-    this.initializeDragAndDrop();
-    this.updateEmptyState();
-  }
-
-  renderDashboard() {
-    const container = document.getElementById("dashboard-widgets");
-    container.innerHTML = ""; // Clear existing widgets
-
-    this.widgets.forEach((widgetId) => {
-      const widgetConfig =
-        this.widgetTypes[widgetId] || this.widgetTemplates[widgetId];
-      if (widgetConfig) {
-        const template =
-          widgetConfig.size === "large"
-            ? this.widgetTemplates.large.wrapper(widgetId, {
-                title: widgetConfig.title,
-                body: widgetConfig.template,
-                detailsUrl: widgetConfig.detailsUrl || "#",
-              })
-            : widgetConfig.template;
-        container.insertAdjacentHTML("beforeend", template);
+    async loadWidgets() {
+      try {
+        const response = await fetch('/dashboard/api/widgets/');
+        if (response.ok) {
+          const data = await response.json();
+          this.widgets = data.widgets || [];
+          this.renderWidgets();
+        } else {
+          console.log('[Dashboard] No saved widgets, starting fresh');
+        }
+      } catch (error) {
+        console.error('[Dashboard] Error loading widgets:', error);
       }
-    });
-
-    this.updateEmptyState();
-    this.saveLayout();
-  }
-
-  addWidget(widgetId) {
-    console.log("Adding widget:", widgetId);
-
-    // Convert 'calendar' to 'calendarSmall' for better UX
-    if (widgetId === "calendar") {
-      widgetId = "calendarSmall";
     }
 
-    const widgetConfig =
-      this.widgetTypes[widgetId] || this.widgetTemplates[widgetId];
+    renderWidgets() {
+      const container = document.getElementById('dashboard-widgets');
+      container.innerHTML = '';
 
-    if (!widgetConfig) {
-      console.log("Widget not found:", widgetId);
-      console.log(
-        "Available widgets:",
-        Object.keys(this.widgetTypes).concat(Object.keys(this.widgetTemplates))
-      );
-      return;
+      if (this.widgets.length === 0) {
+        return;
+      }
+
+      this.widgets.forEach(widget => {
+        this.renderWidget(widget);
+      });
     }
 
-    if (this.widgets.includes(widgetId)) {
-      console.log("Widget already exists:", widgetId);
-      return;
+    renderWidget(widgetConfig) {
+      const container = document.getElementById('dashboard-widgets');
+      const widgetEl = this.createWidgetElement(widgetConfig);
+      container.appendChild(widgetEl);
+
+      // Make widget draggable
+      this.makeWidgetDraggable(widgetEl);
+
+      // Load widget data
+      this.loadWidgetData(widgetConfig.type, widgetEl.id);
+
+      // Setup auto-refresh
+      if (widgetConfig.autoRefresh !== false) {
+        this.setupAutoRefresh(widgetConfig.type, widgetEl.id);
+      }
     }
 
-    // Remove conflicting calendar type if it exists
-    if (
-      widgetId === "calendarSmall" &&
-      this.widgets.includes("calendarLarge")
-    ) {
-      this.removeWidget("calendarLarge");
-    } else if (
-      widgetId === "calendarLarge" &&
-      this.widgets.includes("calendarSmall")
-    ) {
-      this.removeWidget("calendarSmall");
+    createWidgetElement(config) {
+      const col = document.createElement('div');
+      col.className = config.size || 'col-md-6';
+
+      const widgetId = `widget-${config.type}-${Date.now()}`;
+      col.id = widgetId;
+
+      const card = document.createElement('div');
+      card.className = 'card dashboard-widget';
+
+      const header = this.createWidgetHeader(config, widgetId);
+      const body = this.createWidgetBody(config);
+
+      card.appendChild(header);
+      card.appendChild(body);
+      col.appendChild(card);
+
+      return col;
     }
 
-    this.widgets.push(widgetId);
-    this.renderDashboard();
-    this.saveLayout();
-  }
+    createWidgetHeader(config, widgetId) {
+      const header = document.createElement('div');
+      header.className = 'card-header';
 
-  removeWidget(widgetId, event) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
+      const title = document.createElement('h6');
+      title.className = 'mb-0';
+      title.innerHTML = `<i class="${config.icon || 'fas fa-chart-bar'} me-2"></i>${config.title}`;
+
+      const actions = document.createElement('div');
+      actions.className = 'widget-actions';
+
+      // Refresh button
+      const refreshBtn = document.createElement('button');
+      refreshBtn.className = 'btn btn-sm';
+      refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+      refreshBtn.onclick = () => this.refreshWidget(config.type, widgetId);
+
+      // Remove button
+      const removeBtn = document.createElement('span');
+      removeBtn.className = 'widget-remove';
+      removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+      removeBtn.onclick = () => this.removeWidget(widgetId);
+
+      actions.appendChild(refreshBtn);
+      actions.appendChild(removeBtn);
+
+      header.appendChild(title);
+      header.appendChild(actions);
+
+      return header;
     }
-    console.log("Removing widget:", widgetId);
-    const index = this.widgets.indexOf(widgetId);
-    if (index !== -1) {
-      this.widgets.splice(index, 1);
-      this.renderDashboard();
+
+    createWidgetBody(config) {
+      const body = document.createElement('div');
+      body.className = 'card-body';
+      body.innerHTML = '<div class="widget-loading"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+      return body;
+    }
+
+    async loadWidgetData(type, widgetId) {
+      const widget = document.getElementById(widgetId);
+      if (!widget) return;
+
+      const body = widget.querySelector('.card-body');
+
+      try {
+        const response = await fetch(`/dashboard/api/widget-data/${type}/`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        body.innerHTML = this.renderWidgetContent(type, data);
+      } catch (error) {
+        console.error(`[Dashboard] Error loading ${type} widget:`, error);
+        body.innerHTML = `<div class="alert alert-danger m-3">Error loading widget data</div>`;
+      }
+    }
+
+    renderWidgetContent(type, data) {
+      switch(type) {
+        case 'tasks':
+          return this.renderTasksWidget(data);
+        case 'stats':
+          return this.renderStatsWidget(data);
+        case 'team':
+          return this.renderTeamWidget(data);
+        case 'calendar':
+          return this.renderCalendarWidget(data);
+        case 'analytics':
+          return this.renderAnalyticsWidget(data);
+        case 'projectTimeline':
+          return this.renderProjectTimelineWidget(data);
+        case 'teamBoard':
+          return this.renderTeamBoardWidget(data);
+        default:
+          return `<p class="text-muted p-3">Widget type "${type}" not implemented yet</p>`;
+      }
+    }
+
+    renderTasksWidget(data) {
+      if (!data.tasks || data.tasks.length === 0) {
+        return '<p class="text-muted p-3 mb-0">No tasks found</p>';
+      }
+
+      let html = '<div class="task-list">';
+      data.tasks.forEach(task => {
+        html += `
+          <div class="task-list-item">
+            <div>
+              <div class="task-title">${this.escapeHtml(task.title)}</div>
+              <div class="task-meta">
+                ${task.deadline ? `Due: ${new Date(task.deadline).toLocaleDateString()}` : 'No deadline'}
+                ${task.project ? ` • ${this.escapeHtml(task.project)}` : ''}
+                ${task.team ? ` • ${this.escapeHtml(task.team)}` : ''}
+              </div>
+            </div>
+            <span class="task-status ${task.status}">${task.status.replace('_', ' ')}</span>
+          </div>
+        `;
+      });
+      html += '</div>';
+      return html;
+    }
+
+    renderStatsWidget(data) {
+      return `
+        <div class="row g-3 p-3">
+          <div class="col-md-6">
+            <div class="widget-stat">
+              <div class="widget-stat-value">${data.total_tasks || 0}</div>
+              <div class="widget-stat-label">Total Tasks</div>
+              ${data.tasks_change ? `<div class="widget-stat-change ${data.tasks_change > 0 ? 'positive' : 'negative'}">
+                <i class="fas fa-${data.tasks_change > 0 ? 'arrow-up' : 'arrow-down'}"></i> ${Math.abs(data.tasks_change)}% this week
+              </div>` : ''}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="widget-stat">
+              <div class="widget-stat-value">${data.completed_tasks || 0}</div>
+              <div class="widget-stat-label">Completed</div>
+              ${data.completion_rate ? `<div class="widget-stat-change positive">
+                ${data.completion_rate}% completion rate
+              </div>` : ''}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="widget-stat">
+              <div class="widget-stat-value">${data.active_projects || 0}</div>
+              <div class="widget-stat-label">Active Projects</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="widget-stat">
+              <div class="widget-stat-value">${data.team_members || 0}</div>
+              <div class="widget-stat-label">Team Members</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    renderTeamWidget(data) {
+      if (!data.activities || data.activities.length === 0) {
+        return '<p class="text-muted p-3 mb-0">No recent activity</p>';
+      }
+
+      let html = '<div class="activity-list">';
+      data.activities.forEach(activity => {
+        html += `
+          <div class="activity-item">
+            <div class="activity-icon">
+              <i class="fas fa-${activity.icon || 'circle'}"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">${this.escapeHtml(activity.title)}</div>
+              <div class="activity-time">${this.formatTimeAgo(activity.timestamp)}</div>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      return html;
+    }
+
+    renderCalendarWidget(data) {
+      const calendarId = `calendar-${Date.now()}`;
+      setTimeout(() => {
+        if (typeof FullCalendar !== 'undefined') {
+          const calendarEl = document.getElementById(calendarId);
+          if (calendarEl) {
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+              initialView: 'dayGridMonth',
+              height: 'auto',
+              headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: ''
+              },
+              events: data.events || [],
+              eventClick: function(info) {
+                info.jsEvent.preventDefault();
+                const taskId = info.event.extendedProps.taskId;
+                if (taskId) {
+                  // Trigger task modal
+                  fetch(`/dashboard/tasks/${taskId}/view/`, {
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                  })
+                  .then(response => {
+                    if (!response.ok) throw new Error('Load failed.');
+                    return response.text();
+                  })
+                  .then(html => {
+                    const modalContent = document.getElementById('viewTaskModalContent');
+                    if (modalContent) {
+                      modalContent.innerHTML = html;
+
+                      // Parse and set task data for edit mode
+                      const taskDataElement = document.getElementById('taskData');
+                      if (taskDataElement) {
+                        const taskInfo = taskDataElement.getAttribute('data-task-info');
+                        if (taskInfo) {
+                          try {
+                            window.currentTaskData = JSON.parse(taskInfo);
+                            console.log('[Calendar] Loaded task data:', window.currentTaskData);
+                          } catch (error) {
+                            console.error('[Calendar] Error parsing task data:', error);
+                          }
+                        }
+                      }
+
+                      const modal = new bootstrap.Modal(document.getElementById('viewTaskModal'));
+                      modal.show();
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Error loading task:', error);
+                  });
+                }
+              }
+            });
+            calendar.render();
+          }
+        }
+      }, 100);
+
+      return `<div class="widget-calendar" id="${calendarId}"></div>`;
+    }
+
+    renderAnalyticsWidget(data) {
+      return `
+        <div class="widget-chart p-3">
+          <canvas id="analytics-chart-${Date.now()}"></canvas>
+        </div>
+      `;
+    }
+
+    renderProjectTimelineWidget(data) {
+      if (!data.projects || data.projects.length === 0) {
+        return '<p class="text-muted p-3 mb-0">No active projects</p>';
+      }
+
+      let html = '<div class="p-3">';
+      data.projects.forEach(project => {
+        const progress = project.progress || 0;
+        html += `
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="fw-medium">${this.escapeHtml(project.name)}</span>
+              <span class="text-muted">${progress}%</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: ${progress}%" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            ${project.deadline ? `<small class="text-muted">Due: ${new Date(project.deadline).toLocaleDateString()}</small>` : ''}
+          </div>
+        `;
+      });
+      html += '</div>';
+      return html;
+    }
+
+    renderTeamBoardWidget(data) {
+      return `
+        <div class="p-3">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <h6 class="mb-2">To Do</h6>
+              <div class="bg-light p-2 rounded">
+                ${data.todo ? data.todo.map(task => `
+                  <div class="bg-white p-2 mb-2 rounded shadow-sm">
+                    <small>${this.escapeHtml(task.title)}</small>
+                  </div>
+                `).join('') : '<p class="text-muted small mb-0">No tasks</p>'}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <h6 class="mb-2">In Progress</h6>
+              <div class="bg-light p-2 rounded">
+                ${data.in_progress ? data.in_progress.map(task => `
+                  <div class="bg-white p-2 mb-2 rounded shadow-sm">
+                    <small>${this.escapeHtml(task.title)}</small>
+                  </div>
+                `).join('') : '<p class="text-muted small mb-0">No tasks</p>'}
+              </div>
+            </div>
+            <div class="col-md-4">
+              <h6 class="mb-2">Done</h6>
+              <div class="bg-light p-2 rounded">
+                ${data.completed ? data.completed.map(task => `
+                  <div class="bg-white p-2 mb-2 rounded shadow-sm">
+                    <small>${this.escapeHtml(task.title)}</small>
+                  </div>
+                `).join('') : '<p class="text-muted small mb-0">No tasks</p>'}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    setupAutoRefresh(type, widgetId) {
+      // Clear existing interval if any
+      if (this.updateIntervals[widgetId]) {
+        clearInterval(this.updateIntervals[widgetId]);
+      }
+
+      // Refresh every 30 seconds
+      this.updateIntervals[widgetId] = setInterval(() => {
+        this.refreshWidget(type, widgetId);
+      }, 30000);
+    }
+
+    async refreshWidget(type, widgetId) {
+      const widget = document.getElementById(widgetId);
+      if (!widget) return;
+
+      const card = widget.querySelector('.card');
+      card.classList.add('widget-refreshing');
+
+      await this.loadWidgetData(type, widgetId);
+
+      setTimeout(() => {
+        card.classList.remove('widget-refreshing');
+      }, 500);
+    }
+
+    removeWidget(widgetId) {
+      const widget = document.getElementById(widgetId);
+      if (!widget) return;
+
+      // Clear auto-refresh interval
+      if (this.updateIntervals[widgetId]) {
+        clearInterval(this.updateIntervals[widgetId]);
+        delete this.updateIntervals[widgetId];
+      }
+
+      // Remove from widgets array
+      const widgetType = widgetId.split('-')[1];
+      this.widgets = this.widgets.filter(w => w.type !== widgetType);
+
+      // Remove from DOM
+      widget.remove();
+
+      // Save layout
       this.saveLayout();
     }
-  }
 
-  updateEmptyState() {
-    const emptyDashboard = document.getElementById("empty-dashboard");
-    if (emptyDashboard) {
-      emptyDashboard.classList.toggle("d-none", this.widgets.length > 0);
+    async saveLayout(showMessage = true) {
+      const widgets = this.widgets.map(w => ({
+        type: w.type,
+        title: w.title,
+        icon: w.icon,
+        size: w.size,
+        autoRefresh: w.autoRefresh
+      }));
+
+      try {
+        const response = await fetch('/dashboard/api/widgets/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': this.getCSRFToken()
+          },
+          body: JSON.stringify({ widgets })
+        });
+
+        if (response.ok && showMessage) {
+          this.showNotification('Dashboard layout saved successfully', 'success');
+        }
+      } catch (error) {
+        console.error('[Dashboard] Error saving layout:', error);
+        if (showMessage) {
+          this.showNotification('Error saving dashboard layout', 'danger');
+        }
+      }
+    }
+
+    getCSRFToken() {
+      return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+             document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    }
+
+    showNotification(message, type = 'info') {
+      const container = document.querySelector('.container-fluid');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} alert-dismissible fade show`;
+      alert.role = 'alert';
+      alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      container.insertBefore(alert, container.firstChild);
+
+      // Auto-dismiss after 3 seconds
+      setTimeout(() => {
+        alert.remove();
+      }, 3000);
+    }
+
+    escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    formatTimeAgo(timestamp) {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const seconds = Math.floor((now - date) / 1000);
+
+      if (seconds < 60) return 'just now';
+      if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+      return `${Math.floor(seconds / 86400)} days ago`;
+    }
+
+    makeWidgetDraggable(widgetEl) {
+      const card = widgetEl.querySelector('.card');
+      const header = widgetEl.querySelector('.card-header');
+
+      if (!card || !header) return;
+
+      // Make the header draggable - set draggable on header only
+      header.style.cursor = 'move';
+      header.setAttribute('draggable', 'true');
+
+      // Prevent default drag behavior on the widget itself
+      widgetEl.setAttribute('draggable', 'false');
+
+      header.addEventListener('dragstart', (e) => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', widgetEl.id);
+        widgetEl.classList.add('widget-dragging');
+        this.draggedWidget = widgetEl;
+      });
+
+      header.addEventListener('dragend', (e) => {
+        widgetEl.classList.remove('widget-dragging');
+        this.draggedWidget = null;
+
+        // Remove all dragover classes
+        document.querySelectorAll('.widget-dragover').forEach(el => {
+          el.classList.remove('widget-dragover');
+        });
+
+        // Save layout after drag ends
+        this.updateWidgetOrder();
+        this.saveLayout(false);
+      });
+
+      widgetEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        if (this.draggedWidget && this.draggedWidget !== widgetEl) {
+          widgetEl.classList.add('widget-dragover');
+        }
+      });
+
+      widgetEl.addEventListener('dragleave', (e) => {
+        widgetEl.classList.remove('widget-dragover');
+      });
+
+      widgetEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        widgetEl.classList.remove('widget-dragover');
+
+        if (this.draggedWidget && this.draggedWidget !== widgetEl) {
+          const container = document.getElementById('dashboard-widgets');
+          const allWidgets = Array.from(container.children);
+          const draggedIndex = allWidgets.indexOf(this.draggedWidget);
+          const targetIndex = allWidgets.indexOf(widgetEl);
+
+          if (draggedIndex < targetIndex) {
+            widgetEl.parentNode.insertBefore(this.draggedWidget, widgetEl.nextSibling);
+          } else {
+            widgetEl.parentNode.insertBefore(this.draggedWidget, widgetEl);
+          }
+        }
+      });
+    }
+
+    updateWidgetOrder() {
+      const container = document.getElementById('dashboard-widgets');
+      const widgetElements = Array.from(container.children);
+
+      // Get the current order of widgets
+      const newOrder = widgetElements.map(el => {
+        const widgetId = el.id;
+        const widgetType = widgetId.split('-')[1]; // Extract type from id like "widget-tasks-123456"
+        return this.widgets.find(w => w.type === widgetType);
+      }).filter(w => w); // Remove undefined entries
+
+      this.widgets = newOrder;
     }
   }
 
-  saveLayout() {
-    localStorage.setItem("dashboardWidgets", JSON.stringify(this.widgets));
-  }
+  // Widget configurations
+  const WIDGET_CONFIGS = {
+    tasks: {
+      type: 'tasks',
+      title: 'My Tasks',
+      icon: 'fas fa-tasks',
+      size: 'col-md-6',
+      autoRefresh: true
+    },
+    calendar: {
+      type: 'calendar',
+      title: 'Calendar',
+      icon: 'fas fa-calendar',
+      size: 'col-md-12',
+      autoRefresh: false
+    },
+    stats: {
+      type: 'stats',
+      title: 'Statistics',
+      icon: 'fas fa-chart-bar',
+      size: 'col-md-12',
+      autoRefresh: true
+    },
+    team: {
+      type: 'team',
+      title: 'Team Activity',
+      icon: 'fas fa-users',
+      size: 'col-md-6',
+      autoRefresh: true
+    },
+    projectTimeline: {
+      type: 'projectTimeline',
+      title: 'Project Timeline',
+      icon: 'fas fa-stream',
+      size: 'col-md-12',
+      autoRefresh: true
+    },
+    teamBoard: {
+      type: 'teamBoard',
+      title: 'Team Board',
+      icon: 'fas fa-columns',
+      size: 'col-md-12',
+      autoRefresh: true
+    },
+    analytics: {
+      type: 'analytics',
+      title: 'Analytics',
+      icon: 'fas fa-chart-line',
+      size: 'col-md-12',
+      autoRefresh: true
+    }
+  };
 
-  initializeDragAndDrop() {
-    const container = document.getElementById("dashboard-widgets");
+  // Global addWidget function
+  window.addWidget = function(type) {
+    if (!window.dashboard) {
+      console.error('[Dashboard] Dashboard not initialized');
+      return;
+    }
 
-    container.addEventListener("dragstart", (e) => {
-      const widget = e.target.closest(".dashboard-widget");
-      if (widget) {
-        this.draggedItem = widget;
-        e.dataTransfer.effectAllowed = "move";
-        widget.classList.add("dragging");
-      }
-    });
+    const config = WIDGET_CONFIGS[type];
+    if (!config) {
+      console.error(`[Dashboard] Unknown widget type: ${type}`);
+      return;
+    }
 
-    container.addEventListener("dragend", (e) => {
-      if (this.draggedItem) {
-        this.draggedItem.classList.remove("dragging");
-        this.draggedItem = null;
-        this.updateLayoutFromDOM();
-      }
-    });
+    // Check if widget already exists
+    if (window.dashboard.widgets.some(w => w.type === type)) {
+      window.dashboard.showNotification('Widget already added', 'warning');
+      return;
+    }
 
-    container.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      if (!this.draggedItem) return;
+    window.dashboard.widgets.push(config);
+    window.dashboard.renderWidget(config);
+    window.dashboard.saveLayout();
+  };
 
-      const widget = e.target.closest(".dashboard-widget");
-      if (widget && widget !== this.draggedItem) {
-        const rect = widget.getBoundingClientRect();
-        const midpoint = rect.y + rect.height / 2;
-
-        if (e.clientY < midpoint) {
-          widget.parentNode.insertBefore(this.draggedItem, widget);
-        } else {
-          widget.parentNode.insertBefore(this.draggedItem, widget.nextSibling);
-        }
-      }
-    });
-
-    container.addEventListener("drop", (e) => {
-      e.preventDefault();
-      if (this.draggedItem) {
-        this.updateLayoutFromDOM();
-      }
-    });
-  }
-
-  updateLayoutFromDOM() {
-    const widgets = document.querySelectorAll(".dashboard-widget");
-    this.widgets = Array.from(widgets)
-      .map((widget) => widget.getAttribute("data-widget-id") || widget.id)
-      .filter((id) => id);
-    this.saveLayout();
-  }
-}
-
-// Global function for adding widgets
-function addWidget(widgetId) {
-  console.log("Global addWidget called with:", widgetId);
-  if (!window.dashboard) {
-    console.error("Dashboard not initialized");
-    return;
-  }
-  window.dashboard.addWidget(widgetId);
-}
-
-// Initialize dashboard when DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("Initializing dashboard");
-  window.dashboard = new DashboardManager();
-});
+  // Initialize dashboard when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    window.dashboard = new Dashboard();
+  });
+})();

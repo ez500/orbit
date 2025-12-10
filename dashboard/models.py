@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.utils import timezone
@@ -41,7 +40,7 @@ class Task(models.Model):
     content = models.CharField(max_length=200, blank=True)
     status = models.CharField(max_length=20, choices=STATUS, default='todo')
     deadline = models.DateField(null=True, blank=True)
-    pub_date = models.DateTimeField(auto_now=True)
+    pub_date = models.DateTimeField(auto_now_add=True)
     team = models.ForeignKey('teams.Team', on_delete=models.CASCADE, null=True, blank=True,
                              related_name='tasks')
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, null=True, blank=True,
@@ -58,7 +57,7 @@ class Event(models.Model):
     content = models.CharField(max_length=200, blank=True)
     start_datetime = models.DateTimeField(null=True, blank=True)
     end_datetime = models.DateTimeField(null=True, blank=True)
-    pub_date = models.DateTimeField(auto_now=True)
+    pub_date = models.DateTimeField(auto_now_add=True)
     team = models.ForeignKey('teams.Team', on_delete=models.CASCADE, null=True, blank=True,
                              related_name='events')
     project = models.ForeignKey('projects.Project', on_delete=models.CASCADE, null=True, blank=True,
@@ -67,6 +66,21 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class DashboardWidget(models.Model):
+    """Model to store user's dashboard widget configuration"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='dashboard_config')
+    widgets = models.JSONField(default=list, blank=True)  # List of widget configurations
+    layout = models.JSONField(default=dict, blank=True)  # Layout positions and sizes
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Dashboard config for {self.user.username}"
+
+    class Meta:
+        verbose_name = "Dashboard Widget Configuration"
+        verbose_name_plural = "Dashboard Widget Configurations"
 
 
 class InsightSuggestion(models.Model):
@@ -105,3 +119,4 @@ class InsightSuggestion(models.Model):
 
     def __str__(self):
         return f"{self.id} ({self.user.username} - {self.suggestion_type})"
+

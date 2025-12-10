@@ -9,7 +9,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <title>{% block title %}{{ title }} - VerAlign CRM{% endblock %}</title>
+    <title>{% block title %}{{ title }} - Orbit{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
     <link
@@ -73,15 +73,32 @@
         }
 
         footer {
-            background-color: var(--accent-color);
-            color: var(--accent-text);
+            background-color: transparent;
+            color: var(--text-muted);
             text-align: center;
-            padding: 0.1rem 0;
-            margin-top: auto;
+            padding: 0.5rem 0;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        footer p {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: var(--accent-color);
         }
     </style>
 </head>
-<body>
+<body{% if user.is_authenticated %} data-username="{{ user.username }}"{% endif %}>
 <!-- TODO CONSIDER NAVBAR WHEN NOT LOGGED IN -->
 <!-- <header>
       x#}  X{#x
@@ -103,15 +120,17 @@
 <!-- Main Content -->
 <main class="main-content app flex-row align-items-center">
     <div class="container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="card {% if message.tags %}{{ message.tags }}{% endif %}">
-                    <div class="card-body">
-                        {{ message }}
+        {% block messages %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="card {% if message.tags %}{{ message.tags }}{% endif %}">
+                        <div class="card-body">
+                            {{ message }}
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
-        {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endblock %}
         {% block content %}{% endblock %}
     </div>
 </main>
@@ -119,8 +138,8 @@
 <footer>
     <div class="container">
         <p>
-            &copy; 2025 VerAlign. AI-based Customer Relationship Management. All
-            Rights Reserved. <a class="text-white" href="/admin/">Admin</a>
+            &copy; 2025 Orbit ·
+            <a class="text-white" href="/admin/">Admin</a> ·
             {% if title in "Tasks" %}
                 <a class="text-white" href="{% url "help:task_help" %}">Help</a>
             {% else  %}

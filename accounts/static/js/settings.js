@@ -196,8 +196,35 @@
     });
   }
 
+  // Auto-dismiss success messages after 5 seconds
+  function autoDismissMessages() {
+    const messagesContainer = document.getElementById("messages-container");
+    if (messagesContainer) {
+      // Scroll to top to show messages
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      const successAlerts = messagesContainer.querySelectorAll(".alert-success");
+      successAlerts.forEach((alert) => {
+        setTimeout(() => {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }, 5000); // 5 seconds
+      });
+
+      // Error messages stay visible (don't auto-dismiss)
+      // but we still want to scroll to them
+      const errorAlerts = messagesContainer.querySelectorAll(".alert-danger");
+      if (errorAlerts.length > 0) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }
+
   // Call initialize after DOM is loaded and when form values change
   document.addEventListener("DOMContentLoaded", () => {
+    // Auto-dismiss success messages
+    autoDismissMessages();
+
     initializeUI();
 
     // Add click handlers for theme and accent color options
@@ -266,10 +293,23 @@
   });
 
   // Handle form submission - save to localStorage before submitting
-  form.addEventListener("submit", function () {
+  form.addEventListener("submit", function (e) {
     // Get current theme values and save to localStorage
     const themeValues = getCurrentValues();
     localStorage.setItem("theme", JSON.stringify(themeValues));
+
+    // Preserve the active tab in a hidden field or GET parameter
+    const activeTab = document.querySelector('.tab-pane.show.active')?.id || 'profile';
+    
+    // Create a hidden input to track the active tab
+    let activeTabInput = form.querySelector('input[name="active_tab"]');
+    if (!activeTabInput) {
+      activeTabInput = document.createElement('input');
+      activeTabInput.type = 'hidden';
+      activeTabInput.name = 'active_tab';
+      form.appendChild(activeTabInput);
+    }
+    activeTabInput.value = activeTab;
 
     // Hide unsaved changes alert
     hideUnsavedChangesAlert();
@@ -277,7 +317,10 @@
     // Update initial values to current values
     initialValues = JSON.parse(JSON.stringify(themeValues));
 
+    // Scroll to top to show success message
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     // The form will submit normally to the server
-    // Django will save to database and reload the page
+    // Django will save to database and stay on the same page
   });
 })();
