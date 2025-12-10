@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-4">
+  <h3 class="fw-bold text-primary">Create Team Document</h3>
+  <hr>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Document Title</label>
+      <input class="form-control" name="name" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Content</label>
+      <textarea class="form-control" name="content" rows="12" required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+</div>
+
+{% endblock %}
