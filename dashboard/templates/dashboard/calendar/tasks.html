@@ -250,10 +250,7 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
     {{ tasks|json_script:"tasks-data" }}
-    <script src="{% static 'js/addTask.js' %}"></script>
-    <script src="{% static 'js/editTask.js' %}"></script>
     <script src="{% static 'js/viewTaskModal.js' %}"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {

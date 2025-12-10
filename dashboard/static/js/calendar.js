@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const tasks = JSON.parse(document.getElementById("tasks-data").textContent);
-    // TODO INCLUE EVENTS IN CALENDAR VIEW
+    // TODO INCLUDE EVENTS IN CALENDAR VIEW
 
 
     // Calendar initialization
