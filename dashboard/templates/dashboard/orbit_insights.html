@@ -3,29 +3,346 @@
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}"/>
+    <style>
+        .orbit-insights-header {
+            background: linear-gradient(135deg, rgba(var(--accent-color-rgb, 30, 144, 255), 0.08) 0%, rgba(var(--accent-color-rgb, 30, 144, 255), 0.02) 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(var(--accent-color-rgb, 30, 144, 255), 0.15);
+        }
+
+        .orbit-insights-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .orbit-logo-header {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .orbit-circle-header {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid;
+            animation: orbit-pulse-header 3s ease-in-out infinite;
+        }
+
+        .orbit-circle-outer-header {
+            width: 48px;
+            height: 48px;
+            border-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.4);
+            animation-delay: 0s;
+        }
+
+        .orbit-circle-middle-header {
+            width: 34px;
+            height: 34px;
+            border-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.6);
+            animation-delay: 0.3s;
+        }
+
+        .orbit-circle-inner-header {
+            width: 20px;
+            height: 20px;
+            border-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.9);
+            background-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.3);
+            animation-delay: 0.6s;
+        }
+
+        @keyframes orbit-pulse-header {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+
+        .orbit-insights-subtitle {
+            font-size: 0.9375rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Skeleton Loader */
+        .skeleton-loader {
+            animation: skeleton-loading 1.5s ease-in-out infinite;
+            background: linear-gradient(
+                90deg,
+                var(--card-bg) 0%,
+                rgba(var(--accent-color-rgb, 30, 144, 255), 0.08) 50%,
+                var(--card-bg) 100%
+            );
+            background-size: 200% 100%;
+            border-radius: 12px;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .skeleton-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .skeleton-title {
+            height: 24px;
+            width: 60%;
+            margin-bottom: 1rem;
+        }
+
+        .skeleton-line {
+            height: 16px;
+            margin-bottom: 0.5rem;
+        }
+
+        .skeleton-line:last-of-type {
+            width: 80%;
+        }
+
+        .skeleton-button {
+            height: 36px;
+            width: 120px;
+            margin-top: 1rem;
+        }
+
+        /* Enhanced Chat Button */
+        .orbit-chat-button {
+            background: linear-gradient(135deg, rgba(var(--accent-color-rgb, 30, 144, 255), 0.9) 0%, rgba(var(--accent-color-rgb, 30, 144, 255), 0.7) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.875rem 1.5rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.625rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(var(--accent-color-rgb, 30, 144, 255), 0.25);
+            text-decoration: none;
+        }
+
+        .orbit-chat-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(var(--accent-color-rgb, 30, 144, 255), 0.35);
+            color: white;
+            text-decoration: none;
+        }
+
+        .orbit-chat-button i {
+            font-size: 1.125rem;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1) rotate(10deg);
+            }
+        }
+
+        /* Loading Animation */
+        .orbit-loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            gap: 1.5rem;
+        }
+
+        .orbit-loading-spinner {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .spinner-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--accent-color);
+            animation: spinner-rotate 1.5s linear infinite;
+        }
+
+        .spinner-ring:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 10px;
+            left: 10px;
+            border-top-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.6);
+            animation-duration: 2s;
+            animation-direction: reverse;
+        }
+
+        .spinner-ring:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 20px;
+            left: 20px;
+            border-top-color: rgba(var(--accent-color-rgb, 30, 144, 255), 0.3);
+            animation-duration: 2.5s;
+        }
+
+        @keyframes spinner-rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .orbit-loading-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        .orbit-loading-subtext {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Error State */
+        .orbit-error-container {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.02) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .orbit-error-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ef4444;
+            font-size: 2rem;
+        }
+
+        .orbit-error-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .orbit-error-text {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .retry-button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.625rem 1.25rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .retry-button:hover {
+            background: rgba(var(--accent-color-rgb, 30, 144, 255), 0.9);
+            transform: translateY(-1px);
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
     <div class="container-fluid p-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h3 mb-0">Orbit Insights</h1>
-                <p class="text-muted mb-0">Welcome back,
-                    {% if request.user.first_name %}{{ request.user.first_name }}{% else %}
-                        {{ request.user.username }}{% endif %}</p>
+        <div class="orbit-insights-header">
+            <div class="orbit-insights-title">
+                <div class="orbit-logo-header">
+                    <div class="orbit-circle-header orbit-circle-outer-header"></div>
+                    <div class="orbit-circle-header orbit-circle-middle-header"></div>
+                    <div class="orbit-circle-header orbit-circle-inner-header"></div>
+                </div>
+                <div>
+                    <h1 class="h3 mb-0">Orbit AI Insights</h1>
+                    <p class="orbit-insights-subtitle">
+                        Personalized suggestions powered by AI
+                    </p>
+                </div>
             </div>
         </div>
 
-        <div id="orbit-loading" class="alert alert-secondary">
-            Generating insights for you. This may take a moment...
-        </div>
+        <div id="orbit-loading" style="display: none;">
+            <div class="orbit-loading-container">
+                <div class="orbit-loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                </div>
+                <div>
+                    <div class="orbit-loading-text">Analyzing your workspace...</div>
+                    <div class="orbit-loading-subtext">Orbit is generating personalized insights for you</div>
+                </div>
+            </div>
 
+            <!-- Skeleton Loaders -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="skeleton-card">
+                        <div class="skeleton-loader skeleton-title"></div>
+                        <div class="skeleton-loader skeleton-line"></div>
+                        <div class="skeleton-loader skeleton-line"></div>
+                        <div class="skeleton-loader skeleton-line"></div>
+                        <div class="skeleton-loader skeleton-button"></div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="skeleton-card">
+                        <div class="skeleton-loader skeleton-title"></div>
+                        <div class="skeleton-loader skeleton-line"></div>
+                        <div class="skeleton-loader skeleton-line"></div>
+                        <div class="skeleton-loader skeleton-line"></div>
+                        <div class="skeleton-loader skeleton-button"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div id="orbit-suggestions-container"></div>
 
-        <div class="mt-3">
-            <a href="{% url 'message:orbit_chat' request.user.username %}" class="btn btn-primary btn-sm">
-                <i class="fas fa-info-circle me-2"></i> Chat with Orbit
+        <div class="mt-4">
+            <a href="{% url 'message:orbit_chat' request.user.username %}" class="orbit-chat-button">
+                <i class="fas fa-sparkles"></i>
+                Chat with Orbit AI
             </a>
         </div>
     </div>
@@ -37,20 +354,61 @@
             const loadingEl = document.getElementById("orbit-loading");
             const containerEl = document.getElementById("orbit-suggestions-container");
 
-            fetch("{% url 'dashboard:orbit_insights_api' %}")
-                .then((response) => response.json())
-                .then((data) => {
-                    if (loadingEl) loadingEl.style.display = "none";
-                    if (containerEl) containerEl.innerHTML = data.html || "";
-                })
-                .catch((error) => {
-                    console.error("Orbit insights error", error);
-                    if (loadingEl) {
-                        loadingEl.classList.remove("alert-secondary");
-                        loadingEl.classList.add("alert-danger");
-                        loadingEl.textContent = "Failed to load insights. Please try again later.";
-                    }
-                });
+            // Show loading state
+            if (loadingEl) loadingEl.style.display = "block";
+
+            function loadInsights() {
+                fetch("{% url 'dashboard:orbit_insights_api' %}")
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        // Hide loading
+                        if (loadingEl) loadingEl.style.display = "none";
+
+                        // Show suggestions with fade-in animation
+                        if (containerEl) {
+                            containerEl.innerHTML = data.html || "";
+                            containerEl.style.opacity = "0";
+                            setTimeout(() => {
+                                containerEl.style.transition = "opacity 0.5s ease";
+                                containerEl.style.opacity = "1";
+                            }, 50);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Orbit insights error:", error);
+
+                        // Hide loading
+                        if (loadingEl) loadingEl.style.display = "none";
+
+                        // Show error state
+                        if (containerEl) {
+                            containerEl.innerHTML = `
+                                <div class="orbit-error-container">
+                                    <div class="orbit-error-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <h3 class="orbit-error-title">Unable to Load Insights</h3>
+                                    <p class="orbit-error-text">
+                                        Orbit encountered an issue while generating your insights.
+                                        Please check your connection and try again.
+                                    </p>
+                                    <button class="retry-button" onclick="location.reload()">
+                                        <i class="fas fa-redo me-2"></i>
+                                        Try Again
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    });
+            }
+
+            // Load insights
+            loadInsights();
         });
     </script>
 {% endblock %}

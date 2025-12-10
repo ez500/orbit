@@ -994,6 +994,12 @@
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
               }
             } else {
+              // Remove empty state if it exists (for first message)
+              const emptyState = messagesContainer.querySelector('.empty-thread-state');
+              if (emptyState) {
+                emptyState.remove();
+              }
+
               // Create new message element for received message using createMessageHTML
               const messageHTML = createMessageHTML(message, false);
               const tempDiv = document.createElement('div');
@@ -2164,6 +2170,12 @@
     .then(response => response.json())
     .then(data => {
       if (data.success) {
+        // Remove empty state if it exists
+        const emptyState = messagesContainer.querySelector('.empty-thread-state');
+        if (emptyState) {
+          emptyState.remove();
+        }
+
         // Create new message element using the createMessageHTML function
         const messageHTML = createMessageHTML(data.message, true);
         const tempDiv = document.createElement('div');

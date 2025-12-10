@@ -317,7 +317,7 @@ def generate_orbit_reply(prompt):
 
     try:
         if not client:
-            return "Orbit AI not configured"
+            return "🤖 Orbit AI is not currently configured. Please contact your administrator to set up the GEMINI_API_KEY environment variable to enable AI-powered insights and chat."
         response = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=prompt
@@ -325,7 +325,7 @@ def generate_orbit_reply(prompt):
         return (response.text or "").strip()
     except Exception as e:
         print("Orbit chat error:", e)
-        return "Sorry I cannot generate a response at this time."
+        return "Sorry, I cannot generate a response at this time. There was an error connecting to the AI service."
 
 
 def test():
