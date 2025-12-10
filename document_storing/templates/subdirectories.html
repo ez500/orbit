@@ -10,7 +10,7 @@
                 role="button"
                 aria-expanded="false"
                 aria-controls="collapse{{subdirectory.id}}"
-                onclick="window.location.href = '{% url 'file_manager' subdirectory.path|encoded_path %}';"
+                onclick="window.location.href = '{% url 'document_storing:file_manager' subdirectory.path|encoded_path %}';"
             >
                 {{ subdirectory.name }}
             </a>
@@ -19,7 +19,7 @@
     {% else %}
         <li id="collapse{{directory.id}}" class="ms-{{depth}} collapse show">
             <i class="fa-solid fa-folder"></i>
-            <a href="{% url "file_manager" subdirectory.path|encoded_path %}">{{ subdirectory.name }}</a>
+            <a href="{% url "document_storing:file_manager" subdirectory.path|encoded_path %}">{{ subdirectory.name }}</a>
         </li>
     {% endif %}
 {% endfor %} 

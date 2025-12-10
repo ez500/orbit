@@ -66,6 +66,16 @@
                     <span class="hide-on-collapse">Tasks</span>
                 </a>
             </li>
+            <li class="nav-item nav-item-draggable" draggable="true" data-nav-id="files">
+                <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
+                <a
+                        class="nav-link {% if request.resolver_match.app_name == 'document_storing' %}active{% endif %}"
+                        href="{% url 'document_storing:file_manager' %}"
+                >
+                    <i class="fas fa-file"></i>
+                    <span class="hide-on-collapse">Files</span>
+                </a>
+            </li>
             <li class="nav-item nav-item-draggable" draggable="true" data-nav-id="messages">
                 <span class="drag-handle hide-on-collapse"><i class="fas fa-grip-vertical"></i></span>
                 <a
