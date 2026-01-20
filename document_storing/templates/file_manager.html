@@ -50,7 +50,7 @@
                                 href="#collapse{{directory.id}}"
                                 role="button" aria-expanded="false"
                                 aria-controls="collapse{{directory.id}}"
-                                onclick="window.location.href = '{% url 'file_manager' directory.path|encoded_path %}';"
+                                onclick="window.location.href = '{% url 'document_storing:file_manager' directory.path|encoded_path %}';"
                             >
                                 {{ directory.name }}
                             </a>
@@ -59,7 +59,7 @@
                     {% else %}
                         <li>
                             <i class="fa-solid fa-folder"></i>
-                            <a href="{% url "file_manager" directory.path|encoded_path %}">{{ directory.name }}</a>
+                            <a href="{% url "document_storing:file_manager" directory.path|encoded_path %}">{{ directory.name }}</a>
                         </li>
                     {% endif %}
                 {% endfor %}
@@ -70,7 +70,7 @@
                 <label for="fileInput">
                     <i class="fa-solid fa-upload text-primary fs-3"></i>
                 </label>
-                <form method="post" action="{% url "upload_file" %}" id="upload-file" enctype="multipart/form-data">
+                <form method="post" action="{% url "document_storing:upload_file" %}" id="upload-file" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="directory" value="{{ selected_directory }}">
                     <input id="fileInput" class="d-none" onchange="submitForm()" type="file" name="file" required>
@@ -114,10 +114,10 @@
                             tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered modal-xl">
                                     <div class="modal-content">
-                                        <div class="modal-header">
+                                        <div class="modal-header justify-content-between">
                                             <h1 class="modal-title fs-5" id="staticBackdropLabel">{{ file.filename }}</h1>
                                             <span>
-                                                <a href="{% url "download_file" file.file|encoded_file_path %}">
+                                                <a href="{% url "document_storing:download_file" file.file|encoded_file_path %}">
                                                     <i title="Download" class="fa-solid fa-download text-success fs-4"></i>
                                                 </a>
                                             </span>
@@ -153,7 +153,7 @@
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                            <a class="btn btn-danger" href="{% url 'delete_file' file.file|encoded_file_path %}">Delete</a>
+                                            <a class="btn btn-danger" href="{% url 'document_storing:delete_file' file.file|encoded_file_path %}">Delete</a>
                                         </div>
                                     </div>
                                 </div>
@@ -162,14 +162,14 @@
                             <div class="modal fade" id="info-{{forloop.counter}}" tabindex="-1" aria-labelledby="infoModelLabel" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <div class="modal-header">
+                                        <div class="modal-header justify-content-between">
                                             <h1 class="modal-title fs-5" id="infoModelLabel">File Info</h1>
                                             <div class="" id="modal-close-btn-{{forloop.counter}}" data-bs-dismiss="modal" aria-label="Close">
                                                 <i class="fa-solid fa-circle-xmark fs-5"></i>
                                             </div>
                                         </div>
                                         <div class="modal-body">
-                                            <form action="{% url 'save_info' file.file_path|encoded_file_path %}" method="post">
+                                            <form action="{% url 'document_storing:save_info' file.file_path|encoded_file_path %}" method="post">
                                                 {% csrf_token %}
                                                 <div class="form-group mb-2">
                                                     <label for="" class="form-label">File Info</label>

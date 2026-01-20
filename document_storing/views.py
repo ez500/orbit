@@ -5,9 +5,17 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, FileResponse, Http404
 from django.conf import settings
 from document_storing.models import FileInfo
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+
+
+# TODO FIX DOCUMENT STORING
+def home_redirect(request):
+    return redirect("document_storing:file_manager")
+
 
 def convert_csv_to_text(csv_file_path):
-    with open(csv_file_path, 'r') as file:
+    with open(csv_file_path, "r") as file:
         reader = csv.reader(file)
         rows = list(reader)
 
@@ -17,11 +25,12 @@ def convert_csv_to_text(csv_file_path):
 
     return text
 
-def get_files_from_directory(directory_path):
+
+def get_files_from_directory(directory_path, user):
     files = []
     for filename in os.listdir(directory_path):
         file_path = os.path.join(directory_path, filename)
-        if os.path.isfile(file_path):
+        if os.path.isfile(file_path) and FileInfo.objects.filter(user=user, path=file_path).exists():
             try:
                 print(" > file_path " + file_path)
                 _, extension = os.path.splitext(filename)
@@ -30,27 +39,28 @@ def get_files_from_directory(directory_path):
                 else:
                     csv_text = ""
 
-                files.append({
-                    "file": file_path.split(os.sep + "media" + os.sep)[1],
-                    "filename": filename,
-                    "file_path": file_path,
-                    "csv_text": csv_text
-                })
+                files.append(
+                    {
+                        "file": file_path.split(os.sep + "media" + os.sep)[1],
+                        "filename": filename,
+                        "file_path": file_path,
+                        "csv_text": csv_text,
+                    }
+                )
             except Exception as e:
                 print(" > " + str(e))
     return files
 
+
 def save_info(request, file_path):
-    path = file_path.replace('%slash%', '/')
+    path = file_path.replace("%slash%", "/")
     if request.method == "POST":
         FileInfo.objects.update_or_create(
-            path=path,
-            defaults={
-                "info": request.POST.get("info")
-            }
+            path=path, defaults={"info": request.POST.get("info")}
         )
 
     return redirect(request.META.get("HTTP_REFERER"))
+
 
 def get_breadcrumbs(request):
     path_components = [component for component in request.path.split("/") if component]
@@ -66,15 +76,17 @@ def get_breadcrumbs(request):
     return breadcrumbs
 
 
+@login_required
 def file_manager(request, directory=""):
-    media_path = os.path.join(settings.MEDIA_ROOT, "file_storage")
+    media_path = os.path.join(settings.MEDIA_ROOT, "file_storage", str(request.user.id))
+    os.makedirs(media_path, exist_ok=True)
     directories = generate_nested_directories(media_path, media_path)
     selected_directory = directory
 
     files = []
     selected_directory_path = os.path.join(media_path, selected_directory)
     if os.path.isdir(selected_directory_path):
-        files = get_files_from_directory(selected_directory_path)
+        files = get_files_from_directory(selected_directory_path, request.user)
 
     breadcrumbs = get_breadcrumbs(request)
 
@@ -83,7 +95,8 @@ def file_manager(request, directory=""):
         "files": files,
         "selected_directory": selected_directory,
         "segment": "file_manager",
-        "breadcrumbs": breadcrumbs
+        "breadcrumbs": breadcrumbs,
+        "title": "Files",
     }
     return render(request, "file_manager.html", context)
 
@@ -95,7 +108,14 @@ def generate_nested_directories(root_path, current_path):
             unique_id = str(uuid.uuid4())
             nested_path = os.path.join(current_path, name)
             nested_directories = generate_nested_directories(root_path, nested_path)
-            directories.append({"id": unique_id, "name": name, "path": os.path.relpath(nested_path, root_path), "directories": nested_directories})
+            directories.append(
+                {
+                    "id": unique_id,
+                    "name": name,
+                    "path": os.path.relpath(nested_path, root_path),
+                    "directories": nested_directories,
+                }
+            )
     return directories
 
 
@@ -113,20 +133,29 @@ def download_file(request, file_path):
     if os.path.exists(absolute_file_path):
         with open(absolute_file_path, "rb") as fh:
             response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-            response["Content-Disposition"] = "inline; filename=" + os.path.basename(absolute_file_path)
+            response["Content-Disposition"] = "inline; filename=" + os.path.basename(
+                absolute_file_path
+            )
             return response
     return Http404
 
 
+@login_required
 def upload_file(request):
-    media_path = os.path.join(settings.MEDIA_ROOT, "file_storage")
+    media_path = os.path.join(settings.MEDIA_ROOT, "file_storage", str(request.user.id))
     selected_directory = request.POST.get("directory", "")
     selected_directory_path = os.path.join(media_path, selected_directory)
     if request.method == "POST":
         file = request.FILES.get("file")
         file_path = os.path.join(selected_directory_path, file.name)
+        os.makedirs(selected_directory_path, exist_ok=True)
         with open(file_path, "wb") as destination:
             for chunk in file.chunks():
                 destination.write(chunk)
+
+        FileInfo.objects.create(
+            path=file_path,
+            user=request.user
+        )
 
     return redirect(request.META.get("HTTP_REFERER"))
