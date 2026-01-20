@@ -960,7 +960,7 @@ def poll_sidebar_conversations(request, username):
 
 @login_required
 def delete_conversation(request, username, conversation_id):
-    """Delete a team conversation (only team conversations can be deleted)"""
+    """Delete a team conversation or Orbit chat (only team conversations and Orbit chats can be deleted)"""
     user = request.user
 
     # Verify username matches
@@ -974,9 +974,9 @@ def delete_conversation(request, username, conversation_id):
         # Get the conversation
         conversation = Conversation.objects.get(id=conversation_id, participants=user)
 
-        # Only allow deletion of team conversations
-        if not conversation.is_team:
-            return JsonResponse({'success': False, 'error': 'Only team conversations can be deleted'}, status=400)
+        # Only allow deletion of team conversations and Orbit chats
+        if not conversation.is_team and not conversation.is_orbit_chat:
+            return JsonResponse({'success': False, 'error': 'Only team conversations and Orbit chats can be deleted'}, status=400)
 
         # Check if user is the team admin or conversation creator
         # For now, allow any participant to delete (you can add more restrictions)

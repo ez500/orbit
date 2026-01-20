@@ -3,9 +3,7 @@
 {% load task_extras %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/listCalendar.css' %}">
     <link rel="stylesheet" href="{% static 'css/taskModal.css' %}">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -266,8 +264,7 @@
             </div>
         </div>
         </div>
-    <!-- TODO IMPLEMENT EDIT TASK MODAL -->
-    <!-- Add Task Modal -->
+    <!-- Add Task/Event Modal (New) -->
     {% include 'dashboard/calendar/_add_task_event_modal.html' %}
     {% include 'dashboard/calendar/_view_task_modal_shell.html' %}
 
@@ -275,6 +272,9 @@
 
 {% block extra_js %}
     {{ tasks|json_script:"tasks-data" }}
+    <script src="{% static 'js/calendar.js' %}"></script>
+    <script src="{% static 'js/addTask.js' %}"></script>
+    <script src="{% static 'js/editTask.js' %}"></script>
     <script src="{% static 'js/viewTaskModal.js' %}"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {

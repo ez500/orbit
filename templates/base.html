@@ -38,6 +38,15 @@
     {% block extra_css %}{% endblock %}
 
     <style>
+        /* Global link styling - remove underlines */
+        a {
+            text-decoration: none !important;
+        }
+
+        a:hover {
+            text-decoration: none !important;
+        }
+
         header {
             background-color: var(--accent-color);
             color: var(--accent-text);
@@ -138,8 +147,8 @@
 <footer>
     <div class="container">
         <p>
-            &copy; 2025 Orbit ·
-            <a class="text-white" href="/admin/">Admin</a> ·
+            &copy; 2025 VerAlign. AI-based Customer Relationship Management. All
+            Rights Reserved. <a class="text-white" href="/admin/">Admin</a>
             {% if title in "Tasks" %}
                 <a class="text-white" href="{% url "help:task_help" %}">Help</a>
             {% else  %}
