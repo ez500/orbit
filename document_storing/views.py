@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 
 
+# TODO FIX DOCUMENT STORING
 def home_redirect(request):
     return redirect("document_storing:file_manager")
 
