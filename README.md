@@ -1,4 +1,4 @@
-# veralign
+# Orbit
 A AI-based CRM tool.
 
 # Setup
